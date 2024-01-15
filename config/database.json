@@ -1,0 +1,4 @@
+{
+    "dbtest" : "mongodb://127.0.0.1:27017/loja",
+    "dbproduction":"mongodb://127.0.0.1:27017/loja-api"
+}
