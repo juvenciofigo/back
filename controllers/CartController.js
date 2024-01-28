@@ -4,7 +4,7 @@ const mongoose = require("../database/connection");
 const Cart = mongoose.model("Cart");
 
 class CartController {
-    // async createCart(req, res) {
+    // async createCart(req, res,next) {
     //     const { user_id } = req.params;
     //     const bodyData = req.body;
     //     try {
@@ -17,7 +17,7 @@ class CartController {
     //         return res.status(400).json(error);
     //     }
     // }
-    async createCart(req, res) {
+    async createCart(req, res, next) {
         const { user_id } = req.params;
         const bodyData = req.body;
         try {
@@ -29,9 +29,8 @@ class CartController {
             return res.status(400).json(error);
         }
     }
-    
 
-    // async addProtuctsCart(req, res) {
+    // async addProtuctsCart(req, res,next) {
     //     const { user_id } = req.params;
     //     const bodyData = req.body;
     //     console.log("ola");
@@ -50,7 +49,7 @@ class CartController {
     // }
 
     // // Show all
-    // async listCarts(req, res) {
+    // async listCarts(req, res,next) {
     //     try {
     //         const carts = await Cart.find();
     //         if (carts) {
@@ -64,7 +63,7 @@ class CartController {
     // }
 
     // // Show One
-    // async showDetailsCart(req, res) {
+    // async showDetailsCart(req, res,next) {
     //     const id = req.params.id;
     //     try {
     //         const cart = await Cart.findById({ _id: id });
@@ -79,7 +78,7 @@ class CartController {
     // }
 
     // // Update cart
-    // async updatecart(req, res) {
+    // async updatecart(req, res,next) {
     //     try {
     //         const cart = await Cart.findByIdAndUpdate(
     //             { _id: req.params.id },
@@ -107,7 +106,7 @@ class CartController {
     // }
 
     // // Delete cart
-    // async deletecCart(req, res) {
+    // async deletecCart(req, res,next) {
     //     try {
     //         const deleteCart = await Cart.findByIdAndDelete({ _id: req.params.id });
     //         if (deleteCart) {

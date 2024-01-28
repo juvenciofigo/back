@@ -16,10 +16,10 @@
             <% } %> <% if (!success) { %>
             <p>Digite aqui sua nova senha</p>
 
-            <form action="/users/reververedPass" method="post">
+            <form action="/recoverPass" method="post">
                 <input type="hidden" name="token" value="<%= token %>" />
                 <div class="form-group">
-                    <label for="password" class="form-label">Email</label>
+                    <label for="password" class="form-label">Senha</label>
                     <input type="password" name="password" class="form-control" placeholder="Digite nova senha" aria-describedby="helpId" />
                     <small id="helpId" class="text-muted">Ajuda</small>
                 </div>

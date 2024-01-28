@@ -1,11 +1,32 @@
-var express = require("express");
-var router = express.Router();
-var ProductController = require("../controllers/ProductController");
+const router = require("express").Router();
+const ProductController = require("../controllers/ProductController");
+const auth = require("./auth");
+const AdminValidator = require("../controllers/validations/adminValidator");
+const productValidation = require("../controllers/validations/productValidation");
+const upload = require("../config/multer");
 
-router.post("/newProduct", ProductController.createProduct); //Create a product
-router.get("/products", ProductController.listProtucts); //All products
-router.get("/products/:id", ProductController.showDetailsProduct); //one product details
-router.patch("/products/:id", ProductController.updateproduct); //Edit
-router.delete("/products/:id", ProductController.deletecProduct); //Excluir um produto.
+// Admin
+
+router.post("/product/new", auth.require, AdminValidator, productValidation.Create, ProductController.createProduct); // testado
+
+router.put("/product/:id", auth.require, AdminValidator, productValidation.Update, ProductController.updateProduct); // testado
+
+router.put("/product/image/:id", auth.require, AdminValidator, productValidation.Image, upload.array("files", 5), ProductController.updateImage); // tstando e aprovado
+
+router.delete("/product/:id", auth.require, AdminValidator, productValidation.Delete, ProductController.deleteProduct);
+
+router.get("/products", auth.require, AdminValidator, productValidation.All, ProductController.getAllProducts);
+
+//Cliente
+
+router.get("/product/:id", productValidation.getBtId, ProductController.showDetailsProduct); //testado
+router.get("/products/all", productValidation.All, ProductController.availiableProducts);
+router.get("/products/search/:search", ProductController.searchProducts); // nao aprovado
+
+//Ratings
+router.get("/product/:id/ratings", productValidation.getBtId, ProductController.getRatingsProduct);
+
+//Variations
+router.get("/product/:id/variations", productValidation.getBtId, ProductController.getVariationsProduct);
 
 module.exports = router;

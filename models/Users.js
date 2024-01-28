@@ -7,7 +7,7 @@ const crypto = require("crypto");
 
 const UserSchema = new mongoose.Schema(
     {
-        username: {
+        name: {
             type: String,
             required: [true, "Preencha o campo"],
             min: [6, "Nome Do Usuário deve ter no minimo 6 letras"],
@@ -20,26 +20,21 @@ const UserSchema = new mongoose.Schema(
         email: {
             type: String,
             required: [true, "Preencha o campo"],
-            unique: true,
+            unique: [true, "Email em uso, digite um email diferente"],
             lowercase: true,
             index: true,
             match: [/\S+@\S+\.\S+/, "Formato inválido"],
         },
-        endereco: {
+        address: {
             rua: { type: String },
             cidade: { type: String },
             estado: { type: String },
             cep: { type: String },
         },
-        store: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Store",
-            required: [true, "Preencha o campo"],
-        },
-        permition: {
-            type: Array,
+        role: {
+            type: [String],
             require: true,
-            default: ["cliente"],
+            default: ["client"],
         },
         cart: {
             type: mongoose.Schema.Types.ObjectId,
@@ -61,27 +56,28 @@ const UserSchema = new mongoose.Schema(
 UserSchema.plugin(uniqueValidator, { message: "nome de usuário sendo usado, escolha outro" }); // validacao do nome de usuário
 
 UserSchema.methods.setPass = function (password) {
-    this.salt = bcrypt.genSaltSync(16);
-    var hash = bcrypt.hashSync(password, this.salt);
+    return new Promise((resolve, reject) => {
+        this.salt = bcrypt.genSaltSync(10);
+        this.password = bcrypt.hashSync(password, this.salt);
+        resolve();
+    });
 };
 
 UserSchema.methods.validPass = function (password) {
-    var hash = bcrypt.compareSync(password, this.hash);
-    return hash === this.hash;
+    return bcrypt.compareSync(password, this.password);
 };
 
 UserSchema.methods.tokenGer = function () {
-    var dateToday = new Date();
-    var dateExp = new Date(today);
-
-    dateExp.setDate(today.getDate() + 15);
+    const dateToday = new Date();
+    const dateExp = new Date(dateToday);
+    dateExp.setDate(dateToday.getDate() + 15);
 
     return jwt.sign(
         {
             _id: this.id,
             email: this.email,
-            username: this.username,
-            exp: exp.getTime() / 1000,
+            name: this.name,
+            dateExp: parseFloat(dateExp.getTime() / 1000, 10),
         },
         secret
     );
@@ -91,9 +87,9 @@ UserSchema.methods.sendAuthJson = function () {
     return {
         _id: this._id,
         email: this.email,
-        username: this.username,
-        store: this.store,
-        role: this.permition,
+        name: this.name,
+        role: this.role,
+        token: this.tokenGer(),
     };
 };
 
@@ -101,10 +97,10 @@ UserSchema.methods.sendAuthJson = function () {
 UserSchema.methods.gerTokenRecoveryPass = function () {
     this.recovery = {};
     const tokenBuffer = crypto.randomBytes(32);
-    this.recovery.token = tokenBuffer.toString("hex");
+    this.recovery.token = tokenBuffer.toString("hex").replace(/\W/g, "");
     this.recovery.date = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
-}
-
+    return this.recovery;
+};
 
 UserSchema.methods.finalTokenRecoveryPass = function () {
     this.recovery = { token: null, date: null };
@@ -112,3 +108,4 @@ UserSchema.methods.finalTokenRecoveryPass = function () {
 };
 
 module.exports = mongoose.model("User", UserSchema, "users");
+/////////////////////// nome do mode, nome do SChema, nome da coleção
