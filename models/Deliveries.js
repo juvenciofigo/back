@@ -8,7 +8,7 @@ const DeliveryRouterSchema = new mongoose.Schema(
         deliveryType: { type: String, required: true },
         deliveryCost: { type: Number, required: true },
         deliveryDeadline: { type: Number, required: true },
-        deliveryOrder: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
+        deliveryOrder: { type: mongoose.Schema.Types.ObjectId, ref: "Order", required: true },
         payload: { type: Object },
     },
     { timestamps: true }

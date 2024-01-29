@@ -120,8 +120,7 @@ class UserController {
         var { email, password } = req.body;
         try {
             
-            var user = await Users.findOne({ email: email });
-            console.log(user);
+            var user = await Users.findOne({ email: email })
 
             if (!user) return res.status(404).json({ success: false, msg: "Usuário não encontrado!" });
 

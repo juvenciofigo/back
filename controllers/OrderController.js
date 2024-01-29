@@ -5,7 +5,7 @@ const { options } = require("joi"),
     Payments = require("../models/Payments"),
     Deliveries = require("../models/Deliveries"),
     Customers = require("../models/Customers"),
-    Users = require("../models/Users"),//
+    Users = require("../models/Users"), //
     CartValidation = require("./validations/cartValidation");
 
 class OrderController {
@@ -84,6 +84,7 @@ class OrderController {
     }
 
     async getOrderCartAdmin(req, res, next) {
+        console.log("com");
         try {
             const order = await Orders.findById(req.params.id);
 
@@ -108,6 +109,15 @@ class OrderController {
     //CLIENTE
 
     async getAllOrders(req, res, next) {
+        const id = req.auth._id;
+        console.log(id);
+
+        // Adicione uma verificação para garantir que req.payload e req.payload.id não sejam undefined
+        if (!id) {
+            console.log("Payload ou ID do payload não definidos");
+            return res.status(400).json({ success: false, error: "Payload ou ID do payload não definidos" });
+        }
+
         const options = {
             page: Number(req.query.offset) || 0,
             limit: Number(req.query.limit) || 30,
@@ -115,14 +125,17 @@ class OrderController {
         };
 
         try {
-            const customer = await Orders.findById({ user: req.payload.id });
+            const customer = await Customers.findOne({ user: id });
 
             if (!customer) {
+                console.log("Cliente não encontrado");
                 return res.status(400).json({ success: false, error: "Cliente não encontrado" });
             }
+
             const orders = await Orders.paginate({ customerOrder: customer._id }, options);
 
             if (!orders) {
+                console.log("Nenhum pedido encontrado");
                 return res.status(400).json({ success: false, error: "Nenhum pedido encontrado" });
             }
 
@@ -139,15 +152,19 @@ class OrderController {
                 })
             );
 
+            console.log("Sucesso - Retornando pedidos");
             return res.status(200).json({ success: true, orders });
         } catch (error) {
-            next();
+            console.error(error);
+            next(error);
         }
     }
 
     async getOrder(req, res, next) {
+        console.log(req.auth._id);
         try {
-            const customer = await Orders.findById({ user: req.payload.id });
+            const customer = await Customers.findOne({ user: req.auth._id });
+            
 
             if (!customer) {
                 return res.status(400).json({ success: false, error: "Cliente não encontrado" });
@@ -177,9 +194,9 @@ class OrderController {
         const { cart, payment, delivery } = req.body;
         try {
             // // Check Data Cart
-            // if (!CartValidation(cart)) {
-            //     return res.status(400).json({ success: false, msg: "Dados do carrinho inválidos" });
-            // }
+            if (!CartValidation(cart)) {
+                return res.status(400).json({ success: false, msg: "Dados do carrinho inválidos" });
+            }
 
             // // Check Data Delivery
             // if (!DeliveryValidation(cart)) {
@@ -191,7 +208,7 @@ class OrderController {
             //     return res.status(400).json({ success: false, msg: "Dados do pagamento inválidos" });
             // }
 
-            const customer = await Customers.findOneAndDelete({ user: req.payload.id });
+            const customer = await Customers.findOne({ user: req.auth._id });
 
             const newPayment = new Payments({
                 Amount: payment.Amount,
@@ -203,7 +220,7 @@ class OrderController {
             });
 
             const newDelivery = new Deliveries({
-                deliveryStatus: delivery.deliveryStatus,
+                deliveryStatus: "nao-iniciado",
                 deliveryCodeTrack: delivery.deliveryCodeTrack,
                 deliveryType: delivery.deliveryType,
                 deliveryCost: delivery.deliveryCost,
@@ -213,7 +230,7 @@ class OrderController {
             });
 
             const order = new Orders({
-                customer: customer._id,
+                customerOrder: customer._id,
                 Ordercart: cart,
                 paymentOrder: newPayment._id,
                 deliveryOrder: newDelivery._id,
@@ -227,15 +244,16 @@ class OrderController {
 
             // Notificar via email - cliente e admin = New order
 
-            return res.status(200).json({ order: Object.assign({}, order, { delivery: newDelivery, payment: newPayment, customer }) });
+            return res.status(200).json({ order: Object.assign({}, order._doc, { delivery: newDelivery, payment: newPayment, customer }) });
         } catch (error) {
-            next();
+            console.log(error);
+            next(error);
         }
     }
 
     async deleteOrder(req, res) {
         try {
-            const customer = await Orders.findById({ user: req.payload.id });
+            const customer = await Orders.findOne({ user: req.auth._id });
 
             if (!customer) {
                 return res.status(400).json({ success: false, error: "Cliente não encontrado" });
@@ -260,7 +278,7 @@ class OrderController {
 
     async getOrderCart(req, res, next) {
         try {
-            const customer = await Orders.findById({ user: req.payload.id });
+            const customer = await Customers.findOne({ user: req.auth._id });
 
             if (!customer) {
                 return res.status(400).json({ success: false, error: "Cliente não encontrado" });

@@ -37,6 +37,17 @@ const getVariatiosProduct = (req, res, next) => {
 };
 
 const createVariation = (req, res, next) => {
+    const querySchema = Joi.object({
+        product: Joi.string().alphanum().length(24).required(),
+    });
+
+    const { error: queryError } = querySchema.validate(req.query);
+
+    if (queryError) {
+        console.log(queryError);
+        return res.status(400).json({ error: queryError.details[0].message });
+    }
+
     const bodySchema = Joi.object({
         variationCode: Joi.string().required(),
         variationName: Joi.string().required(),
@@ -61,16 +72,7 @@ const createVariation = (req, res, next) => {
         console.log(bodyError);
         return res.status(400).json({ error: bodyError.details[0].message });
     }
-    const querySchema = Joi.object({
-        product: Joi.string().alphanum().length(24).required(),
-    });
 
-    const { error: queryError } = querySchema.validate(req.query);
-
-    if (queryError) {
-        console.log(queryError);
-        return res.status(400).json({ error: queryError.details[0].message });
-    }
     next();
 };
 

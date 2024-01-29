@@ -7,20 +7,19 @@ function getTokenFromHeader(req) {
     const token = req.headers.authorization.split(" ");
 
     if (token.length !== 2 || token[0] !== "Ecommerce") return null;
-
     return token[1];
 }
 
 const auth = {
     require: jwt({
-        secret,
-        userProperty: "payload",
+        secret: secret,
+        userProperty: "auth",
         algorithms: ["HS256"],
         getToken: getTokenFromHeader,
     }),
     optional: jwt({
         secret,
-        userProperty: "payload",
+        userProperty: "auth",
         credentialRequired: false,
         algorithms: ["HS256"],
         getToken: getTokenFromHeader,

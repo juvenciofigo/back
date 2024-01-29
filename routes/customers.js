@@ -13,11 +13,16 @@ router.get("/customers/search/:search/orders", auth.require, AdminValidator,Cust
 
 router.get("/customers/search/:search", auth.require, AdminValidator, CustomerValidation.search, CustomerController.search);
 
-router.get("/customer/admin/:id", auth.require, AdminValidator, CustomerValidation.showCustomer, CustomerController.showCustomer);
+router.get("/customer/admin/:id", auth.require, AdminValidator, CustomerValidation.showCustomerAdmin, CustomerController.showCustomerAdmin);
 
 router.get("/customers/admin/:id/orders", auth.require, AdminValidator,CustomerValidation.showOrdersCustomers, CustomerController.showOrdersCustomers); // Pedidos De Um Cliente
 
+
+
+router.delete("/customer/admin/:id", auth.require, AdminValidator,  CustomerController.deleteAdmin);
+
 router.put("/customer/admin/:id", auth.require, AdminValidator, CustomerValidation.updateCustomerAdmin, CustomerController.updateAdmin);
+
 // Customer
 
 router.get("/customer/:id", auth.require, CustomerValidator, CustomerValidation.mySelf, CustomerValidation.removeMySelf, CustomerController.mySelf);

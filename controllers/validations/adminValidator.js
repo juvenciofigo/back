@@ -7,10 +7,11 @@ module.exports = async (req, res, next) => {
             return res.status(400).json({ error: "ID inválido. O comprimento deve ser 24 caracteres." });
         }
         const user = await Users.findOne({ _id: id });
-        if (user.role.includes("admin")) {
+        if (!user || !user.role.includes("admin")) {
+            return res.status(403).json({ success: false, error: "Não tem permissão" });
+        } else {
             return next();
         }
-        return res.status(403).json({ success: false, error: "Não tem permissão" });
     } catch (error) {
         console.error("Erro ao verificar permissões:", error);
         return res.status(500).json({ success: false, error: "Internal Server Error" });

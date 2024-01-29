@@ -1,34 +1,35 @@
 const router = require("express").Router();
 const OrderController = require("../controllers/OrderController");
-
 const auth = require("./auth");
 const AdminValidator = require("../controllers/validations/adminValidator");
 const orderValidation = require("../controllers/validations/orderValidation");
 
-// // ADMIN
+// Rotas para Admin
+//testado
+router.get("/orders/admin", auth.require, AdminValidator, orderValidation.getAllOrdersAdmin, OrderController.getAllOrdersAdmin); // Todos da loja
+//testado
+router.get("/orders/admin/:id", auth.require, AdminValidator, orderValidation.getOrderAdmin, OrderController.getOrderAdmin); // Um pedido
 
-router.get("/orders/admin", auth.require, AdminValidator, orderValidation.getAllOrdersAdmin, OrderController.getAllOrdersAdmin); // Todos Da loja
-
-// //
-router.get("/orders/admin/:id", auth.require, AdminValidator, orderValidation.getOrderAdmin, OrderController.getOrderAdmin); // Um Pedido
 router.delete("/order/admin/:id", auth.require, AdminValidator, orderValidation.deleteOrderAdmin, OrderController.deleteOrderAdmin); // Cancelar Pedido
-router.get("/orders/:id/cart", auth.require, AdminValidator, orderValidation.getOrderCartAdmin, OrderController.getOrderCartAdmin); // Detalhes De Um Carrinho Do Pedido
+//testado
+router.get("/orders/admin/:id/cart", auth.require, AdminValidator, orderValidation.getOrderCartAdmin, OrderController.getOrderCartAdmin); // Detalhes de um carrinho do pedido
 
-// // ----Entrega
+// Rotas para Cliente
+//testado
+router.get("/orders", auth.require, orderValidation.getAllOrders, OrderController.getAllOrders); // Todos meus pedidos feitos
+//testado
+router.get("/orders/:id", auth.require, orderValidation.getOrder, OrderController.getOrder); // Um pedido Meu
+//testado
+router.post("/order/new", auth.require, orderValidation.createOrder, OrderController.createOrder); // Criando pedido
 
-// // ----Pagamento
+router.delete("/order/:id", auth.require, orderValidation.deleteOrder, OrderController.deleteOrder); // Meu
 
-// // CLIENTE
+router.get("/orders/:id/cart", auth.require, orderValidation.getOrderCart, OrderController.getOrderCart); // Dados do carrinho do meu pedido
 
-router.get("/orders/", auth.require, orderValidation.getAllOrders, OrderController.getAllOrders); // Todos Pedidos Feitos
-router.get("/orders/:id", auth.require, orderValidation.getOrder, OrderController.getOrder); // Um pedido
-router.post("/order", auth.require, orderValidation.createOrder, OrderController.createOrder); // Criando Pedido
-router.delete("/order/:id", auth.require, orderValidation.deleteOrder, OrderController.deleteOrder); // Do Cliente
+// Rotas para Entrega e Pagamento (devem ser definidas)
 
-router.get("/orders/:id/cart", auth.require, orderValidation.getOrderCart, OrderController.getOrderCart); // Dados do Carrinho Do Pedido
-
-// // ----Entrega
-
-// // ----Pagamento
+// Exemplo (Substitua com suas implementações):
+// router.get("/orders/:id/delivery", auth.require, orderValidation.getDelivery, OrderController.getDelivery);
+// router.get("/orders/:id/payment", auth.require, orderValidation.getPayment, OrderController.getPayment);
 
 module.exports = router;

@@ -4,8 +4,8 @@ const Joi = BaseJoi.extend(Extension);
 
 const getAllCustomers = (req, res, next) => {
     const { error } = Joi.object({
-        offset: Joi.number(),
-        limit: Joi.number(),
+        offset: Joi.number().optional(),
+        limit: Joi.number().optional(),
     }).validate(req.query);
 
     if (error) {
@@ -15,7 +15,20 @@ const getAllCustomers = (req, res, next) => {
     next();
 };
 
+const removeCustomerAdmin = (req, res, next) => {
+    const { error } = Joi.object({
+        id: Joi.number().alphanum().length(24).required(),
+    }).validate(req.params);
+
+    if (error) {
+        console.log(error);
+        return res.status(400).json({ error: error.details[0].message });
+    }
+    next();
+};
+
 const searchOrders = (req, res, next) => {
+    
     const paramsSchema = Joi.object({
         search: Joi.string().required(),
     });
@@ -37,6 +50,7 @@ const searchOrders = (req, res, next) => {
         console.log(queryError);
         return res.status(400).json({ error: queryError.details[0].message });
     }
+    
     next();
 };
 
@@ -102,7 +116,7 @@ const showOrdersCustomers = (req, res, next) => {
     next();
 };
 
-
+// Customer
 
 const showCustomer = (req, res, next) => {
     const { error } = Joi.object({
@@ -116,8 +130,7 @@ const showCustomer = (req, res, next) => {
     next();
 };
 
-
-const removeMySelf = (req, res, next) => {
+const mySelf = (req, res, next) => {
     const { error } = Joi.object({
         id: Joi.string().alphanum().length(24).required(),
     }).validate(req.params);
@@ -129,7 +142,7 @@ const removeMySelf = (req, res, next) => {
     next();
 };
 
-const mySelf = (req, res, next) => {
+const removeMySelf = (req, res, next) => {
     const { error } = Joi.object({
         id: Joi.string().alphanum().length(24).required(),
     }).validate(req.params);
@@ -239,14 +252,16 @@ const updateCustomerAdmin = (req, res, next) => {
 
 module.exports = {
     getAllCustomers,
-    searchOrders,
     search,
+    searchOrders,
     showCustomerAdmin,
     showOrdersCustomers,
-    showCustomer,
-    removeMySelf,
-    updateCustomer,
-    createCustomer,
-    mySelf,
     updateCustomerAdmin,
+    removeCustomerAdmin,
+    ///  customer
+    mySelf,
+    createCustomer,
+    updateCustomer,
+    removeMySelf,
+    showCustomer,
 };
