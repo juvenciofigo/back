@@ -9,7 +9,7 @@ const orderValidation = require("../controllers/validations/orderValidation");
 router.get("/orders/admin", auth.require, AdminValidator, orderValidation.getAllOrdersAdmin, OrderController.getAllOrdersAdmin); // Todos da loja
 //testado
 router.get("/orders/admin/:id", auth.require, AdminValidator, orderValidation.getOrderAdmin, OrderController.getOrderAdmin); // Um pedido
-
+//testado
 router.delete("/order/admin/:id", auth.require, AdminValidator, orderValidation.deleteOrderAdmin, OrderController.deleteOrderAdmin); // Cancelar Pedido
 //testado
 router.get("/orders/admin/:id/cart", auth.require, AdminValidator, orderValidation.getOrderCartAdmin, OrderController.getOrderCartAdmin); // Detalhes de um carrinho do pedido
@@ -22,8 +22,9 @@ router.get("/orders/:id", auth.require, orderValidation.getOrder, OrderControlle
 //testado
 router.post("/order/new", auth.require, orderValidation.createOrder, OrderController.createOrder); // Criando pedido
 
+// testado
 router.delete("/order/:id", auth.require, orderValidation.deleteOrder, OrderController.deleteOrder); // Meu
-
+//testado
 router.get("/orders/:id/cart", auth.require, orderValidation.getOrderCart, OrderController.getOrderCart); // Dados do carrinho do meu pedido
 
 // Rotas para Entrega e Pagamento (devem ser definidas)

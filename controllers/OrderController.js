@@ -1,11 +1,10 @@
-const { options } = require("joi"),
-    Products = require("../models/Products"),
+const Products = require("../models/Products"),
     Orders = require("../models/Orders"),
     Variations = require("../models/Variations"),
     Payments = require("../models/Payments"),
     Deliveries = require("../models/Deliveries"),
     Customers = require("../models/Customers"),
-    Users = require("../models/Users"), //
+    OrderRegistrations = require("../models/OrderRegistrations"),
     CartValidation = require("./validations/cartValidation");
 
 class OrderController {
@@ -69,6 +68,10 @@ class OrderController {
 
             if (!order) {
                 return res.status(400).json({ success: false, error: "Pedido não encontrado" });
+            }
+
+            if (order.orderCancel === true) {
+                return res.status(400).json({ success: false, error: "Esse pedido ja foi cancelado" });
             }
             order.orderCancel = true;
 
@@ -164,7 +167,6 @@ class OrderController {
         console.log(req.auth._id);
         try {
             const customer = await Customers.findOne({ user: req.auth._id });
-            
 
             if (!customer) {
                 return res.status(400).json({ success: false, error: "Cliente não encontrado" });
@@ -242,6 +244,9 @@ class OrderController {
             await newPayment.save();
             await newDelivery.save();
 
+            const orderReg = new OrderRegistrations({
+                
+            })
             // Notificar via email - cliente e admin = New order
 
             return res.status(200).json({ order: Object.assign({}, order._doc, { delivery: newDelivery, payment: newPayment, customer }) });
@@ -253,7 +258,8 @@ class OrderController {
 
     async deleteOrder(req, res) {
         try {
-            const customer = await Orders.findOne({ user: req.auth._id });
+            const customer = await Customers.findOne({ user: req.auth._id });
+            console.log(req.auth._id);
 
             if (!customer) {
                 return res.status(400).json({ success: false, error: "Cliente não encontrado" });
@@ -262,6 +268,9 @@ class OrderController {
 
             if (!order) {
                 return res.status(400).json({ success: false, error: "Pedido não encontrado" });
+            }
+            if (order.orderCancel === true) {
+                return res.status(400).json({ success: false, error: "Esse pedido ja foi cancelado" });
             }
             order.orderCancel = true;
 
