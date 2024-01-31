@@ -55,8 +55,8 @@ class OrderController {
                     return item;
                 })
             );
-
-            return res.status(200).json({ success: true, order });
+            const orderReg = await OrderRegistrations.find({ order: order._id });
+            return res.status(200).json({ success: true, order, orderReg  });
         } catch (error) {
             next();
         }
@@ -74,6 +74,12 @@ class OrderController {
                 return res.status(400).json({ success: false, error: "Esse pedido ja foi cancelado" });
             }
             order.orderCancel = true;
+            const orderReg = new OrderRegistrations({
+                order: order._id,
+                type: "pedido",
+                situation: "pedido_cancelado",
+            });
+            await orderReg.save();
 
             //Registro de atividade = pedido cancelado
             // Enviar email para clinte!
@@ -186,7 +192,9 @@ class OrderController {
                 })
             );
 
-            return res.status(200).json({ success: true, order });
+            
+            const orderReg = await OrderRegistrations.find({ order: order._id });
+            return res.status(200).json({ success: true, order, orderReg  });
         } catch (error) {
             next();
         }
@@ -245,8 +253,11 @@ class OrderController {
             await newDelivery.save();
 
             const orderReg = new OrderRegistrations({
-                
-            })
+                order: order._id,
+                type: "pedido",
+                situation: "pedido criado",
+            });
+            await orderReg.save();
             // Notificar via email - cliente e admin = New order
 
             return res.status(200).json({ order: Object.assign({}, order._doc, { delivery: newDelivery, payment: newPayment, customer }) });
@@ -259,7 +270,6 @@ class OrderController {
     async deleteOrder(req, res) {
         try {
             const customer = await Customers.findOne({ user: req.auth._id });
-            console.log(req.auth._id);
 
             if (!customer) {
                 return res.status(400).json({ success: false, error: "Cliente não encontrado" });
@@ -273,6 +283,13 @@ class OrderController {
                 return res.status(400).json({ success: false, error: "Esse pedido ja foi cancelado" });
             }
             order.orderCancel = true;
+
+            const orderReg = new OrderRegistrations({
+                order: order._id,
+                type: "pedido",
+                situation: "pedido_cancelado",
+            });
+            await orderReg.save();
 
             //Registro de atividade = pedido cancelado
             // Enviar email para Admin!

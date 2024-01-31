@@ -18,6 +18,7 @@ const categoryRouter = require("./routes/categorys");
 const ratingsRouter = require("./routes/ratings");
 const variationsRouter = require("./routes/variations");
 const ordersRouter = require("./routes/orders");
+const deliveriesRouter = require("./routes/deliveries");
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use("/", categoryRouter);
 app.use("/", ratingsRouter);
 app.use("/", variationsRouter);
 app.use("/", ordersRouter);
+app.use("/", deliveriesRouter);
 
 // Error Handling
 app.use((req, res, next) => {

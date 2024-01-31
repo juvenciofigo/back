@@ -6,7 +6,7 @@ const orderValidation = require("../controllers/validations/orderValidation");
 
 // Rotas para Admin
 //testado
-router.get("/orders/admin", auth.require, AdminValidator, orderValidation.getAllOrdersAdmin, OrderController.getAllOrdersAdmin); // Todos da loja
+router.get("/orders/admin", auth.require,  orderValidation.getAllOrdersAdmin, OrderController.getAllOrdersAdmin); // Todos da loja
 //testado
 router.get("/orders/admin/:id", auth.require, AdminValidator, orderValidation.getOrderAdmin, OrderController.getOrderAdmin); // Um pedido
 //testado

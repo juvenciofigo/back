@@ -1,17 +1,10 @@
 const router = require("express").Router();
-const RatingController = require("../controllers/RatingController");
+const DeliveryController = require("../controllers/DeliveryController");
 const auth = require("./auth");
 const AdminValidator = require("../controllers/validations/adminValidator");
-const ratingValidation = require("../controllers/validations/ratingValidation");
 
-router.get("/ratings", ratingValidation.getAllRatings, RatingController.getAllRatings);
-router.get("/rating/:id",ratingValidation.getBtId, RatingController.getRating);
-router.post("/rating/new", auth.require, ratingValidation.Create, RatingController.createRating);
-
-// router.put("/rating/", auth.require, AdminValidator, RatingController.updateRating);
-
-//ADMIN
-
-router.delete("/rating/:id", auth.require, AdminValidator, ratingValidation.Delete, RatingController.deleteRating);
+router.get("/delivery/:id", auth.require, DeliveryController.deliveryShow);
+router.put("/delivery/:id", auth.require,AdminValidator, DeliveryController.update);
+router.post("/delivery/:id", auth.require, DeliveryController.calcucate);
 
 module.exports = router;
