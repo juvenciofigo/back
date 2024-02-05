@@ -1,12 +1,13 @@
+require('dotenv').config();
 const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
-const logger = require("morgan");
+const morgan = require("morgan");
 const cors = require("cors");
 const ejs = require("ejs");
 const compression = require("compression");
-const morgan = require("morgan");
 const bodyParser = require("body-parser");
+
 
 // requires routes
 const usersRouter = require("./routes/users");
@@ -23,23 +24,25 @@ const deliveriesRouter = require("./routes/deliveries");
 const app = express();
 
 // Ambient
-const isProduction = process.env.NODE_env === "production";
+const isProduction = process.env.NODE_ENV === "production";
+var PORT = process.env.PORT || "3000";
 
 // Middlewares
-app.use(logger("dev"));
-app.use(bodyParser.json({ limit: 1.5 * 1024 * 1024 }));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
-app.use(cors());
-app.use(compression());
-app.disable("x-powered-by");
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
+app.use("/public/images", express.static(path.join(__dirname, "public/images")));
 
-if (!isProduction) {
-    app.use(morgan("dev"));
-}
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
+
+// config
+if (!isProduction) app.use(morgan("dev"));
+app.use(cors());
+app.disable("x-powered-by");
+app.use(compression());
+
+// BODY PARSER
+app.use(bodyParser.urlencoded({ extended: true, limit: "5mb" }));
+app.use(bodyParser.json({ limit: "5mb" }));
+app.use(cookieParser());
 
 // Routes
 app.use("/", usersRouter);
@@ -64,8 +67,11 @@ app.use((err, req, res, next) => {
     res.status(err.status || 500);
     if (err.status !== 404) {
         console.warn("Error", err.message, new Date());
-        res.json({success: false, errors: { message: err.message, status: res.statusCode } });
+        res.json({ success: false, errors: { message: err.message, status: res.statusCode } });
     }
 });
 
-module.exports = app;
+app.listen(PORT, () => {
+    if (isProduction) console.log(`Server is running at //localhost:${PORT}`);
+    else console.log(`Server is running in DEV mode at //localhost:${PORT}`);
+});

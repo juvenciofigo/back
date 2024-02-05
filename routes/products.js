@@ -15,12 +15,12 @@ router.put("/product/image/:id", auth.require, AdminValidator, productValidation
 
 router.delete("/product/:id", auth.require, AdminValidator, productValidation.Delete, ProductController.deleteProduct);
 
-router.get("/products", auth.require, AdminValidator, productValidation.All, ProductController.getAllProducts);
+router.get("/products/all", auth.require, AdminValidator, productValidation.All, ProductController.getAllProductsAdmin);
 
 //Cliente
 
 router.get("/product/:id", productValidation.getBtId, ProductController.showDetailsProduct); //testado
-router.get("/products/all", productValidation.All, ProductController.availiableProducts);
+router.get("/products", productValidation.All, ProductController.getAllProducts);
 router.get("/products/search/:search", ProductController.searchProducts); // nao aprovado
 
 //Ratings

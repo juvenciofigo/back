@@ -3,10 +3,9 @@
     "version": "0.0.0",
     "private": true,
     "scripts": {
-        "dev": "NODE_ENV=development nodemon ./bin/www",
-        "start": "nodemon ./bin/www",
+        "dev": "set NODE_ENV=development && nodemon app.js",
         "test": "mocha --timeout 2000 --exit",
-        "build": "NODE_ENV=production pm2 start app.js --name=\"ecommerce-api\""
+        "build": "set NODE_ENV=production && pm2 start app.js --name=\"ecommerce-api\""
     },
     "dependencies": {
         "@hapi/joi-date": "^2.0.1",

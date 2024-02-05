@@ -2,6 +2,7 @@ const Products = require("../models/Products");
 const Categories = require("../models/Categories");
 const Ratings = require("../models/Ratings");
 const Variations = require("../models/Variations");
+const api = require("../config/index").api;
 
 const getSort = (sortType) => {
     switch (sortType) {
@@ -120,20 +121,26 @@ class ProductController {
     // Atualizar as imagens de um produto
     async updateImage(req, res, next) {
         try {
+            const productId = req.params.id;
+
             // Encontrar o produto pelo ID fornecido na requisição
-            const product = await Products.findById(req.params.id);
+            const product = await Products.findById(productId);
 
             // Verificar se o produto foi encontrado
             if (!product) {
                 return res.status(404).json({ msg: "Produto não encontrado!" });
             }
 
+            // Verificar se há arquivos enviados na requisição
+            if (!req.files || req.files.length === 0) {
+                return res.status(400).json({ msg: "Nenhuma imagem enviada!" });
+            }
+
             // Obter os nomes dos novos arquivos de imagem a partir dos arquivos enviados na requisição
-            console.log(req.files);
             const newImages = req.files.map((item) => item.filename);
 
-            // Filtrar imagens existentes (removendo valores nulos) e concatenar com as novas imagens
-            product.productImage = product.productImage.filter((item) => item).concat(newImages);
+            // Adicionar as novas imagens ao array existente
+            product.productImage = [...product.productImage, ...newImages];
 
             // Salvar as alterações no banco de dados
             await product.save();
@@ -178,7 +185,7 @@ class ProductController {
         }
     }
     // Show all
-    async getAllProducts(req, res, next) {
+    async getAllProductsAdmin(req, res, next) {
         // Opções de paginação e classificação
         const options = {
             page: Number(req.query.offset) || 1, // Página padrão 1 se offset não fornecido
@@ -189,7 +196,7 @@ class ProductController {
         try {
             // Buscar todos os produtos paginados
             const products = await Products.paginate({}, options);
-
+            console.log(products);
             // Retornar uma resposta com a quantidade de produtos e a lista de produtos
             return res.status(200).json({ quantity: products.totalDocs, products: products.docs });
         } catch (error) {
@@ -208,9 +215,34 @@ class ProductController {
         try {
             // Buscar todos os produtos paginados
             const products = await Products.paginate({ productAvailability: true }, options);
-
             // Retornar uma resposta com a quantidade de produtos e a lista de produtos
             return res.status(200).json({ quantity: products.totalDocs, products: products.docs });
+        } catch (error) {
+            next(error);
+        }
+    }
+    async getAllProducts(req, res, next) {
+        // Opções de paginação e classificação
+        const options = {
+            page: Number(req.query.offset) || 1, // Página padrão 1 se offset não fornecido
+            limit: Number(req.query.limit) || 10, // Limite padrão de 10 se limit não fornecido
+            sort: getSort(req.query.sortType), // Função getSort para obter configuração de classificação
+        };
+
+        try {
+            const products = await Products.paginate({}, options);
+
+            const imagesWithUrl = products.docs.map((product) => {
+                const imageUrls = product.productImage.map((image) => `${api}/public/images/${image}`);
+                return { ...product._doc, productImage: imageUrls };
+            });
+
+            const response = {
+                quantity: products.totalDocs,
+                products: imagesWithUrl,
+            };
+
+            return res.status(200).json(response);
         } catch (error) {
             next(error);
         }
@@ -264,8 +296,11 @@ class ProductController {
                 return res.status(404).json({ msg: "Produto não encontrado!" });
             }
 
+            // Correção: utilize product.productImage em vez de apenas productImage
+            const productImagesWithUrl = product.productImage.map((image) => `${api}/public/images/${image}`);
+
             // Retorna uma resposta 200 com o produto encontrado e suas propriedades populadas
-            return res.status(200).json({ product });
+            return res.status(200).json({ product: { ...product._doc, productImage: productImagesWithUrl } });
         } catch (error) {
             next(error);
         }
@@ -291,7 +326,7 @@ class ProductController {
             if (variations.length > 0) {
                 return res.status(200).json({ variations });
             } else {
-                return res.status(200).json({variations, msg: "Não existem variações para esse produto!", success: true });
+                return res.status(200).json({ variations, msg: "Não existem variações para esse produto!", success: true });
             }
         } catch (error) {
             next(error);
