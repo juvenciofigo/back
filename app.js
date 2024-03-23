@@ -1,4 +1,6 @@
-require('dotenv').config();
+require("dotenv").config();
+const multer = require("multer");
+
 const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
@@ -7,7 +9,6 @@ const cors = require("cors");
 const ejs = require("ejs");
 const compression = require("compression");
 const bodyParser = require("body-parser");
-
 
 // requires routes
 const usersRouter = require("./routes/users");
@@ -57,17 +58,29 @@ app.use("/", ordersRouter);
 app.use("/", deliveriesRouter);
 
 // Error Handling
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        // Erros do Multer (ex: tipo de arquivo não suportado, tamanho excedido)
+        console.log(err);
+        res.status(400).json({ error: err.message });
+    } else {
+        // Outros erros
+        console.error(err);
+        res.status(500).json({ error: "Erro interno do servidor" });
+    }
+});
+
 app.use((req, res, next) => {
     const err = new Error("Not found");
     err.status = 404;
-    next(err);
+    res.status(404).json({ success: false, error: { message: err.message, status: 404 } });
 });
 
 app.use((err, req, res, next) => {
     res.status(err.status || 500);
     if (err.status !== 404) {
         console.warn("Error", err.message, new Date());
-        res.json({ success: false, errors: { message: err.message, status: res.statusCode } });
+        res.json({ success: false, error: { message: err.message, status: res.statusCode } });
     }
 });
 

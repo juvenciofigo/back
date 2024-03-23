@@ -29,8 +29,13 @@ const ProductSchema = new mongoose.Schema(
             default: [],
         },
         productCategory: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Category",
+            type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
+        },
+        productSubcategory: {
+            type: [{ type: mongoose.Schema.Types.ObjectId, ref: "SubCategory" }],
+        },
+        productSub_category: {
+            type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Sub_category" }],
         },
         productRatings: {
             type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Rating" }],
@@ -40,12 +45,28 @@ const ProductSchema = new mongoose.Schema(
         },
         productPromotion: {
             type: Number,
-            default: null,
+            default: undefined,
         },
         sku: {
             type: String,
             required: true,
             unique: true,
+        },
+        productVendor: {
+            type: String,
+            required: true,
+        },
+        productModel: {
+            type: String,
+            default: undefined,
+        },
+        productSize: {
+            type: String,
+            default: undefined,
+        },
+        productBrand: {
+            type: String,
+            default: undefined,
         },
     },
     { timestamps: true }

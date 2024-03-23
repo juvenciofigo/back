@@ -6,7 +6,6 @@ const Stores = mongoose.model("Store");
 
 module.exports = async (req, res, next) => {
     try {
-        console.log(req.params);
         if (!req.params.id) return res.sendStatus(401);
 
         const { store } = req.query;

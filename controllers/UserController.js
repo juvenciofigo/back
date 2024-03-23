@@ -21,7 +21,6 @@ class UserController {
     async getUserDetails(req, res) {
         const id = req.params.id;
         try {
-            
             var user = await Users.findById(id).select("-recovery -salt -password");
 
             if (!user) return res.status(404).json({ msg: "Usuário não encontrado!" });
@@ -40,21 +39,23 @@ class UserController {
         var { name, email, password } = req.body;
 
         try {
+            const emailLowerCase = email.toLowerCase();
+
             // Verificar se o e-mail já está em uso em Users
-            const existingUser = await Users.findOne({ email });
+            const existingUser = await Users.findOne({ email: emailLowerCase });
 
             if (existingUser) {
-                return res.status(422).json({ errors: "E-mail já em uso", success: false });
+                return res.status(422).json({ error: "E-mail já em uso. Escolha outro", success: false });
             }
 
-            var user = await new Users({ name, email });
+            var user = new Users({ name, email: emailLowerCase });
             await user.setPass(password);
             await user.save();
 
             res.json({ user: user.sendAuthJson(), success: true });
         } catch (error) {
             console.error(error);
-            return res.status(400).json(error);
+            return res.status(500).json(error);
         }
     }
 
@@ -64,6 +65,8 @@ class UserController {
         var { name, email, password } = req.body;
         console.log(req.body);
         try {
+            const emailLowerCase = email.toLowerCase();
+
             var user = await Users.findById(req.params.id);
 
             if (!user) {
@@ -79,7 +82,7 @@ class UserController {
             }
 
             if (typeof email !== "undefined") {
-                user.email = email;
+                user.email = emailLowerCase;
             }
 
             var updatedUser = await user.save();
@@ -99,7 +102,6 @@ class UserController {
     // Delete user
 
     async deleteUser(req, res) {
-        console.log(req.params.id);
         try {
             var user = await Users.findById(req.params.id);
 
@@ -119,13 +121,14 @@ class UserController {
     async authenticateUser(req, res) {
         var { email, password } = req.body;
         try {
-            
-            var user = await Users.findOne({ email: email })
+            const emailLowerCase = email.toLowerCase();
 
-            if (!user) return res.status(404).json({ success: false, msg: "Usuário não encontrado!" });
+            var user = await Users.findOne({ email: emailLowerCase });
+
+            if (!user) return res.status(404).json({ success: false, error: "Usuário não encontrado! Verifique o  email" });
 
             if (!user.validPass(password)) {
-                return res.status(401).json({ success: false, errors: "Senha inválida" });
+                return res.status(401).json({ success: false, error: "Senha inválida" });
             }
 
             return res.json({ success: true, user: user.sendAuthJson() });
@@ -133,7 +136,7 @@ class UserController {
             console.log(error);
 
             if (error.name === "ValidationError") {
-                return res.status(422).json({ success: false, errors: error.errors });
+                return res.status(422).json({ success: false, error: error.error });
             }
 
             return res.status(500).json({ success: false, msg: "Erro ao autenticar o usuário" });
@@ -152,9 +155,11 @@ class UserController {
         var { email } = req.body;
 
         try {
+            const emailLowerCase = email.toLowerCase();
+
             if (!email) return res.render("recovery", { error: "Preencha com o seu email", success: false });
 
-            var user = await Users.findOne({ email });
+            var user = await Users.findOne({ email: emailLowerCase });
 
             if (!user) return res.render("recovery", { error: "Não existe usuário com este email", success: false });
 

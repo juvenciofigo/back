@@ -12,14 +12,14 @@ class OrderController {
         const options = {
             page: Number(req.query.offset) || 0,
             limit: Number(req.query.limit) || 30,
-            populate: ["customerOrder paymentOrder deliveryOrder"],
+            populate: ("customerOrder paymentOrder deliveryOrder"),
         };
 
         try {
             const orders = await Orders.paginate({}, options);
 
             if (!orders.docs || orders.docs.length === 0) {
-                return res.status(400).json({ success: false, error: "Nenhum pedido encontrado" });
+                return res.status(200).json({ success: true, error: "Nenhum pedido encontrado" });
             }
 
             await Promise.all(
@@ -56,7 +56,7 @@ class OrderController {
                 })
             );
             const orderReg = await OrderRegistrations.find({ order: order._id });
-            return res.status(200).json({ success: true, order, orderReg  });
+            return res.status(200).json({ success: true, order, orderReg });
         } catch (error) {
             next();
         }
@@ -64,7 +64,7 @@ class OrderController {
 
     async deleteOrderAdmin(req, res) {
         try {
-            const order = await Orders.findOne({ _id: req.params.id }).populate(["customerOrder paymentOrder deliveryOrder"]);
+            const order = await Orders.findOne({ _id: req.params.id }).populate("customerOrder paymentOrder deliveryOrder");
 
             if (!order) {
                 return res.status(400).json({ success: false, error: "Pedido não encontrado" });
@@ -93,7 +93,6 @@ class OrderController {
     }
 
     async getOrderCartAdmin(req, res, next) {
-        console.log("com");
         try {
             const order = await Orders.findById(req.params.id);
 
@@ -119,32 +118,28 @@ class OrderController {
 
     async getAllOrders(req, res, next) {
         const id = req.auth._id;
-        console.log(id);
 
         // Adicione uma verificação para garantir que req.payload e req.payload.id não sejam undefined
         if (!id) {
-            console.log("Payload ou ID do payload não definidos");
             return res.status(400).json({ success: false, error: "Payload ou ID do payload não definidos" });
         }
 
         const options = {
             page: Number(req.query.offset) || 0,
             limit: Number(req.query.limit) || 30,
-            populate: ["customerOrder paymentOrder deliveryOrder"],
+            populate: "customerOrder paymentOrder deliveryOrder",
         };
 
         try {
             const customer = await Customers.findOne({ user: id });
 
             if (!customer) {
-                console.log("Cliente não encontrado");
                 return res.status(400).json({ success: false, error: "Cliente não encontrado" });
             }
 
             const orders = await Orders.paginate({ customerOrder: customer._id }, options);
 
             if (!orders) {
-                console.log("Nenhum pedido encontrado");
                 return res.status(400).json({ success: false, error: "Nenhum pedido encontrado" });
             }
 
@@ -161,7 +156,6 @@ class OrderController {
                 })
             );
 
-            console.log("Sucesso - Retornando pedidos");
             return res.status(200).json({ success: true, orders });
         } catch (error) {
             console.error(error);
@@ -170,7 +164,6 @@ class OrderController {
     }
 
     async getOrder(req, res, next) {
-        console.log(req.auth._id);
         try {
             const customer = await Customers.findOne({ user: req.auth._id });
 
@@ -192,9 +185,8 @@ class OrderController {
                 })
             );
 
-            
             const orderReg = await OrderRegistrations.find({ order: order._id });
-            return res.status(200).json({ success: true, order, orderReg  });
+            return res.status(200).json({ success: true, order, orderReg });
         } catch (error) {
             next();
         }
@@ -258,6 +250,7 @@ class OrderController {
                 situation: "pedido criado",
             });
             await orderReg.save();
+
             // Notificar via email - cliente e admin = New order
 
             return res.status(200).json({ order: Object.assign({}, order._doc, { delivery: newDelivery, payment: newPayment, customer }) });
@@ -274,7 +267,7 @@ class OrderController {
             if (!customer) {
                 return res.status(400).json({ success: false, error: "Cliente não encontrado" });
             }
-            const order = await Orders.findOne({ customerOrder: customer._id, _id: req.params.id }).populate(["customerOrder paymentOrder deliveryOrder"]);
+            const order = await Orders.findOne({ customerOrder: customer._id, _id: req.params.id }).populate("customerOrder paymentOrder deliveryOrder");
 
             if (!order) {
                 return res.status(400).json({ success: false, error: "Pedido não encontrado" });

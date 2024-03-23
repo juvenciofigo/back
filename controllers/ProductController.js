@@ -1,5 +1,5 @@
 const Products = require("../models/Products");
-const Categories = require("../models/Categories");
+const { Category, SubCategory, Sub_category } = require("../models/Categories");
 const Ratings = require("../models/Ratings");
 const Variations = require("../models/Variations");
 const api = require("../config/index").api;
@@ -20,39 +20,89 @@ const getSort = (sortType) => {
 };
 
 class ProductController {
+    // ADMIN
+
     // Save product
 
     async createProduct(req, res, next) {
-        const { productName, productDescription, productPrice, productCategory, productPromotion, sku } = req.body;
+        const {
+            productName,
+            productDescription,
+            productAvailability,
+            productStock,
+            productPrice,
+            productCategory,
+            productSub_category,
+            productSubcategory,
+            productPromotion,
+            sku,
+            productVendor,
+            productModel,
+            productSize,
+            productBrand,
+        } = req.body;
 
         try {
-            // Vericar se o SKU está a ser usado
             const existingSku = await Products.findOne({ sku });
-            if (existingSku) return res.status(400).json({ errors: "SKU já em uso", success: false });
 
-            // Cria uma nova instância do modelo Product com os dados fornecidos
+            if (existingSku) return res.status(400).json({ error: "SKU já em uso", success: false });
+
             const product = new Products({
                 productName,
                 productDescription,
+                productAvailability,
                 productPrice,
                 productCategory,
+                productSubcategory,
+                productSub_category,
+                productStock,
                 productPromotion,
                 sku,
+                productVendor,
+                productModel,
+                productSize,
+                productBrand,
             });
 
-            // Encontra a categoria associada ao produto usando o ID da categoria fornecido
-            const category = await Categories.findById(productCategory);
-            if (!category) return res.status(400).json({ errors: "Cateroria não existente", success: false });
-
-            // Adiciona o ID do novo produto à lista de produtos da categoria
-            await category.products.push(product._id);
-
-            // Salva o novo produto e a categoria associada no banco de dados
-            await product.save();
+            const category = await Category.findById(productCategory);
+            if (!category) return res.status(400).json({ error: "Cateroria não existente", success: false });
+            category.products.push(product._id);
             await category.save();
 
-            // Retorna uma resposta de status 200 (OK) indicando que o produto foi criado com sucesso
+            const subCategory = await SubCategory.findById(productSubcategory);
+            if (!subCategory) return res.status(400).json({ error: "SubCategoria não existente", success: false });
+            subCategory.products.push(product._id);
+            await subCategory.save();
+
+            const sub_category = await Sub_category.findById(productSub_category);
+            if (!sub_category) return res.status(400).json({ error: "sub_categoria não existente", success: false });
+            sub_category.products.push(product._id);
+            await sub_category.save();
+
+            await product.save();
+
             return res.status(200).json({ product, success: true, msg: "Produto Criado!" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async showDetailsProductAdmin(req, res, next) {
+        try {
+            // Busca o produto pelo ID, e popula as propriedades 'productVariations' e 'productRatings'
+            const product = await Products.findById(req.params.id).populate(["productVariations", "productRatings"]);
+
+            // Verifica se o produto foi encontrado
+            if (!product) {
+                // Retorna uma resposta 404 se o produto não for encontrado
+                return res.status(404).json({ msg: "Produto não encontrado!" });
+            }
+
+            // Correção: utilize product.productImage em vez de apenas productImage
+            const productImagesWithUrl = product.productImage.map((image) => `${api}/public/images/${image}`);
+
+            // Retorna uma resposta 200 com o produto encontrado e suas propriedades populadas
+            return res.status(200).json({ product: { ...product._doc, productImage: productImagesWithUrl } });
         } catch (error) {
             next(error);
         }
@@ -61,7 +111,22 @@ class ProductController {
     // Update product
     async updateProduct(req, res, next) {
         // Extrair dados do corpo da requisição
-        const { productName, productDescription, productAvailability, productPrice, productStock, productCategory, productRatings, productPromotion, sku } = req.body;
+        const {
+            productName,
+            productDescription,
+            productAvailability,
+            productPrice,
+            productStock,
+            productPromotion,
+            sku,
+            productVendor,
+            productModel,
+            productSize,
+            productBrand,
+            productCategory,
+            productSubcategory,
+            productSub_category,
+        } = req.body;
 
         try {
             // Encontrar o produto pelo ID fornecido na requisição
@@ -73,45 +138,49 @@ class ProductController {
             }
 
             // Atualizar as propriedades do produto com os valores fornecidos
-            if (productStock) product.productStock = productStock;
-            if (productDescription) product.productDescription = productDescription;
-            if (productName) product.productName = productName;
-            if (productPrice) product.productPrice = productPrice;
-            if (productPromotion) product.productPromotion = productPromotion;
-            if (productAvailability !== undefined) product.productAvailability = productAvailability;
-            if (productRatings) product.productRatings = productRatings;
-            if (sku) product.sku = sku;
+            product.set({
+                productName,
+                productDescription,
+                productAvailability,
+                productPrice,
+                productStock,
+                productPromotion,
+                sku,
+                productVendor,
+                productModel,
+                productSize,
+                productBrand,
+            });
 
-            // Verificar se a categoria do produto está sendo alterada
-            if (productCategory !== undefined && productCategory.toString() !== product.productCategory.toString()) {
-                // Encontrar a categoria antiga do produto
-                const oldCategory = Categories.findById(product.productCategory);
-                // Encontrar a nova categoria do produto
-                const newCategory = await Categories.findById(productCategory);
+            // Atualizar as categorias do produto
+            const updateCategories = async (categoryModel, productCategory, productField) => {
+                if (productCategory && (!product[productField] || !product[productField].every((cat) => productCategory.includes(cat)))) {
+                    if (product[productField] && product[productField].length > 0) {
+                        const oldCategories = await categoryModel.find({ _id: { $in: product[productField] } });
+                        oldCategories.forEach(async (oldCategory) => {
+                            oldCategory.products = oldCategory.products.filter((item) => !item.equals(product._id));
+                            await oldCategory.save();
+                        });
+                    }
 
-                // Verificar se ambas as categorias foram encontradas
-                if (oldCategory && newCategory) {
-                    // Remover o produto da categoria antiga
-                    oldCategory.products = oldCategory.products.filter((item) => item !== product._id);
-                    // Adicionar o produto à nova categoria
-                    newCategory.products.push(product._id);
-                    product.productCategory = productCategory;
+                    const newCategories = await categoryModel.find({ _id: { $in: productCategory } });
+                    newCategories.forEach(async (newCategory) => {
+                        newCategory.products.push(product);
+                        await newCategory.save();
+                    });
 
-                    // Salvar as alterações nas categorias
-                    await oldCategory.save();
-                    await newCategory.save();
-                } else if (newCategory) {
-                    // Adicionar o produto à nova categoria se apenas a nova categoria for encontrada
-                    newCategory.products.push(product._id);
-                    product.productCategory = productCategory;
-                    await newCategory.save();
+                    product[productField] = productCategory;
                 }
-            }
+            };
+
+            await updateCategories(Category, productCategory, "productCategory");
+            await updateCategories(SubCategory, productSubcategory, "productSubcategory");
+            await updateCategories(Sub_category, productSub_category, "productSub_category");
 
             // Salvar as alterações no banco de dados
             await product.save();
 
-            // Responder com sucesso e os detalhes do produto
+            // Responder com sucesso e os detalhes do produto atualizado
             return res.status(200).json({ success: true, product });
         } catch (error) {
             next(error);
@@ -153,27 +222,31 @@ class ProductController {
     }
 
     // Delete product
+
     async deleteProduct(req, res, next) {
         try {
-            // Buscar o produto pelo ID na requisição
+            // Encontrar o produto pelo ID fornecido na requisição
             const product = await Products.findById(req.params.id);
 
-            // Se o produto não existe, retornar um erro
+            // Verificar se o produto foi encontrado
             if (!product) {
                 return res.status(404).json({ error: "Produto não encontrado", success: false });
             }
 
-            // Buscar a categoria do produto
-            const category = await Categories.findById(product.productCategory);
+            // Remover o produto das categorias e subcategorias associadas
+            const removeFromCategory = async (categoryId, productId) => {
+                if (categoryId) {
+                    const category = await Category.findById(categoryId);
+                    if (category && category.products) {
+                        category.products = category.products.filter((item) => !item.equals(productId));
+                        await category.save();
+                    }
+                }
+            };
 
-            // Se a categoria e seus produtos existirem
-            if (category && category.products) {
-                // Remover o ID do produto da lista de produtos da categoria
-                category.products = category.products.filter((item) => item !== product._id);
-
-                // Salvar a categoria atualizada no banco de dados
-                await category.save();
-            }
+            await removeFromCategory(product.productCategory, product._id);
+            await removeFromCategory(product.productSubcategory, product._id);
+            await removeFromCategory(product.productSub_category, product._id);
 
             // Deletar o produto
             await product.deleteOne();
@@ -184,25 +257,40 @@ class ProductController {
             next(error);
         }
     }
+
     // Show all
     async getAllProductsAdmin(req, res, next) {
         // Opções de paginação e classificação
         const options = {
             page: Number(req.query.offset) || 1, // Página padrão 1 se offset não fornecido
-            limit: Number(req.query.limit) || 30, // Limite padrão de 10 se limit não fornecido
+            limit: Number(req.query.limit) || 10, // Limite padrão de 10 se limit não fornecido
             sort: getSort(req.query.sortType), // Função getSort para obter configuração de classificação
         };
 
         try {
-            // Buscar todos os produtos paginados
             const products = await Products.paginate({}, options);
-            console.log(products);
-            // Retornar uma resposta com a quantidade de produtos e a lista de produtos
-            return res.status(200).json({ quantity: products.totalDocs, products: products.docs });
+
+            const imagesWithUrl = products.docs.map((product) => {
+                const imageUrls = product.productImage.map((image) => `${api}/public/images/${image}`);
+                return { ...product._doc, productImage: imageUrls };
+            });
+
+            const response = {
+                quantity: products.totalDocs,
+                products: imagesWithUrl,
+            };
+
+            return res.status(200).json(response);
         } catch (error) {
             next(error);
         }
     }
+
+    ///
+
+    // CLIENT
+
+    ///
 
     async availiableProducts(req, res, next) {
         // Opções de paginação e classificação
@@ -221,7 +309,14 @@ class ProductController {
             next(error);
         }
     }
+
     async getAllProducts(req, res, next) {
+        let query = {};
+        const category = req.query.category;
+        const subcategory = req.query.subcategory;
+        const sub_category = req.query.sub_category;
+        console.log("query", req.query);
+
         // Opções de paginação e classificação
         const options = {
             page: Number(req.query.offset) || 1, // Página padrão 1 se offset não fornecido
@@ -229,8 +324,20 @@ class ProductController {
             sort: getSort(req.query.sortType), // Função getSort para obter configuração de classificação
         };
 
+        if (category) {
+            query.productCategory = category;
+        }
+
+        if (subcategory) {
+            query.productSubcategory = subcategory;
+        }
+
+        if (sub_category) {
+            query.productSub_category = sub_category;
+        }
+
         try {
-            const products = await Products.paginate({}, options);
+            const products = await Products.paginate(query, options);
 
             const imagesWithUrl = products.docs.map((product) => {
                 const imageUrls = product.productImage.map((image) => `${api}/public/images/${image}`);
@@ -286,9 +393,10 @@ class ProductController {
 
     // Show One
     async showDetailsProduct(req, res, next) {
+        console.log(req.params.id);
         try {
             // Busca o produto pelo ID, e popula as propriedades 'productVariations' e 'productRatings'
-            const product = await Products.findById(req.params.id).populate(["productVariations", "productRatings"]);
+            const product = await Products.findById(req.params.id).select("-productVendor ").populate(["productVariations", "productRatings"]);
 
             // Verifica se o produto foi encontrado
             if (!product) {

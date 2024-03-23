@@ -67,15 +67,17 @@ const getAllOrders = (req, res, next) => {
 };
 
 const createOrder = (req, res, next) => {
-    // Validação para o corpo da requisição
     const bodySchema = Joi.object({
         cart: Joi.array()
             .items(
                 Joi.object({
-                    productOrder: Joi.string().alphanum().length(24).required(),
-                    variationOrder: Joi.string().alphanum().length(24).required(),
-                    priceUnit: Joi.number().required(),
-                    quantityOrder: Joi.number().required(),
+                    picture: Joi.string().required(),
+                    productId: Joi.string().alphanum().length(24).required(),
+                    productName: Joi.string().required(),
+                    productPrice: Joi.number().required(),
+                    quantity: Joi.number().required(),
+                    subtotal: Joi.number().required(),
+                    // variation: Joi.string().alphanum().length(24).required(),
                 })
             )
             .required(),

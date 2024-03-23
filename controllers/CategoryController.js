@@ -1,16 +1,22 @@
-const Categories = require("../models/Categories");
+const { Category, SubCategory, Sub_category } = require("../models/Categories");
 const Products = require("../models/Products");
 
 class CategoryController {
     async getAllCategories(req, res) {
         try {
-            const categories = await Categories.find();
-
+            const categories = await Category.find()
+                .populate({
+                    path: "subCategories",
+                    populate: {
+                        path: "sub_categories",
+                        model: "Sub_category",
+                    },
+                })
+                .exec();
             // Se não houver categorias, retornar um código 404 (Not Found)
             if (!categories || categories.length === 0) {
                 return res.status(200).json({ categories: categories, message: "Nenhuma categoria encontrada." });
             }
-
             // Se houver categorias, enviá-las na resposta
             return res.json({ categories });
         } catch (error) {
@@ -29,7 +35,17 @@ class CategoryController {
 
     async categoryAvailable(req, res) {
         try {
-            const categories = await Categories.find({ availability: true });
+            // const categories = await Category.find({ availability: true });
+
+            const categories = await Category.find({ availability: true })
+                .populate({
+                    path: "subCategories",
+                    populate: {
+                        path: "sub_categories",
+                        model: "Sub_category",
+                    },
+                })
+                .exec();
 
             // Se não houver categorias disponíveis, retornar um código 404 (Not Found)
             if (!categories || categories.length === 0) {
@@ -51,9 +67,10 @@ class CategoryController {
             return res.status(500).json({ error: "Erro interno ao obter categorias disponíveis." });
         }
     }
+    
     async categoryUnavailable(req, res) {
         try {
-            const categories = await Categories.find({ availability: false });
+            const categories = await Category.find({ availability: false });
 
             // Se não houver categorias disponíveis, retornar um código 404 (Not Found)
             if (!categories || categories.length === 0) {
@@ -78,9 +95,7 @@ class CategoryController {
 
     async categoryDetails(req, res) {
         try {
-            console.log(req.params.id);
-
-            const category = await Categories.findOne({ _id: req.params.id });
+            const category = await Category.findOne({ _id: req.params.id });
 
             // Se a categoria não for encontrada, retornar um código 404 (Not Found)
             if (!category) {
@@ -105,17 +120,19 @@ class CategoryController {
 
     async createCategory(req, res) {
         const { categoryName, code } = req.body;
-        console.log({ categoryName, code });
         try {
             // Verificar se a categoria já existe com o mesmo nome
-            const existingCategory = await Categories.findOne({ categoryName });
+            const existingCategory = await Category.findOne({ categoryName: categoryName });
 
             if (existingCategory) {
                 return res.status(400).json({ success: false, error: "Nome da categoria já em uso. Escolha outro." });
             }
 
             // Criar uma nova instância de Categories
-            const category = new Categories({ categoryName, code, availability: true });
+            const category = new Category({
+                categoryName,
+                code: categoryName.toLowerCase(),
+            });
 
             // Salvar a nova categoria no banco de dados
             await category.save();
@@ -136,12 +153,107 @@ class CategoryController {
         }
     }
 
+    async createSubCategories(req, res) {
+        const { subCategoryName, categoryID } = req.body;
+
+        try {
+            // Verificar se o ID da categoria é fornecido
+            if (!categoryID) {
+                return res.status(400).json({ success: false, error: "ID da categoria não fornecido" });
+            }
+
+            // Encontrar a categoria correspondente no banco de dados
+            const category = await Category.findById(categoryID).populate("subCategories");
+
+            if (!category) {
+                return res.status(400).json({ success: false, error: "Categoria não encontrada" });
+            }
+
+            // Verificar se o nome da subcategoria é fornecido
+            if (!subCategoryName) {
+                return res.status(400).json({ success: false, error: "Nome da subcategoria não fornecida" });
+            }
+            const existingSubCategory = category.subCategories.find((sub) => sub.subCategoryName.toLowerCase() === subCategoryName.toLowerCase());
+
+            if (existingSubCategory) {
+                return res.status(400).json({ success: false, error: "Nome da subCategoria já em uso. Escolha outro." });
+            }
+
+            // Criar uma nova instância de SubCategory
+            const subCategory = new SubCategory({
+                subCategoryName,
+                category,
+                code: subCategoryName.toLowerCase(),
+            });
+
+            // Adicionar a nova subcategoria à lista de subcategorias da categoria
+            category.subCategories.push(subCategory);
+
+            // Salvar a subcategoria e atualizar a categoria no banco de dados
+            await subCategory.save();
+            await category.save();
+
+            return res.status(200).json({ success: true });
+        } catch (error) {
+            console.error("Erro ao criar subcategoria:", error);
+            return res.status(500).json({ success: false, error: "Erro interno ao criar subcategoria." });
+        }
+    }
+
+    async createSub_categories(req, res) {
+        const { sub_categoryName, subCategoryID } = req.body;
+
+        try {
+            // Verificar se o nome da subcategoria e o ID da subcategoria são fornecidos
+            if (!sub_categoryName || !subCategoryID) {
+                return res.status(400).json({ success: false, error: "Nome da subcategoria ou ID da subcategoria não fornecido" });
+            }
+
+            // Encontrar a subcategoria correspondente no banco de dados pelo ID
+            const subCategory = await SubCategory.findById(subCategoryID).populate("sub_categories");
+            if (!subCategory) {
+                return res.status(400).json({ success: false, error: "Subcategoria não encontrada" });
+            }
+
+            // Verificar se o nome da subcategoria é fornecido
+            if (!sub_categoryName) {
+                return res.status(400).json({ success: false, error: "Nome da sub_categoria não fornecida" });
+            }
+
+            // Verificar se o nome da subcategoria já existe na lista de subcategorias da subcategoria
+            const existingSub_category = subCategory.sub_categories.find((sub) => sub.sub_categoryName.toLowerCase() === sub_categoryName.toLowerCase());
+
+            if (existingSub_category) {
+                return res.status(400).json({ success: false, error: "Nome da sub_categoria já em uso. Escolha outro." });
+            }
+
+            // Criar uma nova instância de Sub_category
+            const sub_category = new Sub_category({
+                sub_categoryName,
+                subCategory,
+                code: sub_categoryName.toLowerCase(), // Pode ser útil criar um código único para a subcategoria, se necessário
+            });
+
+            // Adicionar a nova subcategoria à lista de subcategorias da subcategoria pai
+            subCategory.sub_categories.push(sub_category._id);
+
+            // Salvar a subcategoria e atualizar a subcategoria pai no banco de dados
+            await sub_category.save();
+            await subCategory.save();
+
+            return res.status(200).json({ success: true });
+        } catch (error) {
+            console.error("Erro ao criar subcategoria:", error);
+            return res.status(500).json({ success: false, error: "Erro interno ao criar subcategoria." });
+        }
+    }
+
     async updateCategory(req, res) {
         const { categoryName, code, availability, products } = req.body;
 
         try {
             // Encontrar a categoria pelo ID
-            const category = await Categories.findById(req.params.id);
+            const category = await Category.findById(req.params.id);
 
             if (!category) {
                 // Se a categoria não for encontrada, retornar um erro 404
@@ -176,7 +288,7 @@ class CategoryController {
     async removeCategory(req, res) {
         try {
             // Encontrar a categoria pelo ID
-            const category = await Categories.findById(req.params.id);
+            const category = await Category.findById(req.params.id);
 
             if (!category) {
                 // Se a categoria não for encontrada, retornar um erro 404
@@ -230,7 +342,7 @@ class CategoryController {
         };
 
         try {
-            const category = await Categories.findById(req.params.id);
+            const category = await Category.findById(req.params.id);
 
             const { products } = req.body;
 

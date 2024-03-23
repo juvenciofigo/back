@@ -6,10 +6,19 @@ const Create = (req, res, next) => {
     const { error } = Joi.object({
         productName: Joi.string().required(),
         productDescription: Joi.string().required(),
+        productAvailability: Joi.boolean().required(),
         productPrice: Joi.number().required(),
-        productCategory: Joi.string().alphanum().length(24).required(),
-        productPromotion: Joi.number(),
-        sku: Joi.string(),
+        productStock: Joi.boolean().required(),
+        productCategory: Joi.array().items(Joi.string().length(24).alphanum().required()).required(),
+        productSubcategory: Joi.string().length(24).alphanum().optional(),
+        productSub_category: Joi.string().length(24).alphanum().optional(),
+        productPromotion: Joi.number().optional(),
+        productImage: Joi.array().optional(),
+        sku: Joi.string().required(),
+        productVendor: Joi.string().required(),
+        productModel: Joi.string().optional(),
+        productSize: Joi.string().optional(),
+        productBrand: Joi.string().optional(),
     }).validate(req.body);
 
     if (error) {
@@ -33,12 +42,19 @@ const Update = (req, res, next) => {
     const bodySchema = Joi.object({
         productName: Joi.string().optional(),
         productDescription: Joi.string().optional(),
-        productPrice: Joi.number().optional(),
-        productCategory: Joi.string().alphanum().length(24).optional(),
-        productPromotion: Joi.number().optional(),
         productAvailability: Joi.boolean().optional(),
-        sku: Joi.string().optional(),
+        productPrice: Joi.number().optional(),
         productStock: Joi.boolean().optional(),
+        productCategory: Joi.array().items(Joi.string().length(24).alphanum().required()).optional(),
+        productSubcategory: Joi.string().length(24).alphanum().optional(),
+        productSub_category: Joi.string().length(24).alphanum().optional(),
+        productPromotion: Joi.number().optional(),
+        productImage: Joi.array().optional(),
+        sku: Joi.string().optional(),
+        productVendor: Joi.string().optional(),
+        productModel: Joi.string().optional(),
+        productSize: Joi.string().optional(),
+        productBrand: Joi.string().optional(),
     });
 
     const { error: bodyError } = bodySchema.validate(req.body);
@@ -90,11 +106,14 @@ const All = (req, res, next) => {
     const { error } = Joi.object({
         limit: Joi.number().optional(),
         offset: Joi.number().optional(),
+        category: Joi.string().alphanum().length(24).optional(),
+        subcategory: Joi.string().alphanum().length(24).optional(),
+        sub_category: Joi.string().alphanum().length(24).optional(),
         sortType: Joi.string().optional(),
     }).validate(req.query);
 
     if (error) {
-        // console.log(error);
+        console.log(error);
         return res.status(400).json({ error });
     }
     next();

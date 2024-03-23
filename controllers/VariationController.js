@@ -70,7 +70,7 @@ class VariationController {
 
             // Se o produto não existir, retorna um erro 400
             if (!_product) {
-                return res.status(400).json({ errors: "Produto não existente", success: false });
+                return res.status(400).json({ error: "Produto não existente", success: false });
             }
 
             // Cria uma nova instância da variação
@@ -106,14 +106,14 @@ class VariationController {
     async updateVariation(req, res, next) {
         const { variationCode, variationAvailable, variationName, variationPrice, variationPromotion, variationStock, delivery, variationQuantity } = req.body;
         const { product } = req.query;
-    
+
         try {
             const variation = await Variations.findById(req.params.id);
-    
+
             if (!variation) {
-                return res.status(400).json({ errors: "Variação não existente", success: false });
+                return res.status(400).json({ error: "Variação não existente", success: false });
             }
-    
+
             // Atualiza as propriedades da variação com os valores fornecidos
             if (variationCode) variation.variationCode = variationCode;
             if (variationAvailable !== undefined) variation.variationAvailable = variationAvailable;
@@ -123,10 +123,10 @@ class VariationController {
             if (variationStock !== undefined) variation.variationStock = variationStock;
             if (delivery) variation.delivery = delivery;
             if (variationQuantity) variation.variationQuantity = variationQuantity;
-    
+
             // Salva a variação atualizada no banco de dados
             await variation.save();
-    
+
             // Retorna uma resposta de sucesso com a variação atualizada
             return res.status(200).json({ variation, success: true, msg: "Variação atualizada com sucesso!" });
         } catch (error) {
@@ -134,23 +134,22 @@ class VariationController {
             next(error);
         }
     }
-    
 
     async imageVariation(req, res, next) {
         try {
             const variation = await Variations.findById(req.params.id);
-    
+
             if (!variation) {
-                return res.status(400).json({ errors: "Variação não existente", success: false });
+                return res.status(400).json({ error: "Variação não existente", success: false });
             }
-    
+
             const newImages = req.files.map((item) => item.filename);
-    
+
             // Filtra itens nulos e concatena as novas imagens
             variation.variationImage = variation.variationImage.filter((item) => item).concat(newImages);
-    
+
             await variation.save();
-    
+
             // Retorna uma resposta de sucesso com a variação atualizada
             return res.status(200).json({ success: true, variation });
         } catch (error) {
@@ -158,7 +157,6 @@ class VariationController {
             next(error);
         }
     }
-    
 
     // Delete Variations
     async deleteVariation(req, res, next) {

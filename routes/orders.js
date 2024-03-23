@@ -20,7 +20,7 @@ router.get("/orders", auth.require, orderValidation.getAllOrders, OrderControlle
 //testado
 router.get("/orders/:id", auth.require, orderValidation.getOrder, OrderController.getOrder); // Um pedido Meu
 //testado
-router.post("/order/new", auth.require, orderValidation.createOrder, OrderController.createOrder); // Criando pedido
+router.post("/order", auth.require, orderValidation.createOrder, OrderController.createOrder); // Criando pedido
 
 // testado
 router.delete("/order/:id", auth.require, orderValidation.deleteOrder, OrderController.deleteOrder); // Meu

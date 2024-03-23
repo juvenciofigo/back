@@ -1,5 +1,4 @@
 require("../models/Carts");
-const { json } = require("body-parser");
 const mongoose = require("../database/connection");
 const Cart = mongoose.model("Cart");
 

@@ -11,7 +11,7 @@ const auth = require("./auth");
 router.post("/login", UserValidation.authenticateUser, UserController.authenticateUser); //testado
 
 // criar um novo usuário
-router.post("/user/new", UserValidation.create, UserController.createUser); // testado
+router.post("/user", UserValidation.create, UserController.createUser); // testado
 
 //
 

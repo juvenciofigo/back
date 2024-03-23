@@ -13,9 +13,12 @@ class CustomerController {
     async getAllCustomers(req, res) {
         // Opções de paginação a partir dos parâmetros da consulta (query parameters)
         const options = {
-            page: Number(req.query.offset) || 1, // Página padrão 1 se offset não fornecido
-            limit: Number(req.query.limit) || 10, // Limite padrão de 10 se limit não fornecido,
-            populate: { path: "user", select: "-salt -hash" },
+            page: Number(req.query.offset) || 1,
+            limit: Number(req.query.limit) || 30,
+            populate: {
+                path: "user",
+                select: "-salt -hash -password",
+            },
         };
         try {
             // Obtém clientes paginados usando o modelo Customers e as opções de paginação
@@ -42,7 +45,7 @@ class CustomerController {
         try {
             const search = new RegExp(req.params.search, "i");
 
-            const customers = await Customers.paginate({ $or: [{name: { $regex: search } }] });
+            const customers = await Customers.paginate({ $or: [{ name: { $regex: search } }] });
 
             if (!customers || customers.docs.length === 0) {
                 return res.status(404).json({ success: false, error: "Nenhum cliente encontrado" });
@@ -56,7 +59,6 @@ class CustomerController {
                 },
                 options
             );
-            
 
             await Promise.all(
                 orders.docs.map(async (order) => {
@@ -240,9 +242,9 @@ class CustomerController {
 
         try {
             // Verificar se o e-mail já está em uso em Customers
-            const existingCustomer = await Customers.findOne({ email });
+            const existingCustomer = await Customers.findOne({ email: email });
             if (existingCustomer) {
-                return res.status(422).json({ errors: "E-mail já em uso", success: false });
+                return res.status(422).json({ error: "E-mail já em uso", success: false });
             }
             // Criar novo usuário
             const user = new Users({ name, email });

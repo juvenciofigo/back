@@ -20,7 +20,6 @@ class RatingController {
     // Show all
     async getAllRatings(req, res, next) {
         const { product } = req.query;
-        console.log(product);
 
         try {
             // Procura todas as avaliações relacionadas ao produto usando o ID do produto
@@ -64,7 +63,7 @@ class RatingController {
 
             const _product = await Products.findById(product);
 
-            if (!_product) return res.status(400).json({ errors: "Produto não existente", success: false });
+            if (!_product) return res.status(400).json({ error: "Produto não existente", success: false });
 
             // Adiciona o ID do novo produto à lista de produtos da categoria
             await _product.productRatings.push(rating._id);

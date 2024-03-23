@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate-v2");
 
-const OrderRouterSchema = new mongoose.Schema(
+const OrderSchema = new mongoose.Schema(
     {
         customerOrder: {
             type: mongoose.Schema.Types.ObjectId,
@@ -10,12 +10,16 @@ const OrderRouterSchema = new mongoose.Schema(
         },
         Ordercart: {
             type: [
+                // { type: mongoose.Schema.Types.ObjectId, ref: "Cart", required: true },
+
                 {
-                    productOrder: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
-                    variationOrder: { type: mongoose.Schema.Types.ObjectId, ref: "Variation", required: true },
-                    staticProduct: { type: String },
-                    quantityOrder: { type: Number, default: 1 },
-                    priceUnit: { type: Number, default: 1 },
+                    picture: { type: String },
+                    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+                    productName: { type: String },
+                    productPrice: { type: Number },
+                    quantity: { type: Number },
+                    subtotal: { type: Number },
+                    // variation: { type: mongoose.Schema.Types.ObjectId, ref: "Variation", required: true },
                 },
             ],
         },
@@ -37,6 +41,6 @@ const OrderRouterSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-OrderRouterSchema.plugin(mongoosePaginate);
+OrderSchema.plugin(mongoosePaginate);
 
-module.exports = mongoose.model("Order", OrderRouterSchema, "orders");
+module.exports = mongoose.model("Order", OrderSchema, "orders");

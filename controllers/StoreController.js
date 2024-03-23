@@ -27,17 +27,16 @@ class StoreController {
         const { storeName, cnpj, contacts, address, email } = req.body;
         try {
             //validate
-            var errors = [];
-            if (!storeName) errors.push("storeName");
-            if (!cnpj) errors.push("cnpj");
-            if (!contacts) errors.push("contacts");
-            if (!address) errors.push("address");
-            if (!email) errors.push("email");
-            if (errors.length > 0) return res.status(422).json({ error: "required", payload: errors });
+            var error = [];
+            if (!storeName) error.push("storeName");
+            if (!cnpj) error.push("cnpj");
+            if (!contacts) error.push("contacts");
+            if (!address) error.push("address");
+            if (!email) error.push("email");
+            if (error.length > 0) return res.status(422).json({ error: "required", payload: error });
 
             //create store
             var store = new Stores({ storeName, cnpj, contacts, address, email });
-            console.log("respota" + store);
             await store.save();
 
             // send res
