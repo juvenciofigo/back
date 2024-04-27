@@ -9,6 +9,7 @@
     },
     "dependencies": {
         "@hapi/joi-date": "^2.0.1",
+        "axios": "^1.6.8",
         "bcrypt": "^5.1.1",
         "body-parser": "^1.20.2",
         "compression": "^1.7.4",
@@ -32,6 +33,7 @@
         "mongoose-paginate-v2": "^1.8.0",
         "mongoose-unique-validation": "^0.1.0",
         "morgan": "~1.9.1",
+        "mpesa-api-nodejs": "^1.0.4",
         "multer": "^1.4.5-lts.1",
         "nodemailer": "^6.9.8",
         "request": "^2.88.2",

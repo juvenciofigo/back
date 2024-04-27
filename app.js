@@ -1,5 +1,6 @@
 require("dotenv").config();
 const multer = require("multer");
+
  
 const express = require("express");
 const path = require("path");
@@ -21,6 +22,7 @@ const ratingsRouter = require("./routes/ratings");
 const variationsRouter = require("./routes/variations");
 const ordersRouter = require("./routes/orders");
 const deliveriesRouter = require("./routes/deliveries");
+const payments = require("./routes/payments");
 
 const app = express();
 
@@ -56,6 +58,7 @@ app.use("/", ratingsRouter);
 app.use("/", variationsRouter);
 app.use("/", ordersRouter);
 app.use("/", deliveriesRouter);
+app.use("/", payments);
 
 // Error Handling
 app.use((err, req, res, next) => {

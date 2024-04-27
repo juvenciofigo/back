@@ -67,7 +67,7 @@ class CategoryController {
             return res.status(500).json({ error: "Erro interno ao obter categorias disponíveis." });
         }
     }
-    
+
     async categoryUnavailable(req, res) {
         try {
             const categories = await Category.find({ availability: false });
@@ -374,6 +374,7 @@ class CategoryController {
 
             const results = await Products.paginate({ productCategory: req.params.id }, options);
             res.status(200).json({ products: results });
+            return;
         } catch (error) {
             console.error(error);
             return res.status(500).json({ error: "Erro ao atualizar produtos na categoria." });
