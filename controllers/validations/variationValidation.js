@@ -6,8 +6,7 @@ const getAllVariations = (req, res, next) => {
     }).validate(req.query);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -20,8 +19,7 @@ const getVariatiosProduct = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        console.log(paramsError);
-        return res.status(400).json({ error: paramsError.details[0].message });
+        next(error);
     }
     const querySchema = Joi.object({
         product: Joi.string().alphanum().length(24).required(),
@@ -30,8 +28,7 @@ const getVariatiosProduct = (req, res, next) => {
     const { error: queryError } = querySchema.validate(req.query);
 
     if (queryError) {
-        console.log(queryError);
-        return res.status(400).json({ error: queryError.details[0].message });
+        next(error);
     }
     next();
 };
@@ -44,8 +41,7 @@ const createVariation = (req, res, next) => {
     const { error: queryError } = querySchema.validate(req.query);
 
     if (queryError) {
-        console.log(queryError);
-        return res.status(400).json({ error: queryError.details[0].message });
+        next(error);
     }
 
     const bodySchema = Joi.object({
@@ -69,8 +65,7 @@ const createVariation = (req, res, next) => {
     const { error: bodyError } = bodySchema.validate(req.body);
 
     if (bodyError) {
-        console.log(bodyError);
-        return res.status(400).json({ error: bodyError.details[0].message });
+        next(error);
     }
 
     next();
@@ -99,8 +94,7 @@ const updateVariation = (req, res, next) => {
     const { error: bodyError } = bodySchema.validate(req.body);
 
     if (bodyError) {
-        console.log(bodyError);
-        return res.status(400).json({ error: bodyError.details[0].message });
+        next(error);
     }
 
     const querySchema = Joi.object({
@@ -110,8 +104,7 @@ const updateVariation = (req, res, next) => {
     const { error: queryError } = querySchema.validate(req.query);
 
     if (queryError) {
-        console.log(queryError);
-        return res.status(400).json({ error: queryError.details[0].message });
+        next(error);
     }
 
     const paramsSchema = Joi.object({
@@ -121,8 +114,7 @@ const updateVariation = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        console.log(paramsError);
-        return res.status(400).json({ error: paramsError.details[0].message });
+        next(error);
     }
     next();
 };
@@ -135,8 +127,7 @@ const imageVariation = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        console.log(paramsError);
-        return res.status(400).json({ error: paramsError.details[0].message });
+        next(error);
     }
     const querySchema = Joi.object({
         product: Joi.string().alphanum().length(24).required(),
@@ -145,8 +136,7 @@ const imageVariation = (req, res, next) => {
     const { error: queryError } = querySchema.validate(req.query);
 
     if (queryError) {
-        console.log(queryError);
-        return res.status(400).json({ error: queryError.details[0].message });
+        next(error);
     }
     next();
 };
@@ -159,8 +149,7 @@ const deleteVariation = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        console.log(paramsError);
-        return res.status(400).json({ error: paramsError.details[0].message });
+        next(error);
     }
     const querySchema = Joi.object({
         product: Joi.string().alphanum().length(24).required(),
@@ -169,8 +158,7 @@ const deleteVariation = (req, res, next) => {
     const { error: queryError } = querySchema.validate(req.query);
 
     if (queryError) {
-        console.log(queryError);
-        return res.status(400).json({ error: queryError.details[0].message });
+        next(error);
     }
     next();
 };

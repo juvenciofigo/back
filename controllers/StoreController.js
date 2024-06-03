@@ -3,27 +3,25 @@ const mongoose = require("../database/connection");
 var Stores = mongoose.model("Store");
 
 class StoreController {
-    async stores(req, res) {
+    async stores(req, res, next) {
         try {
             var stores = await Stores.find({}).select("_id storeName cnpj contacts address");
             res.status(200).json(stores);
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: "Ocorreu um erro ao buscar as lojas." });
+            next(error);
         }
     }
 
-    async showStore(req, res) {
+    async showStore(req, res, next) {
         try {
             var store = await Stores.findById(req.params.id);
             res.status(200).json(store);
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: "Ocorreu um erro ao buscar a loja." });
+            next(error);
         }
     }
 
-    async createStore(req, res) {
+    async createStore(req, res, next) {
         const { storeName, cnpj, contacts, address, email } = req.body;
         try {
             //validate
@@ -42,12 +40,11 @@ class StoreController {
             // send res
             return res.status(200).json(store);
         } catch (error) {
-            console.error(error);
-            return res.status(500).json(error);
+            next(error);
         }
     }
 
-    async updateStore(req, res) {
+    async updateStore(req, res, next) {
         const { storeName, cnpj, contacts, address, email } = req.body;
         try {
             var store = await Stores.findById(req.params.id);
@@ -62,12 +59,11 @@ class StoreController {
             await store.save();
             res.status(200).json({ store });
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: "Ocorreu um erro ao atualizar a loja." });
+            next(error);
         }
     }
 
-    async deleteStore(req, res) {
+    async deleteStore(req, res, next) {
         try {
             var store = await Stores.findById(req.params.id);
             if (!store) return res.status(422).send({ error: "Loja não existe." });
@@ -75,8 +71,7 @@ class StoreController {
             await store.deleteOne();
             res.status(200).json({ delete: true });
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: "Ocorreu um erro ao excluir a loja." });
+            next(error);
         }
     }
 }

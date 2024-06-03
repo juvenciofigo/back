@@ -2,7 +2,7 @@ const { Category, SubCategory, Sub_category } = require("../models/Categories");
 const Products = require("../models/Products");
 
 class CategoryController {
-    async getAllCategories(req, res) {
+    async getAllCategories(req, res, next) {
         try {
             const categories = await Category.find()
                 .populate({
@@ -20,20 +20,11 @@ class CategoryController {
             // Se houver categorias, enviá-las na resposta
             return res.json({ categories });
         } catch (error) {
-            // Se ocorrer um erro durante a busca no banco de dados
-            console.error("Erro ao obter todas as categorias:", error);
-
-            // Verificar se é um erro de validação do Mongoose
-            if (error.name === "ValidationError") {
-                return res.status(400).json({ error: "Erro de validação. Certifique-se de que todos os campos são válidos." });
-            }
-
-            // Outros erros são tratados como erro interno do servidor (código 500)
-            return res.status(500).json({ error: "Erro interno ao obter todas as categorias." });
+            next(error);
         }
     }
 
-    async categoryAvailable(req, res) {
+    async categoryAvailable(req, res, next) {
         try {
             // const categories = await Category.find({ availability: true });
 
@@ -55,20 +46,11 @@ class CategoryController {
             // Se houver categorias disponíveis, enviá-las na resposta
             return res.json({ categories });
         } catch (error) {
-            // Se ocorrer um erro durante a busca no banco de dados
-            console.error("Erro ao obter categorias disponíveis:", error);
-
-            // Verificar se é um erro de validação do Mongoose
-            if (error.name === "ValidationError") {
-                return res.status(400).json({ error: "Erro de validação. Certifique-se de que todos os campos são válidos." });
-            }
-
-            // Outros erros são tratados como erro interno do servidor (código 500)
-            return res.status(500).json({ error: "Erro interno ao obter categorias disponíveis." });
+            next(error);
         }
     }
 
-    async categoryUnavailable(req, res) {
+    async categoryUnavailable(req, res, next) {
         try {
             const categories = await Category.find({ availability: false });
 
@@ -80,20 +62,11 @@ class CategoryController {
             // Se houver categorias disponíveis, enviá-las na resposta
             return res.json({ categories });
         } catch (error) {
-            // Se ocorrer um erro durante a busca no banco de dados
-            console.error("Erro ao obter categorias disponíveis:", error);
-
-            // Verificar se é um erro de validação do Mongoose
-            if (error.name === "ValidationError") {
-                return res.status(400).json({ error: "Erro de validação. Certifique-se de que todos os campos são válidos." });
-            }
-
-            // Outros erros são tratados como erro interno do servidor (código 500)
-            return res.status(500).json({ error: "Erro interno ao obter categorias disponíveis." });
+            next(error);
         }
     }
 
-    async categoryDetails(req, res) {
+    async categoryDetails(req, res, next) {
         try {
             const category = await Category.findOne({ _id: req.params.id });
 
@@ -105,20 +78,11 @@ class CategoryController {
             // Se a categoria for encontrada, enviá-la na resposta
             return res.json({ category });
         } catch (error) {
-            // Se ocorrer um erro durante a busca no banco de dados
-            console.error("Erro ao obter detalhes da categoria:", error);
-
-            // Verificar se é um erro de validação do Mongoose
-            if (error.name === "ValidationError") {
-                return res.status(400).json({ error: "Erro de validação. Certifique-se de que todos os campos são válidos." });
-            }
-
-            // Outros erros são tratados como erro interno do servidor (código 500)
-            return res.status(500).json({ error: "Erro interno ao obter detalhes da categoria." });
+            next(error);
         }
     }
 
-    async createCategory(req, res) {
+    async createCategory(req, res, next) {
         const { categoryName, code } = req.body;
         try {
             // Verificar se a categoria já existe com o mesmo nome
@@ -140,20 +104,11 @@ class CategoryController {
             // Responder com a categoria criada
             return res.status(200).json({ success: true, category });
         } catch (error) {
-            // Tratamento de erro mais detalhado
-            console.error("Erro ao criar categoria:", error);
-
-            // Verificar se é um erro de validação do Mongoose
-            if (error.name === "ValidationError") {
-                return res.status(400).json({ success: false, error: "Erro de validação. Certifique-se de que todos os campos são válidos." });
-            }
-
-            // Outros erros são tratados como erro interno do servidor (código 500)
-            return res.status(500).json({ success: false, error: "Erro interno ao criar categoria." });
+            next(error);
         }
     }
 
-    async createSubCategories(req, res) {
+    async createSubCategories(req, res, next) {
         const { subCategoryName, categoryID } = req.body;
 
         try {
@@ -195,12 +150,11 @@ class CategoryController {
 
             return res.status(200).json({ success: true });
         } catch (error) {
-            console.error("Erro ao criar subcategoria:", error);
-            return res.status(500).json({ success: false, error: "Erro interno ao criar subcategoria." });
+            next(error);
         }
     }
 
-    async createSub_categories(req, res) {
+    async createSub_categories(req, res, next) {
         const { sub_categoryName, subCategoryID } = req.body;
 
         try {
@@ -243,12 +197,11 @@ class CategoryController {
 
             return res.status(200).json({ success: true });
         } catch (error) {
-            console.error("Erro ao criar subcategoria:", error);
-            return res.status(500).json({ success: false, error: "Erro interno ao criar subcategoria." });
+            next(error);
         }
     }
 
-    async updateCategory(req, res) {
+    async updateCategory(req, res, next) {
         const { categoryName, code, availability, products } = req.body;
 
         try {
@@ -272,20 +225,11 @@ class CategoryController {
             // Responder com a categoria atualizada
             return res.status(200).json({ category, sucesses: true });
         } catch (error) {
-            // Tratamento de erro mais detalhado
-            console.error("Erro ao atualizar categoria:", error);
-
-            // Verificar se é um erro de validação do Mongoose
-            if (error.name === "ValidationError") {
-                return res.status(400).json({ error: "Erro de validação. Certifique-se de que todos os campos são válidos." });
-            }
-
-            // Outros erros são tratados como erro interno do servidor (código 500)
-            return res.status(500).json({ error: "Erro interno ao atualizar categoria." });
+            next(error);
         }
     }
 
-    async removeCategory(req, res) {
+    async removeCategory(req, res, next) {
         try {
             // Encontrar a categoria pelo ID
             const category = await Category.findById(req.params.id);
@@ -301,16 +245,12 @@ class CategoryController {
             // Responder com um objeto indicando que a categoria foi deletada
             return res.status(200).json({ deleted: true });
         } catch (error) {
-            // Tratamento de erro mais detalhado
-            console.error("Erro ao remover categoria:", error);
-
-            // Outros erros são tratados como erro interno do servidor (código 500)
-            return res.status(500).json({ error: "Erro interno ao remover categoria." });
+            next(error);
         }
     }
 
     // Produtos com base na categoria especificada
-    async productCategory(req, res) {
+    async productCategory(req, res, next) {
         // Opções de paginação e classificação
         const options = {
             page: Number(req.query.offset) || 1, // Página padrão 1 se offset não fornecido
@@ -329,9 +269,7 @@ class CategoryController {
             // Retorna uma resposta com a lista de produtos
             return res.status(200).json({ products });
         } catch (error) {
-            // Trata erros, se houver
-            console.error(error);
-            return res.status(500).json({ error: "Erro ao obter produtos da categoria." });
+            next(error);
         }
     }
 
@@ -376,9 +314,7 @@ class CategoryController {
             res.status(200).json({ products: results });
             return;
         } catch (error) {
-            console.error(error);
-            return res.status(500).json({ error: "Erro ao atualizar produtos na categoria." });
-            // next(error);
+            next(error);
         }
     }
 }

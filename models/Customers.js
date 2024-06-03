@@ -9,8 +9,6 @@ const CustomerSchema = new mongoose.Schema(
             required: [true, "Preencha o campo"],
         },
         name: { type: String, required: true },
-        birthday: { type: Date, required: true },
-        nuit: { type: String, required: true },
         email: {
             type: String,
             required: [true, "Preencha o campo"],
@@ -19,11 +17,11 @@ const CustomerSchema = new mongoose.Schema(
             index: true,
             match: [/\S+@\S+\.\S+/, "Formato inválido"],
         },
-        contacts: [{ type: String }],
+        contacts: { type: String },
         address: {
-            street: { type: String },
-            neighborhood: { type: String },
+            address: { type: String },
             city: { type: String },
+            country: { type: String },
             province: { type: String },
             reference: { type: String },
         },

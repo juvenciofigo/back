@@ -19,8 +19,6 @@ module.exports = async (req, res, next) => {
         next();
         res.status(200).json({ user });
     } catch (error) {
-        console.error(error);
-
-        res.status(500).json({ error: "Ocorreu um erro interno." });
+        next(error);
     }
 };

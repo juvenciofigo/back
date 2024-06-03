@@ -22,8 +22,7 @@ const Create = (req, res, next) => {
     }).validate(req.body);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -36,8 +35,7 @@ const Update = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        console.log(paramsError);
-        return res.status(400).json({ error: paramsError.details[0].message });
+        next(error);
     }
     const bodySchema = Joi.object({
         productName: Joi.string().optional(),
@@ -60,8 +58,7 @@ const Update = (req, res, next) => {
     const { error: bodyError } = bodySchema.validate(req.body);
 
     if (bodyError) {
-        console.log(bodyError);
-        return res.status(400).json({ error: bodyError.details[0].message });
+        next(error);
     }
     next();
 };
@@ -72,8 +69,7 @@ const Image = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -84,8 +80,7 @@ const Delete = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -96,8 +91,7 @@ const getBtId = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -113,8 +107,7 @@ const All = (req, res, next) => {
     }).validate(req.query);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error });
+        next(error);
     }
     next();
 };

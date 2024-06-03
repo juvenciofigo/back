@@ -9,8 +9,7 @@ const getAllOrdersAdmin = (req, res, next) => {
     }).validate(req.query);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -21,8 +20,7 @@ const getOrderAdmin = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -33,8 +31,7 @@ const deleteOrderAdmin = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -45,8 +42,7 @@ const getOrderCartAdmin = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -60,8 +56,7 @@ const getAllOrders = (req, res, next) => {
     }).validate(req.query);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -83,7 +78,7 @@ const createOrder = (req, res, next) => {
             .required(),
         payment: Joi.object({
             Amount: Joi.number().required(),
-            PaymentForm: Joi.string().required(),
+            PaymentForm: Joi.string().optional(),
             PaymentInstallments: Joi.object().optional(),
             PaymentStatus: Joi.string().optional(),
             paymentOrder: Joi.string().alphanum().length(24).optional(),
@@ -91,10 +86,11 @@ const createOrder = (req, res, next) => {
         }).required(),
         delivery: Joi.object({
             deliveryStatus: Joi.string().optional(),
-            deliveryCodeTrack: Joi.string().optional(),
-            deliveryType: Joi.string().required(),
+            // deliveryCodeTrack: Joi.string().optional(),
+            // deliveryType: Joi.string().required(),
             deliveryCost: Joi.number().required(),
-            deliveryDeadline: Joi.number().required(),
+            referenceOrder: Joi.string().required(),
+            // deliveryDeadline: Joi.number().required(),
             deliveryOrder: Joi.string().alphanum().length(24).optional(),
             payload: Joi.object().optional(),
         }).required(),
@@ -103,8 +99,7 @@ const createOrder = (req, res, next) => {
     const { error: bodyError } = bodySchema.validate(req.body);
 
     if (bodyError) {
-        console.log(bodyError);
-        return res.status(400).json({ error: bodyError.details[0].message });
+        next(error);
     }
     next();
 };
@@ -115,8 +110,7 @@ const getOrder = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -127,8 +121,7 @@ const deleteOrder = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -139,8 +132,7 @@ const getOrderCart = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };

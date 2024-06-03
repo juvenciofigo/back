@@ -25,16 +25,14 @@ const UserSchema = new mongoose.Schema(
             index: true,
             match: [/\S+@\S+\.\S+/, "Formato inválido"],
         },
-        address: {
-            rua: { type: String },
-            cidade: { type: String },
-            estado: { type: String },
-            cep: { type: String },
-        },
         role: {
             type: [String],
             require: true,
             default: ["client"],
+        },
+        customer: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Customer",
         },
         cart: {
             type: mongoose.Schema.Types.ObjectId,

@@ -10,8 +10,7 @@ class CustomerController {
      * ADMIN
      */
 
-    async getAllCustomers(req, res) {
-        // Opções de paginação a partir dos parâmetros da consulta (query parameters)
+    async getAllCustomers(req, res, next) {
         const options = {
             page: Number(req.query.offset) || 1,
             limit: Number(req.query.limit) || 30,
@@ -21,25 +20,19 @@ class CustomerController {
             },
         };
         try {
-            // Obtém clientes paginados usando o modelo Customers e as opções de paginação
             const customers = await Customers.paginate({}, options);
 
-            // Retorna a resposta JSON com os clientes paginados
             return res.json(customers);
         } catch (error) {
-            // Em caso de erro, registra o erro no console
-            console.error("Erro ao obter clientes:", error);
-
-            // Retorna uma resposta de status 500 (Internal Server Error) em caso de falha
-            return res.status(500).json({ error: "Erro ao obter clientes." });
+            next(error);
         }
     }
 
-    async searchOrders(req, res) {
+    async searchOrders(req, res, next) {
         const options = {
             page: Number(req.query.offset) || 0,
             limit: Number(req.query.limit) || 10,
-            populate: ["customerOrder", "paymentOrder", "deliveryOrder"], // Corrigido aqui
+            populate: ["customerOrder", "paymentOrder", "deliveryOrder"],
         };
 
         try {
@@ -73,13 +66,11 @@ class CustomerController {
             );
             return res.status(200).json({ success: true, orders });
         } catch (error) {
-            // Adicione o tratamento de erro aqui, se necessário
-            console.error(error);
-            return res.status(500).json({ success: false, error: "Erro interno do servidor" });
+            next(error);
         }
     }
 
-    async search(req, res) {
+    async search(req, res, next) {
         try {
             // Configuração das opções de paginação a partir dos parâmetros da consulta (query parameters)
             const options = {
@@ -97,40 +88,27 @@ class CustomerController {
                 options // Opções de paginação
             );
 
-            // Retorna a resposta JSON com os clientes encontrados
             return res.status(200).json(customers);
         } catch (error) {
-            // Em caso de erro, registra o erro no console
-            console.error("Erro ao obter clientes:", error);
-
-            // Retorna uma resposta de status 500 (Internal Server Error) em caso de falha
-            return res.status(500).json({ error: "Erro ao obter clientes." });
+            next(error);
         }
     }
 
-    async showCustomerAdmin(req, res) {
+    async showCustomerAdmin(req, res, next) {
         try {
-            // Busca o cliente pelo ID fornecido nos parâmetros da requisição
             const customer = await Customers.findById(req.params.id).populate({ path: "user" });
 
-            // Verifica se o cliente foi encontrado
             if (!customer) {
-                // Retorna uma resposta de status 404 (Not Found) se o cliente não for encontrado
                 return res.status(404).json({ error: "Cliente não encontrado." });
             }
 
-            // Retorna uma resposta de status 200 (OK) com os detalhes do cliente
             return res.send({ customer });
         } catch (error) {
-            // Em caso de erro, registra o erro no console
-            console.error("Erro ao buscar o cliente:", error);
-
-            // Retorna uma resposta de status 500 (Internal Server Error) em caso de falha
-            return res.status(500).json({ error: "Erro interno ao buscar o cliente." });
+            next(error);
         }
     }
 
-    async showOrdersCustomers(req, res) {
+    async showOrdersCustomers(req, res, next) {
         const options = {
             page: Number(req.query.offset) || 0,
             limit: Number(req.query.limit) || 30,
@@ -158,77 +136,55 @@ class CustomerController {
 
             return res.status(200).json({ success: true, orders });
         } catch (error) {
-            next();
+            next(error);
         }
     }
 
-    async updateAdmin(req, res) {
-        const { name, birthday, nuit, email, contacts, address, province, city } = req.body;
+    async updateAdmin(req, res, next) {
+        const { name, email, contacts, address, province, city } = req.body;
 
         try {
-            // Busca o cliente pelo ID fornecido nos parâmetros da requisição
             const customer = await Customers.findById(req.params.id).populate("user");
 
-            // Verifica se o cliente foi encontrado
             if (!customer) {
-                // Retorna uma resposta de status 404 (Not Found) se o cliente não for encontrado
                 return res.status(404).json({ error: "Cliente não encontrado." });
             }
 
-            // Atualiza os dados do cliente com os valores fornecidos no corpo da requisição
             customer.user.name = name;
             customer.name = name;
-            customer.birthday = birthday;
-            customer.nuit = nuit;
             customer.user.email = email;
             customer.contacts = contacts;
             customer.address = address;
             customer.province = province;
             customer.city = city;
 
-            // Salva as alterações no banco de dados
             await customer.save();
 
-            // Retorna uma resposta de status 200 (OK) com os dados atualizados do cliente
             return res.status(200).json({ customer });
         } catch (error) {
-            // Em caso de erro, registra o erro no console
-            console.error("Erro ao atualizar cliente:", error);
-
-            // Retorna uma resposta de status 500 (Internal Server Error) em caso de falha
-            return res.status(500).json({ error: "Erro interno ao atualizar cliente." });
+            next(error);
         }
     }
 
-    async deleteAdmin(req, res) {
+    async deleteAdmin(req, res, next) {
         try {
-            // Procura um cliente pelo ID fornecido nos parâmetros da requisição
             const customer = await Customers.findById(req.params.id).populate("user");
 
-            // Verifica se o cliente foi encontrado
             if (!customer) {
                 return res.status(404).json({ success: false, error: "Cliente não encontrado." });
             }
 
-            // Se o cliente tiver um usuário associado, remove o usuário
             if (customer.user) {
                 await customer.user.deleteOne();
             }
 
-            // Define a propriedade 'deleted' do cliente como true
             customer.deleted = true;
 
-            // Salva as alterações no banco de dados
             await customer.save();
 
-            // Retorna uma resposta de status 200 (OK) indicando que o cliente foi removido com sucesso
             return res.status(200).json({ success: true, deleted: true });
         } catch (error) {
-            // Em caso de erro, registra o erro no console
-            console.error("Erro ao buscar cliente:", error);
-
-            // Retorna uma resposta de status 500 (Internal Server Error) em caso de falha
-            return res.status(500).json({ sucesso: false, error: "Erro interno ao buscar cliente." });
+            next(error);
         }
     }
 
@@ -237,75 +193,63 @@ class CustomerController {
      * CUSTUMERS
      */
 
-    async createCustomer(req, res) {
-        const { name, birthday, password, nuit, email, contacts, address } = req.body;
+    async createCustomer(req, res, next) {
+        const { userId } = req.params;
+        const { name, email, contacts, address } = req.body;
 
         try {
-            // Verificar se o e-mail já está em uso em Customers
-            const existingCustomer = await Customers.findOne({ email: email });
-            if (existingCustomer) {
-                return res.status(422).json({ error: "E-mail já em uso", success: false });
+            const user = await Users.findById(userId).select("-recovery -salt -password -role");
+            if (!user.customer) {
+                const customer = new Customers({ email, name, contacts, address, user: user._id });
+                user.customer = customer._id;
+                await customer.save();
+                await user.save();
             }
-            // Criar novo usuário
-            const user = new Users({ name, email });
-            await user.setPass(password);
-            await user.save();
-
-            // Criar novo cliente
-            const customer = new Customers({ email, name, nuit, contacts, address, birthday, user: user._id });
-            await customer.save();
-
-            return res.status(200).json({ success: true, client: { ...customer.toObject(), email: user.email } });
+            return res.status(200).json({ success: true });
         } catch (error) {
-            console.error("Erro ao criar usuário e cliente:", error);
-            return res.status(500).json({ success: false, error: "Erro interno ao criar usuário e cliente." });
+            next(error);
         }
     }
 
-    async mySelf(req, res) {
+    async mySelf(req, res, next) {
         try {
-            // Busca o cliente pelo ID fornecido nos parâmetros da requisição
             const customer = await Customers.findById(req.params.id).populate({ path: "user" });
 
-            // Verifica se o cliente foi encontrado
             if (!customer) {
-                // Retorna uma resposta de status 404 (Not Found) se o cliente não for encontrado
                 return res.status(404).json({ error: "Cliente não encontrado." });
             }
 
-            // Retorna uma resposta de status 200 (OK) com os detalhes do cliente
             return res.send({ customer });
         } catch (error) {
-            // Em caso de erro, registra o erro no console
-            console.error("Erro ao buscar o cliente:", error);
-
-            // Retorna uma resposta de status 500 (Internal Server Error) em caso de falha
-            return res.status(500).json({ error: "Erro interno ao buscar o cliente." });
+            next(error);
+        }
+    }
+    async deliveryData(req, res, next) {
+        const { userId } = req.params;
+        try {
+            const user = await Users.findById(userId).select("-recovery -salt -password -role").populate({ path: "customer" });
+            if (user.customer) {
+                return res.send({ customer: user.customer });
+            } else {
+                return res.send(false);
+            }
+        } catch (error) {
+            next(error);
         }
     }
 
-    async updateMySelf(req, res) {
-        const { name, birthday, password, nuit, email, contacts, address } = req.body;
+    async updateMySelf(req, res, next) {
+        const { name, email, contacts, address } = req.body;
 
         try {
-            // Verificar se o cliente existe com base no ID do usuário associado ao token
             const customer = await Customers.findById(req.params.id).populate("user");
 
-            // Atualizar informações do cliente
             customer.user.name = name || customer.user.name;
             customer.name = name || customer.name;
             customer.user.email = email || customer.user.email;
-            customer.nuit = nuit || customer.nuit;
             customer.contacts = contacts || customer.contacts;
             customer.address = address || customer.address;
-            customer.birthday = birthday || customer.birthday;
 
-            // Atualizar senha se fornecida
-            if (password) {
-                await customer.user.setPass(password);
-            }
-
-            // Salvar as alterações
             await customer.save();
 
             const updatedCustomer = {
@@ -314,41 +258,29 @@ class CustomerController {
             };
             return res.status(200).json(updatedCustomer);
         } catch (error) {
-            console.error("Erro ao atualizar cliente:", error);
-            return res.status(500).json({ error: "Erro interno ao atualizar cliente." });
+            next(error);
         }
     }
 
-    async removeMySelf(req, res) {
+    async removeMySelf(req, res, next) {
         try {
-            // Busca o cliente pelo ID fornecido nos parâmetros da requisição
             const customer = await Customers.findById(req.params.id).populate("user");
 
-            // Verifica se o cliente foi encontrado
             if (!customer) {
-                // Retorna uma resposta de status 404 (Not Found) se o cliente não for encontrado
                 return res.status(404).json({ error: "Cliente não encontrado." });
             }
 
-            // Se o cliente tiver um usuário associado, remove o usuário
             if (customer.user) {
                 await customer.user.deleteOne();
             }
 
-            // Define a propriedade 'deleted' do cliente como true
             customer.deleted = true;
 
-            // Salva as alterações no banco de dados
             await customer.save();
 
-            // Retorna uma resposta de status 200 (OK) indicando que o cliente foi removido com sucesso
             return res.status(200).json({ deleted: true });
         } catch (error) {
-            // Em caso de erro, registra o erro no console
-            console.error("Erro ao remover cliente:", error);
-
-            // Retorna uma resposta de status 500 (Internal Server Error) em caso de falha
-            return res.status(500).json({ error: "Erro interno ao remover cliente." });
+            next(error);
         }
     }
 }

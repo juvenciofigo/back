@@ -1,4 +1,5 @@
-const Request = require("./request")
+const Request = require("./request");
+const agent_id = process.env.AGENT_ID;
 // Classe para operações de transação
 class Transaction {
     constructor(api_key, public_key, ssl = true) {
@@ -13,7 +14,7 @@ class Transaction {
             input_Amount: data.value,
             input_TransactionReference: data.transaction_reference,
             input_CustomerMSISDN: data.client_number,
-            input_ServiceProviderCode: data.agent_id,
+            input_ServiceProviderCode: agent_id,
             input_ThirdPartyReference: data.third_party_reference,
         };
         const request = await new Request(this.api_key, this.public_key, this.ssl);
@@ -25,7 +26,7 @@ class Transaction {
         const params = {
             input_Amount: data.value,
             input_CustomerMSISDN: data.client_number,
-            input_ServiceProviderCode: data.agent_id,
+            input_ServiceProviderCode: agent_id,
             input_TransactionReference: data.transaction_reference,
             input_ThirdPartyReference: data.third_party_reference,
         };
@@ -36,7 +37,7 @@ class Transaction {
     async b2b(data) {
         const url = "https://api.sandbox.vm.co.mz:18349/ipg/v1x/b2bPayment/";
         const params = {
-            input_PrimaryPartyCode: data.agent_id,
+            input_PrimaryPartyCode: agent_id,
             input_ReceiverPartyCode: data.agent_receiver_id,
             input_Amount: data.value,
             input_TransactionReference: data.transaction_reference,
@@ -53,7 +54,7 @@ class Transaction {
             input_SecurityCredential: data.security_credential,
             input_InitiatorIdentifier: data.indicator_identifier,
             input_ThirdPartyReference: data.third_party_reference,
-            input_ServiceProviderCode: data.agent_id,
+            input_ServiceProviderCode: agent_id,
             input_ReversalAmount: data.value,
         };
         const request = new Request(this.api_key, this.public_key, this.ssl);
@@ -65,7 +66,7 @@ class Transaction {
         const params = {
             input_QueryReference: data.transaction_id,
             input_ThirdPartyReference: data.third_party_reference,
-            input_ServiceProviderCode: data.agent_id,
+            input_ServiceProviderCode: agent_id,
         };
         const request = new Request(this.api_key, this.public_key, this.ssl);
         return await request.get(url, params);
@@ -76,7 +77,7 @@ class Transaction {
         const params = {
             input_CustomerMSISDN: data.client_number,
             input_ThirdPartyReference: data.third_party_reference,
-            input_ServiceProviderCode: data.agent_id,
+            input_ServiceProviderCode: agent_id,
         };
         const request = new Request(this.api_key, this.public_key, this.ssl);
         return await request.get(url, params);

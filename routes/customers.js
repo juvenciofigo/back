@@ -9,17 +9,15 @@ const CustomerValidator = require("../controllers/validations/customerValidator"
 
 router.get("/customers", auth.require, AdminValidator, CustomerValidation.getAllCustomers, CustomerController.getAllCustomers);
 
-router.get("/customers/search/:search/orders", auth.require, AdminValidator,CustomerValidation.searchOrders, CustomerController.searchOrders); // Procurar Entre Os Pedidos
+router.get("/customers/search/:search/orders", auth.require, AdminValidator, CustomerValidation.searchOrders, CustomerController.searchOrders); // Procurar Entre Os Pedidos
 
 router.get("/customers/search/:search", auth.require, AdminValidator, CustomerValidation.search, CustomerController.search);
 
 router.get("/customer/admin/:id", auth.require, AdminValidator, CustomerValidation.showCustomerAdmin, CustomerController.showCustomerAdmin);
 
-router.get("/customers/admin/:id/orders", auth.require, AdminValidator,CustomerValidation.showOrdersCustomers, CustomerController.showOrdersCustomers); // Pedidos De Um Cliente
+router.get("/customers/admin/:id/orders", auth.require, AdminValidator, CustomerValidation.showOrdersCustomers, CustomerController.showOrdersCustomers); // Pedidos De Um Cliente
 
-
-
-router.delete("/customer/admin/:id", auth.require, AdminValidator,  CustomerController.deleteAdmin);
+router.delete("/customer/admin/:id", auth.require, AdminValidator, CustomerController.deleteAdmin);
 
 router.put("/customer/admin/:id", auth.require, AdminValidator, CustomerValidation.updateCustomerAdmin, CustomerController.updateAdmin);
 
@@ -27,7 +25,9 @@ router.put("/customer/admin/:id", auth.require, AdminValidator, CustomerValidati
 
 router.get("/customer/:id", auth.require, CustomerValidator, CustomerValidation.mySelf, CustomerValidation.removeMySelf, CustomerController.mySelf);
 
-router.post("/customer/new", CustomerValidation.createCustomer, CustomerController.createCustomer);
+router.get("/customer/:userId/delivery", auth.require, CustomerController.deliveryData);
+
+router.post("/customer/:userId", CustomerValidation.createCustomer, CustomerController.createCustomer);
 
 router.put("/customer/:id", auth.require, CustomerValidator, CustomerValidation.updateCustomer, CustomerController.updateMySelf);
 

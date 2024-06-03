@@ -5,7 +5,6 @@ const transporter = nodemailer.createTransport(emailConfig);
 
 module.exports = ({ user, recovery }, cb) => {
     const recoveryLink = `${link}/recoverPass?token=${recovery.token}`;
-    console.log(recovery)
 
     const message = `
         <h1 style="text-align: center;">Recuperação de Senha</h1>

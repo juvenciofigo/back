@@ -1,3 +1,4 @@
+const { response } = require("express");
 const Cryptor = require("./cryptor");
 const axios = require("axios");
 
@@ -37,7 +38,7 @@ class Request {
     }
 
     async post(url, params) {
-        const length = JSON.stringify(params).length || 0;
+         const length = JSON.stringify(params).length || 0;
         const headers = {
             "Content-Length": length,
             "Content-Type": "application/json",
@@ -49,13 +50,14 @@ class Request {
             const request = await axios.post(url, params, {
                 headers,
             });
-
             return {
                 status: request.status,
                 data: request.data,
             };
         } catch (error) {
-            if (typeof error.response.data !== "undefined") {
+            if (error.code.toLowerCase() === "enotfound") {
+                return { error: "Erro ao efectuar pagamento." };
+            } else if (error.response.data && typeof error.response.data !== "undefined") {
                 return {
                     status: error.response.status,
                     data: error.response.data,

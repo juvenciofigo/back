@@ -1,7 +1,6 @@
 var Users = require("../../models/Users");
 
 module.exports = async (req, res, next) => {
-    
     const id = req.auth._id;
 
     try {
@@ -16,7 +15,6 @@ module.exports = async (req, res, next) => {
             return next();
         }
     } catch (error) {
-        console.error("Erro ao verificar permissões:", error);
-        return res.status(500).json({ success: false, error: "Internal Server Error" });
+        next(error);
     }
 };

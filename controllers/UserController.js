@@ -1,42 +1,42 @@
-var Users = require("../models/Users");
-var sendEmailRecovery = require("../helpers/email-recovery");
+const Users = require("../models/Users");
+const Carts = require("../models/Carts");
+
+const sendEmailRecovery = require("../helpers/email-recovery");
 const { UserValidator } = require("./validations/userValidation");
+const tr = require("faker/lib/locales/tr");
 
 class UserController {
     // Show all
-    async getAllUsers(req, res) {
+    async getAllUsers(req, res, next) {
         try {
-            var users = await Users.find().select("-recovery -salt -password");
+            const users = await Users.find().select("-recovery -salt -password").populate(["cart"]);
             if (users) {
-                console.log(users);
                 return res.status(200).json({ count: users.length, users });
             }
             throw new Error("error");
         } catch (error) {
-            console.log(error);
+            next(error);
         }
     }
 
     // Show Details
-    async getUserDetails(req, res) {
+    async getUserDetails(req, res, next) {
         const id = req.params.id;
         try {
-            var user = await Users.findById(id).select("-recovery -salt -password");
+            const user = await Users.findById(id).select("-recovery -salt -password").populate("cart");
 
             if (!user) return res.status(404).json({ msg: "Usuário não encontrado!" });
 
             return res.status(200).json(user);
         } catch (error) {
-            console.log(error);
-
-            return res.status(500).json({ msg: "Erro ao obter detalhes do usuário.!" });
+            next(error);
         }
     }
 
     // Save user
 
-    async createUser(req, res) {
-        var { name, email, password } = req.body;
+    async createUser(req, res, next) {
+        const { name, email, password } = req.body;
 
         try {
             const emailLowerCase = email.toLowerCase();
@@ -48,26 +48,29 @@ class UserController {
                 return res.status(422).json({ error: "E-mail já em uso. Escolha outro", success: false });
             }
 
-            var user = new Users({ name, email: emailLowerCase });
+            const user = new Users({ name, email: emailLowerCase });
             await user.setPass(password);
-            await user.save();
 
+            // Criar um carrinho vazio associado ao novo usuário
+            const newCart = new Carts({ cartItens: [], cartUser: user._id });
+
+            user.cart = newCart._id;
+            await newCart.save();
+            await user.save();
             res.json({ user: user.sendAuthJson(), success: true });
         } catch (error) {
-            console.error(error);
-            return res.status(500).json(error);
+            next(error);
         }
     }
 
     // Update user
 
-    async updateUser(req, res) {
-        var { name, email, password } = req.body;
-        console.log(req.body);
+    async updateUser(req, res, next) {
+        const { name, email, password } = req.body;
         try {
             const emailLowerCase = email.toLowerCase();
 
-            var user = await Users.findById(req.params.id);
+            const user = await Users.findById(req.params.id);
 
             if (!user) {
                 return res.status(404).json({ msg: "Usuário não encontrado!", success: false });
@@ -85,25 +88,19 @@ class UserController {
                 user.email = emailLowerCase;
             }
 
-            var updatedUser = await user.save();
+            const updatedUser = await user.save();
 
             return res.status(200).json({ user: updatedUser.sendAuthJson(), success: true, msg: "Usuário atualizado!" });
         } catch (error) {
-            console.log(error);
-
-            if (error.name === "CastError") {
-                return res.status(400).json({ success: false, msg: "ID de usuário inválido!" });
-            }
-
-            return res.status(500).json({ success: false, msg: "Erro ao obter detalhes do usuário." });
+            next(error);
         }
     }
 
     // Delete user
 
-    async deleteUser(req, res) {
+    async deleteUser(req, res, next) {
         try {
-            var user = await Users.findById(req.params.id);
+            const user = await Users.findById(req.params.id);
 
             if (!user) return res.status(404).json({ success: false, msg: "Usuário não encontrado!" });
 
@@ -111,19 +108,17 @@ class UserController {
 
             return res.status(200).json({ msg: "usuário removido", success: true });
         } catch (error) {
-            console.error(error);
-
-            return res.status(500).json({ success: false, message: "Erro ao excluir usuário!" });
+            next(error);
         }
     }
 
     // Login
-    async authenticateUser(req, res) {
-        var { email, password } = req.body;
+    async authenticateUser(req, res, next) {
+        const { email, password } = req.body;
         try {
             const emailLowerCase = email.toLowerCase();
 
-            var user = await Users.findOne({ email: emailLowerCase });
+            const user = await Users.findOne({ email: emailLowerCase });
 
             if (!user) return res.status(404).json({ success: false, error: "Usuário não encontrado! Verifique o  email" });
 
@@ -133,79 +128,69 @@ class UserController {
 
             return res.json({ success: true, user: user.sendAuthJson() });
         } catch (error) {
-            console.log(error);
-
-            if (error.name === "ValidationError") {
-                return res.status(422).json({ success: false, error: error.error });
-            }
-
-            return res.status(500).json({ success: false, msg: "Erro ao autenticar o usuário" });
+            next(error);
         }
     }
 
     // RECOVERY
 
     //
-    async showRecovery(req, res) {
+    async showRecovery(req, res, next) {
         return res.render("recovery", { error: null, success: null });
     }
 
     //
     async initiateRecovery(req, res) {
-        var { email } = req.body;
+        const { email } = req.body;
 
         try {
             const emailLowerCase = email.toLowerCase();
 
             if (!email) return res.render("recovery", { error: "Preencha com o seu email", success: false });
 
-            var user = await Users.findOne({ email: emailLowerCase });
+            const user = await Users.findOne({ email: emailLowerCase });
 
             if (!user) return res.render("recovery", { error: "Não existe usuário com este email", success: false });
 
-            var recoveryData = await user.gerTokenRecoveryPass();
+            const recoveryData = await user.gerTokenRecoveryPass();
             user.save();
 
             sendEmailRecovery({ user, recovery: recoveryData }, (error, success) => {
                 if (error) {
-                    console.error(error);
                     return res.status(500).json({ success: false, msg: "Erro ao enviar e-mail de recuperação de senha." });
                 }
 
                 return res.render("recovery", { error, success });
             });
         } catch (error) {
-            console.error(error);
-
-            return res.status(500).json({ success: false, msg: "Erro ao iniciar a recuperação de senha." });
+            next(error);
         }
     }
 
-    async GetCompleteRecovery(req, res) {
-        var token = req.query.token;
+    async GetCompleteRecovery(req, res, next) {
+        const token = req.query.token;
         try {
             if (!token) return res.render("recovery", { error: "Token não identificado", success: null });
 
-            var user = await Users.findOne({ "recovery.token": token });
+            const user = await Users.findOne({ "recovery.token": token });
             if (!user) return res.render("recovery", { error: "Não existe usuário com este token", success: null });
 
             if (new Date(user.recovery.date) < new Date()) return res.render("recovery", { error: "Token expirado", success: null });
 
             return res.render("recovery/store", { error: null, success: null, token: token });
         } catch (error) {
-            console.error(error);
-            return res.status(500).json({ success: false, msg: "Erro ao completar a recuperação de senha. Por favor, tente novamente." });
+            next(error);
         }
     }
 
-    async completeRecovery(req, res) {
-        var { token, password } = req.body;
+    async completeRecovery(req, res, next) {
+        const { token, password } = req.body;
         try {
             if (!token || !password) {
                 return res.render("recovery/store", { error: "Preencha novamente com a sua senha", success: false, token: token });
             }
 
-            var user = await Users.findOne({ "recovery.token": token });
+            const user = await Users.findOne({ "recovery.token": token });
             if (!user) {
                 return res.render("recovery", { error: "Usuário não identificado", success: false });
             }
@@ -216,8 +201,7 @@ class UserController {
 
             return res.render("recovery/store", { error: null, success: true, token: null });
         } catch (error) {
-            console.error(error);
-            return res.status(500).json({ success: false, msg: "Erro ao completar a recuperação de senha. Por favor, tente novamente." });
+            next(error);
         }
     }
 }

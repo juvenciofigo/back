@@ -13,7 +13,6 @@ module.exports = async (req, res, next) => {
         }
         return next();
     } catch (error) {
-        console.error("Erro ao verificar permissões:", error);
-        return res.status(500).json({ success: false, error: "Erro do servidor ao verificar permissões " });
+        next(error);
     }
 };

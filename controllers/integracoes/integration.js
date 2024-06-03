@@ -9,14 +9,14 @@ const mpesa = Mpesa.init(api_key, public_key, ssl);
 
 // Controlador para pagamentos
 class PaymentController {
-    async mpesaPay(req, res) {
+    async mpesaPay(req, res, next) {
         const data = req.body;
         try {
             const response = await mpesa.c2b(data);
             res.json(response);
             return;
         } catch (error) {
-            console.log("erro", error);
+            next(error);
         }
     }
 }

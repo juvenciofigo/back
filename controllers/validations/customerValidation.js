@@ -9,8 +9,7 @@ const getAllCustomers = (req, res, next) => {
     }).validate(req.query);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -21,14 +20,12 @@ const removeCustomerAdmin = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
 
 const searchOrders = (req, res, next) => {
-    
     const paramsSchema = Joi.object({
         search: Joi.string().required(),
     });
@@ -36,8 +33,7 @@ const searchOrders = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        console.log(paramsError);
-        return res.status(400).json({ error: paramsError.details[0].message });
+        next(error);
     }
     const querySchema = Joi.object({
         offset: Joi.number(),
@@ -47,10 +43,9 @@ const searchOrders = (req, res, next) => {
     const { error: queryError } = querySchema.validate(req.query);
 
     if (queryError) {
-        console.log(queryError);
-        return res.status(400).json({ error: queryError.details[0].message });
+        next(error);
     }
-    
+
     next();
 };
 
@@ -62,8 +57,7 @@ const search = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        console.log(paramsError);
-        return res.status(400).json({ error: paramsError.details[0].message });
+        next(error);
     }
     const querySchema = Joi.object({
         offset: Joi.number(),
@@ -73,8 +67,7 @@ const search = (req, res, next) => {
     const { error: queryError } = querySchema.validate(req.query);
 
     if (queryError) {
-        console.log(queryError);
-        return res.status(400).json({ error: queryError.details[0].message });
+        next(error);
     }
     next();
 };
@@ -85,8 +78,7 @@ const showCustomerAdmin = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -99,8 +91,7 @@ const showOrdersCustomers = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        console.log(paramsError);
-        return res.status(400).json({ error: paramsError.details[0].message });
+        next(error);
     }
     const querySchema = Joi.object({
         offset: Joi.number(),
@@ -110,8 +101,7 @@ const showOrdersCustomers = (req, res, next) => {
     const { error: queryError } = querySchema.validate(req.query);
 
     if (queryError) {
-        console.log(queryError);
-        return res.status(400).json({ error: queryError.details[0].message });
+        next(error);
     }
     next();
 };
@@ -124,8 +114,7 @@ const showCustomer = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -136,8 +125,7 @@ const mySelf = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -148,8 +136,7 @@ const removeMySelf = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -157,23 +144,19 @@ const removeMySelf = (req, res, next) => {
 const createCustomer = (req, res, next) => {
     const { error } = Joi.object({
         email: Joi.string().email().optional(),
-        password: Joi.string().optional().min(6),
         name: Joi.string().required(),
-        nuit: Joi.string().required(),
-        contacts: Joi.array().items(Joi.string()),
+        contacts: Joi.string(),
         address: Joi.object({
-            street: Joi.string().required(),
-            neighborhood: Joi.string().required(),
+            address: Joi.string().required(),
             city: Joi.string().required(),
+            country: Joi.string().required(),
             province: Joi.string().required(),
-            reference: Joi.string().required(),
+            reference: Joi.string().optional(),
         }).required(),
-        birthday: Joi.date().format("YYYY-MM-DD").raw().required(),
     }).validate(req.body);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ error: error.details[0].message });
+        next(error);
     }
     next();
 };
@@ -186,8 +169,7 @@ const updateCustomer = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        console.log(paramsError);
-        return res.status(400).json({ error: paramsError.details[0].message });
+        next(error);
     }
     const bodySchema = Joi.object({
         email: Joi.string().email().optional(),
@@ -196,8 +178,7 @@ const updateCustomer = (req, res, next) => {
         nuit: Joi.string().optional(),
         contacts: Joi.array().items(Joi.string().optional()),
         address: Joi.object({
-            street: Joi.string().optional(),
-            neighborhood: Joi.string().optional(),
+            address: Joi.string().optional(),
             city: Joi.string().optional(),
             province: Joi.string().optional(),
             reference: Joi.string().optional(),
@@ -208,8 +189,7 @@ const updateCustomer = (req, res, next) => {
     const { error: bodyError } = bodySchema.validate(req.body);
 
     if (bodyError) {
-        console.log(bodyError);
-        return res.status(400).json({ error: bodyError.details[0].message });
+        next(error);
     }
     next();
 };
@@ -222,8 +202,7 @@ const updateCustomerAdmin = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        console.log(paramsError);
-        return res.status(400).json({ error: paramsError.details[0].message });
+        next(error);
     }
     const bodySchema = Joi.object({
         email: Joi.string().email().optional(),
@@ -232,8 +211,7 @@ const updateCustomerAdmin = (req, res, next) => {
         nuit: Joi.string().optional(),
         contacts: Joi.array().items(Joi.string().optional()),
         address: Joi.object({
-            street: Joi.string().optional(),
-            neighborhood: Joi.string().optional(),
+            address: Joi.string().optional(),
             city: Joi.string().optional(),
             province: Joi.string().optional(),
             reference: Joi.string().optional(),
@@ -244,8 +222,7 @@ const updateCustomerAdmin = (req, res, next) => {
     const { error: bodyError } = bodySchema.validate(req.body);
 
     if (bodyError) {
-        console.log(bodyError);
-        return res.status(400).json({ error: bodyError.details[0].message });
+        next(error);
     }
     next();
 };

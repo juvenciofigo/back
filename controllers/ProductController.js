@@ -67,6 +67,7 @@ class ProductController {
             const category = await Category.findById(productCategory);
             if (!category) return res.status(400).json({ error: "Cateroria não existente", success: false });
             category.products.push(product._id);
+
             await category.save();
 
             const subCategory = await SubCategory.findById(productSubcategory);
@@ -315,7 +316,6 @@ class ProductController {
         const category = req.query.category;
         const subcategory = req.query.subcategory;
         const sub_category = req.query.sub_category;
-        console.log("query", req.query);
 
         // Opções de paginação e classificação
         const options = {
@@ -393,7 +393,6 @@ class ProductController {
 
     // Show One
     async showDetailsProduct(req, res, next) {
-        console.log(req.params.id);
         try {
             // Busca o produto pelo ID, e popula as propriedades 'productVariations' e 'productRatings'
             const product = await Products.findById(req.params.id).select("-productVendor ").populate(["productVariations", "productRatings"]);
@@ -404,7 +403,6 @@ class ProductController {
                 return res.status(404).json({ msg: "Produto não encontrado!" });
             }
 
-            // Correção: utilize product.productImage em vez de apenas productImage
             const productImagesWithUrl = product.productImage.map((image) => `${api}/public/images/${image}`);
 
             // Retorna uma resposta 200 com o produto encontrado e suas propriedades populadas

@@ -5,6 +5,7 @@ const Products = require("../models/Products"),
     Deliveries = require("../models/Deliveries"),
     Customers = require("../models/Customers"),
     OrderRegistrations = require("../models/OrderRegistrations"),
+    Cart = require("../models/Carts"),
     CartValidation = require("./validations/cartValidation");
 
 class OrderController {
@@ -12,7 +13,7 @@ class OrderController {
         const options = {
             page: Number(req.query.offset) || 0,
             limit: Number(req.query.limit) || 30,
-            populate: ("customerOrder paymentOrder deliveryOrder"),
+            populate: "customerOrder paymentOrder deliveryOrder",
         };
 
         try {
@@ -155,10 +156,8 @@ class OrderController {
                     return order;
                 })
             );
-
             return res.status(200).json({ success: true, orders });
         } catch (error) {
-            console.error(error);
             next(error);
         }
     }
@@ -194,11 +193,13 @@ class OrderController {
 
     async createOrder(req, res, next) {
         const { cart, payment, delivery } = req.body;
+        const userID = req.auth._id;
+
         try {
             // // Check Data Cart
-            if (!CartValidation(cart)) {
-                return res.status(400).json({ success: false, msg: "Dados do carrinho inválidos" });
-            }
+            // if (!CartValidation(cart)) {
+            //     return res.status(400).json({ success: false, msg: "Dados do carrinho inválidos" });
+            // }
 
             // // Check Data Delivery
             // if (!DeliveryValidation(cart)) {
@@ -210,7 +211,7 @@ class OrderController {
             //     return res.status(400).json({ success: false, msg: "Dados do pagamento inválidos" });
             // }
 
-            const customer = await Customers.findOne({ user: req.auth._id });
+            const customer = await Customers.findOne({ user: userID });
 
             const newPayment = new Payments({
                 Amount: payment.Amount,
@@ -223,8 +224,8 @@ class OrderController {
 
             const newDelivery = new Deliveries({
                 deliveryStatus: "nao-iniciado",
-                deliveryCodeTrack: delivery.deliveryCodeTrack,
-                deliveryType: delivery.deliveryType,
+                // deliveryCodeTrack: delivery.deliveryCodeTrack,
+                // deliveryType: delivery.deliveryType,
                 deliveryCost: delivery.deliveryCost,
                 deliveryDeadline: delivery.deliveryDeadline,
                 deliveryOrder: delivery.deliveryOrder,
@@ -234,28 +235,31 @@ class OrderController {
             const order = new Orders({
                 customerOrder: customer._id,
                 Ordercart: cart,
+                referenceOrder: delivery.referenceOrder,
                 paymentOrder: newPayment._id,
                 deliveryOrder: newDelivery._id,
             });
             newPayment.paymentOrder = order._id;
             newDelivery.deliveryOrder = order._id;
 
-            await order.save();
-            await newPayment.save();
-            await newDelivery.save();
-
             const orderReg = new OrderRegistrations({
                 order: order._id,
                 type: "pedido",
                 situation: "pedido criado",
             });
+
+            await order.save();
+            await newPayment.save();
+            await newDelivery.save();
             await orderReg.save();
 
+            const userCart = await Cart.findOne({ cartUser: userID });
+            userCart.cartItens = [];
+            userCart.save();
             // Notificar via email - cliente e admin = New order
 
-            return res.status(200).json({ order: Object.assign({}, order._doc, { delivery: newDelivery, payment: newPayment, customer }) });
+            return res.status(200).json({ success: true, order: Object.assign({}, order._doc, { delivery: newDelivery, payment: newPayment, customer }) });
         } catch (error) {
-            console.log(error);
             next(error);
         }
     }
