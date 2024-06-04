@@ -34,6 +34,7 @@ class OrderController {
                     );
                 })
             );
+            console.log(orders);
 
             return res.status(200).json({ success: true, orders });
         } catch (error) {
@@ -217,13 +218,13 @@ class OrderController {
                 Amount: payment.Amount,
                 PaymentForm: payment.PaymentForm,
                 PaymentInstallments: payment.PaymentInstallments,
-                PaymentStatus: "start",
+                PaymentStatus: "Espera de pagamento",
                 paymentOrder: payment.paymentOrder,
                 payload: payment,
             });
 
             const newDelivery = new Deliveries({
-                deliveryStatus: "nao-iniciado",
+                deliveryStatus: "Não iniciado",
                 // deliveryCodeTrack: delivery.deliveryCodeTrack,
                 // deliveryType: delivery.deliveryType,
                 deliveryCost: delivery.deliveryCost,
@@ -239,6 +240,7 @@ class OrderController {
                 paymentOrder: newPayment._id,
                 deliveryOrder: newDelivery._id,
             });
+
             newPayment.paymentOrder = order._id;
             newDelivery.deliveryOrder = order._id;
 

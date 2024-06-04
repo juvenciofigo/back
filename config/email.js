@@ -1,8 +1,8 @@
 module.exports = {
-    host: "smtp.gmail.com",
-    port: 465,
+    host: process.env.HOST_GMAIL,
+    port: process.env.PORT_GMAIL,
     auth: {
-        user: "mocambiqueiformacoes@gmail.com",
-        pass: "lqqp bchk rdbd pxat",
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS,
     },
 };
