@@ -12,8 +12,8 @@ class OrderController {
     async getAllOrdersAdmin(req, res, next) {
         const options = {
             page: Number(req.query.offset) || 0,
-            limit: Number(req.query.limit) || 30,
-            populate: "customerOrder paymentOrder deliveryOrder",
+            limit: Number(req.query.limit) || 10,
+            populate: "customerOrder paymentOrder deliveryOrder orderRegistration",
         };
 
         try {
@@ -25,8 +25,8 @@ class OrderController {
 
             await Promise.all(
                 orders.docs.map(async (order) => {
-                    order.Ordercart = await Promise.all(
-                        order.Ordercart.map(async (item) => {
+                    order.ordercart = await Promise.all(
+                        order.ordercart.map(async (item) => {
                             item.productOrder = await Products.findById(item.productOrder);
                             item.variationOrder = await Variations.findById(item.variationOrder);
                             return item;
@@ -50,8 +50,8 @@ class OrderController {
                 return res.status(400).json({ success: false, error: "Pedido não encontrado" });
             }
 
-            order.Ordercart = await Promise.all(
-                order.Ordercart.map(async (item) => {
+            order.ordercart = await Promise.all(
+                order.ordercart.map(async (item) => {
                     item.productOrder = await Products.findById(item.productOrder);
                     item.variationOrder = await Variations.findById(item.variationOrder);
                     return item;
@@ -102,8 +102,8 @@ class OrderController {
                 return res.status(404).json({ success: false, error: "Pedido não encontrado" });
             }
 
-            order.Ordercart = await Promise.all(
-                order.Ordercart.map(async (item) => {
+            order.ordercart = await Promise.all(
+                order.ordercart.map(async (item) => {
                     item.productOrder = await Products.findById(item.productOrder);
                     item.variationOrder = await Variations.findById(item.variationOrder);
                     return item;
@@ -128,8 +128,8 @@ class OrderController {
 
         const options = {
             page: Number(req.query.offset) || 0,
-            limit: Number(req.query.limit) || 30,
-            populate: "customerOrder paymentOrder deliveryOrder",
+            limit: Number(req.query.limit) || 10,
+            populate: "customerOrder paymentOrder deliveryOrder orderRegistration",
         };
 
         try {
@@ -147,8 +147,8 @@ class OrderController {
 
             orders.docs = await Promise.all(
                 orders.docs.map(async (order) => {
-                    order.Ordercart = await Promise.all(
-                        order.Ordercart.map(async (item) => {
+                    order.ordercart = await Promise.all(
+                        order.ordercart.map(async (item) => {
                             item.productOrder = await Products.findById(item.productOrder);
                             item.variationOrder = await Variations.findById(item.variationOrder);
                             return item;
@@ -177,8 +177,8 @@ class OrderController {
                 return res.status(400).json({ success: false, error: "Pedido não encontrado" });
             }
 
-            order.Ordercart = await Promise.all(
-                order.Ordercart.map(async (item) => {
+            order.ordercart = await Promise.all(
+                order.ordercart.map(async (item) => {
                     item.productOrder = await Products.findById(item.productOrder);
                     item.variationOrder = await Variations.findById(item.variationOrder);
                     return item;
@@ -215,12 +215,12 @@ class OrderController {
             const customer = await Customers.findOne({ user: userID });
 
             const newPayment = new Payments({
-                Amount: payment.Amount,
-                PaymentForm: payment.PaymentForm,
-                PaymentInstallments: payment.PaymentInstallments,
-                PaymentStatus: "Espera de pagamento",
+                amount: payment.amount,
+                totalProductsPrice: payment.totalProductsPrice,
+                paymentForm: payment.paymentForm,
+                paymentInstallments: payment.paymentInstallments,
+                paymentStatus: "Esperando",
                 paymentOrder: payment.paymentOrder,
-                payload: payment,
             });
 
             const newDelivery = new Deliveries({
@@ -230,37 +230,37 @@ class OrderController {
                 deliveryCost: delivery.deliveryCost,
                 deliveryDeadline: delivery.deliveryDeadline,
                 deliveryOrder: delivery.deliveryOrder,
-                payload: delivery,
             });
 
             const order = new Orders({
                 customerOrder: customer._id,
-                Ordercart: cart,
+                ordercart: cart,
                 referenceOrder: delivery.referenceOrder,
                 paymentOrder: newPayment._id,
                 deliveryOrder: newDelivery._id,
+                note:order
+            });
+            const orderReg = new OrderRegistrations({
+                order: order._id,
+                orderStatus: "Pedido realizado",
             });
 
             newPayment.paymentOrder = order._id;
             newDelivery.deliveryOrder = order._id;
-
-            const orderReg = new OrderRegistrations({
-                order: order._id,
-                type: "pedido",
-                situation: "pedido criado",
-            });
+            order.orderRegistration = orderReg.id;
 
             await order.save();
             await newPayment.save();
             await newDelivery.save();
             await orderReg.save();
 
+            // resetar o carrinho
             const userCart = await Cart.findOne({ cartUser: userID });
             userCart.cartItens = [];
             userCart.save();
             // Notificar via email - cliente e admin = New order
 
-            return res.status(200).json({ success: true, order: Object.assign({}, order._doc, { delivery: newDelivery, payment: newPayment, customer }) });
+            return res.status(200).json({ success: true, order: Object.assign({}, order._doc, { delivery: newDelivery, payment: newPayment, customer, orderReg }) });
         } catch (error) {
             next(error);
         }
@@ -315,8 +315,8 @@ class OrderController {
                 return res.status(404).json({ success: false, error: "Pedido não encontrado" });
             }
 
-            order.Ordercart = await Promise.all(
-                order.Ordercart.map(async (item) => {
+            order.ordercart = await Promise.all(
+                order.ordercart.map(async (item) => {
                     item.productOrder = await Products.findById(item.productOrder);
                     item.variationOrder = await Variations.findById(item.variationOrder);
                     return item;

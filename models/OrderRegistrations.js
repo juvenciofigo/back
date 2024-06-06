@@ -8,19 +8,15 @@ const OrderRegistrationSchema = new mongoose.Schema(
             ref: "Order",
             required: true,
         },
-        type: {
+        packagedAt: { type: Date },
+        outForDelivery: { type: Date },
+        deliverydAt: { type: Date },
+        canceledAt: { type: Date },
+        orderStatus: {
             type: String,
             required: true,
+            enem: ["Pedido realizado", "Embalando", "Cancelado", "Devolvido", "Entregue"],
         },
-        situation: {
-            type: String,
-            required: true,
-        },
-        date: {
-            type: Date,
-            default: Date.now,
-        },
-        payload: { type: Object },
     },
     { timestamps: true }
 );

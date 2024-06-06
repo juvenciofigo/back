@@ -55,8 +55,8 @@ class CustomerController {
 
             await Promise.all(
                 orders.docs.map(async (order) => {
-                    order.Ordercart = await Promise.all(
-                        order.Ordercart.map(async (item) => {
+                    order.ordercart = await Promise.all(
+                        order.ordercart.map(async (item) => {
                             item.productOrder = await Products.findById(item.productOrder);
                             item.variationOrder = await Variations.findById(item.variationOrder);
                             return item;
@@ -124,8 +124,8 @@ class CustomerController {
 
             await Promise.all(
                 orders.docs.map(async (order) => {
-                    order.Ordercart = await Promise.all(
-                        order.Ordercart.map(async (item) => {
+                    order.ordercart = await Promise.all(
+                        order.ordercart.map(async (item) => {
                             item.productOrder = await Products.findById(item.productOrder);
                             item.variationOrder = await Variations.findById(item.variationOrder);
                             return item;

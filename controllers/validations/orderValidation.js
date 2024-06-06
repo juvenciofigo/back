@@ -77,12 +77,12 @@ const createOrder = (req, res, next) => {
             )
             .required(),
         payment: Joi.object({
-            Amount: Joi.number().required(),
-            PaymentForm: Joi.string().optional(),
-            PaymentInstallments: Joi.object().optional(),
-            PaymentStatus: Joi.string().optional(),
+            amount: Joi.number().required(),
+            totalProductsPrice: Joi.number().required(),
+            paymentForm: Joi.string().optional(),
+            paymentInstallments: Joi.object().optional(),
+            paymentStatus: Joi.string().optional(),
             paymentOrder: Joi.string().alphanum().length(24).optional(),
-            payload: Joi.object().optional(),
         }).required(),
         delivery: Joi.object({
             deliveryStatus: Joi.string().optional(),
@@ -92,14 +92,13 @@ const createOrder = (req, res, next) => {
             referenceOrder: Joi.string().required(),
             // deliveryDeadline: Joi.number().required(),
             deliveryOrder: Joi.string().alphanum().length(24).optional(),
-            payload: Joi.object().optional(),
         }).required(),
     });
 
     const { error: bodyError } = bodySchema.validate(req.body);
 
     if (bodyError) {
-        next(error);
+        next(bodyError);
     }
     next();
 };

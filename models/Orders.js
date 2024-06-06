@@ -8,7 +8,7 @@ const OrderSchema = new mongoose.Schema(
             ref: "Customer",
             required: true,
         },
-        Ordercart: {
+        ordercart: {
             type: [
                 // { type: mongoose.Schema.Types.ObjectId, ref: "Cart", required: true },
 
@@ -32,6 +32,10 @@ const OrderSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Delivery",
             required: true,
+        },
+        orderRegistration: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "OrderRegistration",
         },
         orderCancel: {
             type: Boolean,

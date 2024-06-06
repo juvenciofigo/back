@@ -22,9 +22,6 @@ const DeliveryRouterSchema = new mongoose.Schema(
             ref: "Order",
             required: true,
         },
-        payload: {
-            type: Object,
-        },
     },
     { timestamps: true }
 );

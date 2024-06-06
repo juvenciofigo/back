@@ -96,18 +96,18 @@ class CartController {
     }
 
     // // Show all
-    // async listCarts(req, res,next) {
-    //     try {
-    //         const carts = await Cart.find();
-    //         if (carts) {
-    //             console.log(carts);
-    //             return res.status(200).json({ quan: carts.length, carts });
-    //         }
-    //         throw new Error("error");
-    //     } catch (error) {
-    //                     next(error);
-    //     }
-    // }
+    async allCarts(req, res, next) {
+        try {
+            const carts = await Cart.find();
+            if (carts) {
+                console.log(carts);
+                return res.status(200).json({ quan: carts.length, carts });
+            }
+            throw new Error("error");
+        } catch (error) {
+            next(error);
+        }
+    }
 
     // // Show One prices
     async showDetailsCartPrices(req, res, next) {
@@ -117,7 +117,7 @@ class CartController {
             if (!cart) {
                 cart = await newCart(userId);
             }
-
+            console.log(cart);
             const Products = cart.cartItens;
 
             const Prices = [];

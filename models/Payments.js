@@ -3,29 +3,30 @@ const mongoosePaginate = require("mongoose-paginate-v2");
 
 const PaymentRouterSchema = new mongoose.Schema(
     {
-        Amount: {
+        amount: {
             type: Number,
             required: true,
         },
-        PaymentForm: {
+        totalProductsPrice: {
+            type: Number,
+            required: true,
+        },
+        paymentForm: {
             type: String,
             enum: ["Mpesa", "Emola", "Paypal", "Visa", "Mastercard"],
         },
-        PaymentInstallments: {
+        paymentInstallments: {
             type: Number,
             default: 1,
         },
-        PaymentStatus: {
+        paymentStatus: {
             type: String,
             required: true,
-            enum: ["Espera de pagamento", "Pagamento recusado", "Fraude suspeita", "Pago"],
+            enum: ["Esperando", "Pagamento recusado", "Fraude suspeita", "Pago"],
         },
         paymentOrder: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Order",
-        },
-        payload: {
-            type: Object,
         },
     },
     { timestamps: true }
