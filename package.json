@@ -6,7 +6,7 @@
         "dev": "set NODE_ENV=development && nodemon app.js",
         "test": "mocha --timeout 2000 --exit",
         "build": "set NODE_ENV=production && pm2 start app.js --name=\"ecommerce-api\"",
-        "start": "NODE_ENV=production node app.js"
+        "start": "set NODE_ENV=production node app.js"
     },
     "dependencies": {
         "@hapi/joi-date": "^2.0.1",
