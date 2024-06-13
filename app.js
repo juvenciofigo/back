@@ -1,7 +1,6 @@
 require("dotenv").config();
 const multer = require("multer");
 
- 
 const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
@@ -48,6 +47,11 @@ app.use(bodyParser.json({ limit: "5mb" }));
 app.use(cookieParser());
 
 // Routes
+
+app.get("/", (req, res) => {
+    res.send("Hello World!");
+});
+
 app.use("/", usersRouter);
 app.use("/", customersRouter);
 app.use("/", cartRouter);
@@ -64,17 +68,17 @@ app.use("/", payments);
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         console.log(err);
-       return res.status(400).json({ message: err.message });
+        return res.status(400).json({ message: err.message });
     } else {
         console.error(err);
-       return res.status(500).json({ message: "Erro interno do servidor" });
+        return res.status(500).json({ message: "Erro interno do servidor" });
     }
 });
 
 app.use((req, res, next) => {
     const err = new Error("Not found");
     err.status = 404;
-   return res.status(404).json({ success: false, message: { message: err.message, status: 404 } });
+    return res.status(404).json({ success: false, message: { message: err.message, status: 404 } });
 });
 
 app.use((err, req, res, next) => {
