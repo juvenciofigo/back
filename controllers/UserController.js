@@ -127,7 +127,16 @@ class UserController {
                 return res.status(401).json({ success: false, message: "Senha inválida" });
             }
 
-            return res.json({ success: true, user: user.sendAuthJson() });
+            return res.status(200).json({ success: true, user: user.sendAuthJson() });
+        } catch (error) {
+            next(error);
+        }
+    }
+    // default
+    async default(req, res, next) {
+        const { email, password } = req.body;
+        try {
+            return res.status(200).json({ success: true });
         } catch (error) {
             next(error);
         }

@@ -9,6 +9,7 @@ const auth = require("./auth");
 // autenticar um usuário
 
 router.post("/login", UserValidation.authenticateUser, UserController.authenticateUser); //testado
+router.get("/login", UserController.default); //testado
 
 // criar um novo usuário
 router.post("/user", UserValidation.create, UserController.createUser); // testado
