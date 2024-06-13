@@ -11,7 +11,10 @@ const PaymentRouterSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
-        paymentForm: {
+        paymentAt: {
+            type: Date,
+        },
+        paymentMethod: {
             type: String,
             enum: ["Mpesa", "Emola", "Paypal", "Visa", "Mastercard"],
         },
@@ -19,18 +22,34 @@ const PaymentRouterSchema = new mongoose.Schema(
             type: Number,
             default: 1,
         },
-        paymentStatus: {
+        status: {
             type: String,
             required: true,
             enum: ["Esperando", "Pagamento recusado", "Fraude suspeita", "Pago"],
+            default: "Esperando",
         },
-        paymentOrder: {
+        order: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Order",
+        },
+        transactionId: {
+            type: String,
+            unique: true,
+        },
+        reference: {
+            type: String,
+            unique: true,
+        },
+        number: {
+            type: String,
+        },
+        holderName: {
+            type: String,
         },
     },
     { timestamps: true }
 );
+
 
 PaymentRouterSchema.plugin(mongoosePaginate);
 

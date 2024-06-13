@@ -1,5 +1,6 @@
 const Users = require("../models/Users");
 const Customers = require("../models/Customers");
+const Address = require("../models/Addresses");
 const Orders = require("../models/Orders");
 const Products = require("../models/Products");
 const Variations = require("../models/Variations");
@@ -41,7 +42,7 @@ class CustomerController {
             const customers = await Customers.paginate({ $or: [{ name: { $regex: search } }] });
 
             if (!customers || customers.docs.length === 0) {
-                return res.status(404).json({ success: false, error: "Nenhum cliente encontrado" });
+                return res.status(404).json({ success: false, message: "Nenhum cliente encontrado" });
             }
 
             const orders = await Orders.paginate(
@@ -99,7 +100,7 @@ class CustomerController {
             const customer = await Customers.findById(req.params.id).populate({ path: "user" });
 
             if (!customer) {
-                return res.status(404).json({ error: "Cliente não encontrado." });
+                return res.status(404).json({ message: "Cliente não encontrado." });
             }
 
             return res.send({ customer });
@@ -119,7 +120,7 @@ class CustomerController {
             const orders = await Orders.paginate({ customerOrder: req.params.id }, options);
 
             if (!orders.docs || orders.docs.length === 0) {
-                return res.status(400).json({ success: false, error: "Nenhum pedido encontrado" });
+                return res.status(400).json({ success: false, message: "Nenhum pedido encontrado" });
             }
 
             await Promise.all(
@@ -147,7 +148,7 @@ class CustomerController {
             const customer = await Customers.findById(req.params.id).populate("user");
 
             if (!customer) {
-                return res.status(404).json({ error: "Cliente não encontrado." });
+                return res.status(404).json({ message: "Cliente não encontrado." });
             }
 
             customer.user.name = name;
@@ -171,7 +172,7 @@ class CustomerController {
             const customer = await Customers.findById(req.params.id).populate("user");
 
             if (!customer) {
-                return res.status(404).json({ success: false, error: "Cliente não encontrado." });
+                return res.status(404).json({ success: false, message: "Cliente não encontrado." });
             }
 
             if (customer.user) {
@@ -195,17 +196,77 @@ class CustomerController {
 
     async createCustomer(req, res, next) {
         const { userId } = req.params;
-        const { name, email, contacts, address } = req.body;
+        const { cellNumber } = req.body;
 
         try {
             const user = await Users.findById(userId).select("-recovery -salt -password -role");
+
             if (!user.customer) {
-                const customer = new Customers({ email, name, contacts, address, user: user._id });
+                
+                const customer = new Customers({
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    cellNumber: cellNumber,
+                    user: user._id,
+                    cart: user.cart,
+                });
+
                 user.customer = customer._id;
+
                 await customer.save();
                 await user.save();
             }
             return res.status(200).json({ success: true });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async addAddress(req, res, next) {
+        const { userId } = req.params;
+        const { firstName, lastName, email, cellNumber, complete, country, province, postalCode, neighborhood, city, reference } = req.body;
+
+        try {
+            const user = await Users.findById(userId).select("-recovery -salt -password -role");
+            if (!user) {
+                return res.status(404).json({ message: "Usuario não encontrado." });
+            }
+
+            const newAddress = new Address({ firstName, lastName, email, cellNumber, complete, country, province, postalCode, neighborhood, city, reference, user: user._id });
+
+            let customer = await Customers.findOne({ user: userId }).select("-recovery -salt -password -role");
+
+            if (!customer) {
+                const newCustomer = new Customers({ user, firstName, lastName, email, cellNumber, user: user._id, cart: user.cart });
+                user.customer = newCustomer._id;
+                customer = newCustomer;
+                user.save();
+            }
+
+            newAddress.customer = customer._id;
+            customer.addresses.push(newAddress._id);
+
+            newAddress.save();
+            customer.save();
+
+            return res.status(200).json({ addressId: newAddress._id });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteAddress(req, res, next) {
+        const { addressId } = req.params;
+        const userId = req.auth._id;
+        try {
+            const address = await Address.findOne({ _id: addressId, user: userId });
+            if (!address) {
+                return res.status(404).json({ message: "Falha ao apagar" });
+            }
+            address.deleted = true;
+            await address.save();
+            return res.status(200).json({ message: "Endereço deletado com sucesso" });
         } catch (error) {
             next(error);
         }
@@ -216,7 +277,7 @@ class CustomerController {
             const customer = await Customers.findById(req.params.id).populate({ path: "user" });
 
             if (!customer) {
-                return res.status(404).json({ error: "Cliente não encontrado." });
+                return res.status(404).json({ message: "Cliente não encontrado." });
             }
 
             return res.send({ customer });
@@ -224,14 +285,15 @@ class CustomerController {
             next(error);
         }
     }
-    async deliveryData(req, res, next) {
+    async allAddress(req, res, next) {
         const { userId } = req.params;
         try {
-            const user = await Users.findById(userId).select("-recovery -salt -password -role").populate({ path: "customer" });
-            if (user.customer) {
-                return res.send({ customer: user.customer });
+            const address = await Address.find({ user: userId, deleted: false }).populate({ path: "user" });
+
+            if (address) {
+                return res.status(200).json(address);
             } else {
-                return res.send(false);
+                return res.status(404).json(false);
             }
         } catch (error) {
             next(error);
@@ -239,44 +301,56 @@ class CustomerController {
     }
 
     async updateMySelf(req, res, next) {
-        const { name, email, contacts, address } = req.body;
+        const customerId = req.params.id;
+        const { firstName, lastName, email, cellNumber } = req.body;
 
         try {
-            const customer = await Customers.findById(req.params.id).populate("user");
+            const customer = await Customers.findById(customerId).populate("user");
+            const user = await Users.findOne({ customer: customerId });
 
-            customer.user.name = name || customer.user.name;
-            customer.name = name || customer.name;
-            customer.user.email = email || customer.user.email;
-            customer.contacts = contacts || customer.contacts;
-            customer.address = address || customer.address;
+            if (firstName) {
+                customer.firstName = firstName;
+                user.firstName = firstName;
+            }
+            if (lastName) {
+                customer.lastName = lastName;
+                user.lastName = lastName;
+            }
+            if (email) {
+                customer.email = email;
+                user.email = email;
+            }
+            if (cellNumber) {
+                customer.cellNumber = cellNumber;
+                user.cellNumber = cellNumber;
+            }
 
             await customer.save();
+            await user.save();
 
-            const updatedCustomer = {
-                success: true,
-                customer,
-            };
-            return res.status(200).json(updatedCustomer);
+            return res.status(200).json({ success: true, customer });
         } catch (error) {
             next(error);
         }
     }
 
     async removeMySelf(req, res, next) {
+        const customerId = req.params.id;
         try {
             const customer = await Customers.findById(req.params.id).populate("user");
 
             if (!customer) {
-                return res.status(404).json({ error: "Cliente não encontrado." });
+                return res.status(404).json({ message: "Cliente não encontrado." });
             }
-
-            if (customer.user) {
-                await customer.user.deleteOne();
+            const user = await Users.findOne({ customer: customerId });
+            if (user) {
+                user.deleted = true;
             }
 
             customer.deleted = true;
 
             await customer.save();
+            await user.save();
 
             return res.status(200).json({ deleted: true });
         } catch (error) {

@@ -100,7 +100,6 @@ class CartController {
         try {
             const carts = await Cart.find();
             if (carts) {
-                console.log(carts);
                 return res.status(200).json({ quan: carts.length, carts });
             }
             throw new Error("error");
@@ -117,7 +116,6 @@ class CartController {
             if (!cart) {
                 cart = await newCart(userId);
             }
-            console.log(cart);
             const Products = cart.cartItens;
 
             const Prices = [];

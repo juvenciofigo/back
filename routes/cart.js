@@ -4,7 +4,7 @@ var CartController = require("../controllers/CartController");
 const auth = require("./auth");
 const AdminValidator = require("../controllers/validations/adminValidator");
 
-router.get("/carts", auth.require, AdminValidator, CartController.allCarts);
+router.get("/carts/admin", auth.require, AdminValidator, CartController.allCarts);
 
 router.get("/cart/:userId/prices", auth.require, CartController.showDetailsCartPrices); //Retrieve items in the cart for a specific user.
 router.post("/cart/:userId/products", CartController.showDetailsCart); //Retrieve items in the cart for a specific user.

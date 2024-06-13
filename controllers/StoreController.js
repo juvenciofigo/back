@@ -31,7 +31,7 @@ class StoreController {
             if (!contacts) error.push("contacts");
             if (!address) error.push("address");
             if (!email) error.push("email");
-            if (error.length > 0) return res.status(422).json({ error: "required", payload: error });
+            if (error.length > 0) return res.status(422).json({ message: "required", payload: error });
 
             //create store
             var store = new Stores({ storeName, cnpj, contacts, address, email });
@@ -48,7 +48,7 @@ class StoreController {
         const { storeName, cnpj, contacts, address, email } = req.body;
         try {
             var store = await Stores.findById(req.params.id);
-            if (!store) return res.status(422).send({ error: "Loja não existe." });
+            if (!store) return res.status(422).send({ message: "Loja não existe." });
 
             if (storeName) store.storeName = storeName;
             if (cnpj) store.cnpj = cnpj;
@@ -66,7 +66,7 @@ class StoreController {
     async deleteStore(req, res, next) {
         try {
             var store = await Stores.findById(req.params.id);
-            if (!store) return res.status(422).send({ error: "Loja não existe." });
+            if (!store) return res.status(422).send({ message: "Loja não existe." });
 
             await store.deleteOne();
             res.status(200).json({ delete: true });

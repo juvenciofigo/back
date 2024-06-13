@@ -70,7 +70,7 @@ class VariationController {
 
             // Se o produto não existir, retorna um erro 400
             if (!_product) {
-                return res.status(400).json({ error: "Produto não existente", success: false });
+                return res.status(400).json({ message: "Produto não existente", success: false });
             }
 
             // Cria uma nova instância da variação
@@ -111,7 +111,7 @@ class VariationController {
             const variation = await Variations.findById(req.params.id);
 
             if (!variation) {
-                return res.status(400).json({ error: "Variação não existente", success: false });
+                return res.status(400).json({ message: "Variação não existente", success: false });
             }
 
             // Atualiza as propriedades da variação com os valores fornecidos
@@ -140,7 +140,7 @@ class VariationController {
             const variation = await Variations.findById(req.params.id);
 
             if (!variation) {
-                return res.status(400).json({ error: "Variação não existente", success: false });
+                return res.status(400).json({ message: "Variação não existente", success: false });
             }
 
             const newImages = req.files.map((item) => item.filename);
@@ -167,7 +167,7 @@ class VariationController {
 
             // Se o comentário não existe, retorna um erro
             if (!variation) {
-                return res.status(400).json({ success: false, error: "Variação não encontrada" });
+                return res.status(400).json({ success: false, message: "Variação não encontrada" });
             }
 
             // Busca o produto relacionado ao comentário

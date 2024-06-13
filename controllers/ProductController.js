@@ -45,7 +45,7 @@ class ProductController {
         try {
             const existingSku = await Products.findOne({ sku });
 
-            if (existingSku) return res.status(400).json({ error: "SKU já em uso", success: false });
+            if (existingSku) return res.status(400).json({ message: "SKU já em uso", success: false });
 
             const product = new Products({
                 productName,
@@ -65,18 +65,18 @@ class ProductController {
             });
 
             const category = await Category.findById(productCategory);
-            if (!category) return res.status(400).json({ error: "Cateroria não existente", success: false });
+            if (!category) return res.status(400).json({ message: "Cateroria não existente", success: false });
             category.products.push(product._id);
 
             await category.save();
 
             const subCategory = await SubCategory.findById(productSubcategory);
-            if (!subCategory) return res.status(400).json({ error: "SubCategoria não existente", success: false });
+            if (!subCategory) return res.status(400).json({ message: "SubCategoria não existente", success: false });
             subCategory.products.push(product._id);
             await subCategory.save();
 
             const sub_category = await Sub_category.findById(productSub_category);
-            if (!sub_category) return res.status(400).json({ error: "sub_categoria não existente", success: false });
+            if (!sub_category) return res.status(400).json({ message: "sub_categoria não existente", success: false });
             sub_category.products.push(product._id);
             await sub_category.save();
 
@@ -231,7 +231,7 @@ class ProductController {
 
             // Verificar se o produto foi encontrado
             if (!product) {
-                return res.status(404).json({ error: "Produto não encontrado", success: false });
+                return res.status(404).json({ message: "Produto não encontrado", success: false });
             }
 
             // Remover o produto das categorias e subcategorias associadas

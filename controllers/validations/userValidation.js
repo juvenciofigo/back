@@ -29,7 +29,8 @@ const create = (req, res, next) => {
     const { error } = Joi.object({
         email: Joi.string().email().required(),
         password: Joi.string().required().min(6),
-        name: Joi.string(),
+        firstName: Joi.string().required(),
+        lastName: Joi.string().required(),
     }).validate(req.body);
 
     if (error) {
@@ -51,7 +52,8 @@ const update = (req, res, next) => {
     const bodySchema = Joi.object({
         email: Joi.string().email().optional(),
         password: Joi.string().optional().min().min(6),
-        name: Joi.string().optional(),
+        firstName: Joi.string().optional(),
+        lastName: Joi.string().optional(),
     });
 
     const { error: bodyError } = bodySchema.validate(req.body);

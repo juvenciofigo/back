@@ -1,3 +1,4 @@
+const { query } = require("express");
 const Joi = require("joi");
 
 // Middlewares de validação para pedidos do administrador
@@ -50,13 +51,22 @@ const getOrderCartAdmin = (req, res, next) => {
 // Middlewares de validação para pedidos do cliente
 
 const getAllOrders = (req, res, next) => {
-    const { error } = Joi.object({
+    const { queryError } = Joi.object({
         offset: Joi.number().optional(),
         limit: Joi.number().optional(),
     }).validate(req.query);
 
-    if (error) {
-        next(error);
+    const { paramsError } = Joi.object({
+        user: Joi.string().alphanum().length(24).required(),
+    }).validate(req.params);
+
+    if (queryError) {
+        console.log(queryError);
+        next(queryError);6
+    }
+    if (paramsError) {
+        console.log(paramsError);
+        next(paramsError);
     }
     next();
 };
@@ -77,21 +87,13 @@ const createOrder = (req, res, next) => {
             )
             .required(),
         payment: Joi.object({
-            amount: Joi.number().required(),
+            total: Joi.number().required(),
             totalProductsPrice: Joi.number().required(),
-            paymentForm: Joi.string().optional(),
-            paymentInstallments: Joi.object().optional(),
-            paymentStatus: Joi.string().optional(),
-            paymentOrder: Joi.string().alphanum().length(24).optional(),
+            shippingPrice: Joi.number().required(),
         }).required(),
         delivery: Joi.object({
-            deliveryStatus: Joi.string().optional(),
-            // deliveryCodeTrack: Joi.string().optional(),
-            // deliveryType: Joi.string().required(),
-            deliveryCost: Joi.number().required(),
-            referenceOrder: Joi.string().required(),
-            // deliveryDeadline: Joi.number().required(),
-            deliveryOrder: Joi.string().alphanum().length(24).optional(),
+            address: Joi.string().alphanum().length(24).required(),
+            reference: Joi.string().required(),
         }).required(),
     });
 

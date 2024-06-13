@@ -6,36 +6,49 @@ const Products = require("../models/Products"),
     Customers = require("../models/Customers"),
     OrderRegistrations = require("../models/OrderRegistrations"),
     Cart = require("../models/Carts"),
+    Users = require("../models/Users"),
     CartValidation = require("./validations/cartValidation");
 
+const getSort = (sortType) => {
+    switch (sortType) {
+        case "alphabet_a-z":
+            return { productName: 1 };
+        case "alphabet_z-a":
+            return { productName: -1 };
+        case "price-ascending":
+            return { productPrice: 1 };
+        case "price-descending":
+            return { productPrice: -1 };
+        default:
+            return { updatedAt: -1 };
+    }
+};
 class OrderController {
     async getAllOrdersAdmin(req, res, next) {
         const options = {
             page: Number(req.query.offset) || 0,
             limit: Number(req.query.limit) || 10,
-            populate: "customerOrder paymentOrder deliveryOrder orderRegistration",
+            populate: ["address ", "customer", "orderRegistration", "delivery", "payment"],
         };
 
         try {
             const orders = await Orders.paginate({}, options);
 
             if (!orders.docs || orders.docs.length === 0) {
-                return res.status(200).json({ success: true, error: "Nenhum pedido encontrado" });
+                return res.status(200).json({ success: true, message: "Nenhum pedido encontrado" });
             }
 
-            await Promise.all(
-                orders.docs.map(async (order) => {
-                    order.ordercart = await Promise.all(
-                        order.ordercart.map(async (item) => {
-                            item.productOrder = await Products.findById(item.productOrder);
-                            item.variationOrder = await Variations.findById(item.variationOrder);
-                            return item;
-                        })
-                    );
-                })
-            );
-            console.log(orders);
-
+            // await Promise.all(
+            //     orders.docs.map(async (order) => {
+            //         order.cart = await Promise.all(
+            //             order.cart.map(async (item) => {
+            //                 item.productOrder = await Products.findById(item.productOrder);
+            //                 item.variationOrder = await Variations.findById(item.variationOrder);
+            //                 return item;
+            //             })
+            //         );
+            //     })
+            // );
             return res.status(200).json({ success: true, orders });
         } catch (error) {
             next();
@@ -47,7 +60,7 @@ class OrderController {
             const order = await Orders.findOne({ _id: req.params.id }).populate("customerOrder paymentOrder deliveryOrder").exec();
 
             if (!order) {
-                return res.status(400).json({ success: false, error: "Pedido não encontrado" });
+                return res.status(400).json({ success: false, message: "Pedido não encontrado" });
             }
 
             order.ordercart = await Promise.all(
@@ -69,11 +82,11 @@ class OrderController {
             const order = await Orders.findOne({ _id: req.params.id }).populate("customerOrder paymentOrder deliveryOrder");
 
             if (!order) {
-                return res.status(400).json({ success: false, error: "Pedido não encontrado" });
+                return res.status(400).json({ success: false, message: "Pedido não encontrado" });
             }
 
             if (order.orderCancel === true) {
-                return res.status(400).json({ success: false, error: "Esse pedido ja foi cancelado" });
+                return res.status(400).json({ success: false, message: "Esse pedido ja foi cancelado" });
             }
             order.orderCancel = true;
             const orderReg = new OrderRegistrations({
@@ -99,7 +112,7 @@ class OrderController {
             const order = await Orders.findById(req.params.id);
 
             if (!order) {
-                return res.status(404).json({ success: false, error: "Pedido não encontrado" });
+                return res.status(404).json({ success: false, message: "Pedido não encontrado" });
             }
 
             order.ordercart = await Promise.all(
@@ -119,44 +132,46 @@ class OrderController {
     //CLIENTE
 
     async getAllOrders(req, res, next) {
-        const id = req.auth._id;
+        const user = req.params.user;
 
-        // Adicione uma verificação para garantir que req.payload e req.payload.id não sejam undefined
-        if (!id) {
-            return res.status(400).json({ success: false, error: "Payload ou ID do payload não definidos" });
+        if (!user) {
+            return res.status(400).json({ success: false, message: "Payload ou ID do payload não definidos" });
         }
 
         const options = {
             page: Number(req.query.offset) || 0,
             limit: Number(req.query.limit) || 10,
-            populate: "customerOrder paymentOrder deliveryOrder orderRegistration",
+            sort: { updatedAt: -1 },
+            populate: "customer payment delivery orderRegistration address",
         };
 
         try {
-            const customer = await Customers.findOne({ user: id });
+            const customer = await Customers.findOne({ user: user });
+            console.log(customer);
 
             if (!customer) {
-                return res.status(400).json({ success: false, error: "Cliente não encontrado" });
+                return res.status(400).json({ success: false, message: "Não tem pedidos ainda!" });
             }
 
-            const orders = await Orders.paginate({ customerOrder: customer._id }, options);
+            const orders = await Orders.paginate({ customer: customer._id }, options);
+            console.log(orders);
 
             if (!orders) {
-                return res.status(400).json({ success: false, error: "Nenhum pedido encontrado" });
+                return res.status(400).json({ success: false, message: "Nenhum pedido encontrado" });
             }
 
-            orders.docs = await Promise.all(
-                orders.docs.map(async (order) => {
-                    order.ordercart = await Promise.all(
-                        order.ordercart.map(async (item) => {
-                            item.productOrder = await Products.findById(item.productOrder);
-                            item.variationOrder = await Variations.findById(item.variationOrder);
-                            return item;
-                        })
-                    );
-                    return order;
-                })
-            );
+            // orders.docs = await Promise.all(
+            //     orders.docs.map(async (order) => {
+            //         order.ordercart = await Promise.all(
+            //             order.ordercart.map(async (item) => {
+            //                 item.productOrder = await Products.findById(item.productOrder);
+            //                 item.variationOrder = await Variations.findById(item.variationOrder);
+            //                 return item;
+            //             })
+            //         );
+            //         return order;
+            //     })
+            // );
             return res.status(200).json({ success: true, orders });
         } catch (error) {
             next(error);
@@ -168,13 +183,13 @@ class OrderController {
             const customer = await Customers.findOne({ user: req.auth._id });
 
             if (!customer) {
-                return res.status(400).json({ success: false, error: "Cliente não encontrado" });
+                return res.status(400).json({ success: false, message: "Cliente não encontrado" });
             }
 
             const order = await Orders.findOne({ customerOrder: customer._id, _id: req.params.id }).populate("customerOrder paymentOrder deliveryOrder").exec();
 
             if (!order) {
-                return res.status(400).json({ success: false, error: "Pedido não encontrado" });
+                return res.status(400).json({ success: false, message: "Pedido não encontrado" });
             }
 
             order.ordercart = await Promise.all(
@@ -214,45 +229,58 @@ class OrderController {
 
             const customer = await Customers.findOne({ user: userID });
 
+            if (!customer) {
+                const user = await Users.findById(userID).select("-recovery -salt -password -role");
+
+                const customer = new Customers({
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    cellNumber: user.cellNumber,
+                    user: user._id,
+                    cart: user.cart,
+                });
+
+                user.customer = customer._id;
+
+                await customer.save();
+                await user.save();
+            }
+
             const newPayment = new Payments({
-                amount: payment.amount,
+                amount: payment.total,
                 totalProductsPrice: payment.totalProductsPrice,
-                paymentForm: payment.paymentForm,
-                paymentInstallments: payment.paymentInstallments,
-                paymentStatus: "Esperando",
-                paymentOrder: payment.paymentOrder,
+                reference: delivery.reference,
             });
 
             const newDelivery = new Deliveries({
-                deliveryStatus: "Não iniciado",
-                // deliveryCodeTrack: delivery.deliveryCodeTrack,
-                // deliveryType: delivery.deliveryType,
-                deliveryCost: delivery.deliveryCost,
-                deliveryDeadline: delivery.deliveryDeadline,
-                deliveryOrder: delivery.deliveryOrder,
+                cost: payment.shippingPrice,
+                address: delivery.address,
             });
 
             const order = new Orders({
-                customerOrder: customer._id,
-                ordercart: cart,
-                referenceOrder: delivery.referenceOrder,
-                paymentOrder: newPayment._id,
-                deliveryOrder: newDelivery._id,
-                note:order
+                customer: customer._id,
+                cart: cart,
+                address: delivery.address,
+                payment: newPayment._id,
+                delivery: newDelivery._id,
+                referenceOrder: delivery.reference,
+                totalPrice: payment.total,
+                totalProductsPrice: payment.totalProductsPrice,
             });
-            const orderReg = new OrderRegistrations({
+            const newOrderReg = new OrderRegistrations({
                 order: order._id,
-                orderStatus: "Pedido realizado",
+                orderStatus: order.status,
             });
 
-            newPayment.paymentOrder = order._id;
-            newDelivery.deliveryOrder = order._id;
-            order.orderRegistration = orderReg.id;
+            newPayment.order = order._id;
+            newDelivery.order = order._id;
+            order.orderRegistration = newOrderReg._id;
 
             await order.save();
             await newPayment.save();
             await newDelivery.save();
-            await orderReg.save();
+            await newOrderReg.save();
 
             // resetar o carrinho
             const userCart = await Cart.findOne({ cartUser: userID });
@@ -260,7 +288,7 @@ class OrderController {
             userCart.save();
             // Notificar via email - cliente e admin = New order
 
-            return res.status(200).json({ success: true, order: Object.assign({}, order._doc, { delivery: newDelivery, payment: newPayment, customer, orderReg }) });
+            return res.status(200).json({ success: true, order: Object.assign({}, order._doc, { delivery: newDelivery, payment: newPayment, customer, newOrderReg }) });
         } catch (error) {
             next(error);
         }
@@ -271,15 +299,15 @@ class OrderController {
             const customer = await Customers.findOne({ user: req.auth._id });
 
             if (!customer) {
-                return res.status(400).json({ success: false, error: "Cliente não encontrado" });
+                return res.status(400).json({ success: false, message: "Cliente não encontrado" });
             }
             const order = await Orders.findOne({ customerOrder: customer._id, _id: req.params.id }).populate("customerOrder paymentOrder deliveryOrder");
 
             if (!order) {
-                return res.status(400).json({ success: false, error: "Pedido não encontrado" });
+                return res.status(400).json({ success: false, message: "Pedido não encontrado" });
             }
             if (order.orderCancel === true) {
-                return res.status(400).json({ success: false, error: "Esse pedido ja foi cancelado" });
+                return res.status(400).json({ success: false, message: "Esse pedido ja foi cancelado" });
             }
             order.orderCancel = true;
 
@@ -306,13 +334,13 @@ class OrderController {
             const customer = await Customers.findOne({ user: req.auth._id });
 
             if (!customer) {
-                return res.status(400).json({ success: false, error: "Cliente não encontrado" });
+                return res.status(400).json({ success: false, message: "Cliente não encontrado" });
             }
 
             const order = await Orders.findOne({ customerOrder: customer._id, _id: req.params.id });
 
             if (!order) {
-                return res.status(404).json({ success: false, error: "Pedido não encontrado" });
+                return res.status(404).json({ success: false, message: "Pedido não encontrado" });
             }
 
             order.ordercart = await Promise.all(

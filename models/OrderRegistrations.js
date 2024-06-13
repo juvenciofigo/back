@@ -15,7 +15,6 @@ const OrderRegistrationSchema = new mongoose.Schema(
         orderStatus: {
             type: String,
             required: true,
-            enem: ["Pedido realizado", "Embalando", "Cancelado", "Devolvido", "Entregue"],
         },
     },
     { timestamps: true }

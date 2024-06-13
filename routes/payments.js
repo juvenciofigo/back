@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const auth = require("./auth");
 const AdminValidator = require("../controllers/validations/adminValidator");
-const PaymentController = require("../controllers/integracoes/integration");
+const PaymentController = require("../controllers/PaymentController");
 const paymentValidation = require("../controllers/validations/paymentValidation");
 
 // client

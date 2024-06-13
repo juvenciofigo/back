@@ -7,7 +7,7 @@ const CustomerValidator = require("../controllers/validations/customerValidator"
 
 // Admin
 
-router.get("/customers", auth.require, AdminValidator, CustomerValidation.getAllCustomers, CustomerController.getAllCustomers);
+router.get("/customers/admin", auth.require, AdminValidator, CustomerValidation.getAllCustomers, CustomerController.getAllCustomers);
 
 router.get("/customers/search/:search/orders", auth.require, AdminValidator, CustomerValidation.searchOrders, CustomerController.searchOrders); // Procurar Entre Os Pedidos
 
@@ -25,9 +25,11 @@ router.put("/customer/admin/:id", auth.require, AdminValidator, CustomerValidati
 
 router.get("/customer/:id", auth.require, CustomerValidator, CustomerValidation.mySelf, CustomerValidation.removeMySelf, CustomerController.mySelf);
 
-router.get("/customer/:userId/delivery", auth.require, CustomerController.deliveryData);
-
 router.post("/customer/:userId", auth.require, CustomerValidation.createCustomer, CustomerController.createCustomer);
+
+router.get("/customer/:userId/addresses", auth.require, CustomerController.allAddress);
+router.post("/customer/:userId/address/", auth.require, CustomerController.addAddress);
+router.put("/customer/:addressId/address/", auth.require, CustomerController.deleteAddress);
 
 router.put("/customer/:id", auth.require, CustomerValidator, CustomerValidation.updateCustomer, CustomerController.updateMySelf);
 

@@ -24,7 +24,7 @@ const ProductSchema = new mongoose.Schema(
             required: true,
             default: true,
         },
-        productImage: { 
+        productImage: {
             type: Array,
             default: [],
         },
@@ -35,7 +35,12 @@ const ProductSchema = new mongoose.Schema(
             type: [{ type: mongoose.Schema.Types.ObjectId, ref: "SubCategory" }],
         },
         productSub_category: {
-            type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Sub_category" }],
+            type: [
+                {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Sub_category",
+                },
+            ],
         },
         productRatings: {
             type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Rating" }],
@@ -68,6 +73,12 @@ const ProductSchema = new mongoose.Schema(
             type: String,
             default: undefined,
         },
+        order_items: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Order",
+            },
+        ],
     },
     { timestamps: true }
 );

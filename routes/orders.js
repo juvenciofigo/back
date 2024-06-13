@@ -3,20 +3,22 @@ const OrderController = require("../controllers/OrderController");
 const auth = require("./auth");
 const AdminValidator = require("../controllers/validations/adminValidator");
 const orderValidation = require("../controllers/validations/orderValidation");
+const CustomerValidator = require("../controllers/validations/customerValidator");
 
 // Rotas para Admin
 //testado
-router.get("/orders/admin", auth.require,  orderValidation.getAllOrdersAdmin, OrderController.getAllOrdersAdmin); // Todos da loja
+router.get("/orders/admin", auth.require, AdminValidator, orderValidation.getAllOrdersAdmin, OrderController.getAllOrdersAdmin); // Todos da loja
 //testado
-router.get("/orders/admin/:id", auth.require, AdminValidator, orderValidation.getOrderAdmin, OrderController.getOrderAdmin); // Um pedido
+router.get("/order/admin/:id", auth.require, AdminValidator, orderValidation.getOrderAdmin, OrderController.getOrderAdmin); // Um pedido
 //testado
 router.delete("/order/admin/:id", auth.require, AdminValidator, orderValidation.deleteOrderAdmin, OrderController.deleteOrderAdmin); // Cancelar Pedido
 //testado
 router.get("/orders/admin/:id/cart", auth.require, AdminValidator, orderValidation.getOrderCartAdmin, OrderController.getOrderCartAdmin); // Detalhes de um carrinho do pedido
 
 // Rotas para Cliente
+
 //testado
-router.get("/orders", auth.require, orderValidation.getAllOrders, OrderController.getAllOrders); // Todos meus pedidos feitos
+router.get("/orders/:user", auth.require, orderValidation.getAllOrders, OrderController.getAllOrders); // Todos meus pedidos feitos
 //testado
 router.get("/orders/:id", auth.require, orderValidation.getOrder, OrderController.getOrder); // Um pedido Meu
 //testado

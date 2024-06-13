@@ -18,7 +18,11 @@ const RatingRouterSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Product",
             required: true,
-        },
+        },customer:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Customer",
+            required: true,
+        }
     },
     { timestamps: true }
 );

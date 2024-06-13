@@ -54,6 +54,12 @@ const VariationRouterSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        variation_type:{
+            type:String
+        },
+        variation_value:{
+            type:String
+        },
     },
     { timestamps: true }
 );

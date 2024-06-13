@@ -4,13 +4,19 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const secret = require("../config").secret;
 const crypto = require("crypto");
+const { boolean } = require("joi");
 
 const UserSchema = new mongoose.Schema(
     {
-        name: {
+        firstName: {
             type: String,
             required: [true, "Preencha o campo"],
-            min: [6, "Nome Do Usuário deve ter no minimo 6 letras"],
+            min: [4, "Nome Do Usuário deve ter no minimo 6 letras"],
+        },
+        lastName: {
+            type: String,
+            required: [true, "Preencha o campo"],
+            min: [4, "Nome Do Usuário deve ter no minimo 6 letras"],
         },
         password: {
             type: String,
@@ -37,6 +43,11 @@ const UserSchema = new mongoose.Schema(
         cart: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Cart",
+        },
+        deleted: {
+            type: Boolean,
+            default: false,
+            required: true,
         },
         hash: String,
         salt: String,
@@ -74,7 +85,8 @@ UserSchema.methods.tokenGer = function () {
         {
             _id: this.id,
             email: this.email,
-            name: this.name,
+            firstName: this.firstName,
+            lastName: this.lastName,
             dateExp: parseFloat(dateExp.getTime() / 1000, 10),
         },
         secret
@@ -85,7 +97,8 @@ UserSchema.methods.sendAuthJson = function () {
     return {
         _id: this._id,
         email: this.email,
-        name: this.name,
+        firstName: this.firstName,
+        lastName: this.lastName,
         role: this.role,
         token: this.tokenGer(),
     };

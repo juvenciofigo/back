@@ -72,7 +72,7 @@ class CategoryController {
 
             // Se a categoria não for encontrada, retornar um código 404 (Not Found)
             if (!category) {
-                return res.status(404).json({ error: "Categoria não encontrada." });
+                return res.status(404).json({ message: "Categoria não encontrada." });
             }
 
             // Se a categoria for encontrada, enviá-la na resposta
@@ -89,7 +89,7 @@ class CategoryController {
             const existingCategory = await Category.findOne({ categoryName: categoryName });
 
             if (existingCategory) {
-                return res.status(400).json({ success: false, error: "Nome da categoria já em uso. Escolha outro." });
+                return res.status(400).json({ success: false, message: "Nome da categoria já em uso. Escolha outro." });
             }
 
             // Criar uma nova instância de Categories
@@ -114,24 +114,24 @@ class CategoryController {
         try {
             // Verificar se o ID da categoria é fornecido
             if (!categoryID) {
-                return res.status(400).json({ success: false, error: "ID da categoria não fornecido" });
+                return res.status(400).json({ success: false, message: "ID da categoria não fornecido" });
             }
 
             // Encontrar a categoria correspondente no banco de dados
             const category = await Category.findById(categoryID).populate("subCategories");
 
             if (!category) {
-                return res.status(400).json({ success: false, error: "Categoria não encontrada" });
+                return res.status(400).json({ success: false, message: "Categoria não encontrada" });
             }
 
             // Verificar se o nome da subcategoria é fornecido
             if (!subCategoryName) {
-                return res.status(400).json({ success: false, error: "Nome da subcategoria não fornecida" });
+                return res.status(400).json({ success: false, message: "Nome da subcategoria não fornecida" });
             }
             const existingSubCategory = category.subCategories.find((sub) => sub.subCategoryName.toLowerCase() === subCategoryName.toLowerCase());
 
             if (existingSubCategory) {
-                return res.status(400).json({ success: false, error: "Nome da subCategoria já em uso. Escolha outro." });
+                return res.status(400).json({ success: false, message: "Nome da subCategoria já em uso. Escolha outro." });
             }
 
             // Criar uma nova instância de SubCategory
@@ -160,25 +160,25 @@ class CategoryController {
         try {
             // Verificar se o nome da subcategoria e o ID da subcategoria são fornecidos
             if (!sub_categoryName || !subCategoryID) {
-                return res.status(400).json({ success: false, error: "Nome da subcategoria ou ID da subcategoria não fornecido" });
+                return res.status(400).json({ success: false, message: "Nome da subcategoria ou ID da subcategoria não fornecido" });
             }
 
             // Encontrar a subcategoria correspondente no banco de dados pelo ID
             const subCategory = await SubCategory.findById(subCategoryID).populate("sub_categories");
             if (!subCategory) {
-                return res.status(400).json({ success: false, error: "Subcategoria não encontrada" });
+                return res.status(400).json({ success: false, message: "Subcategoria não encontrada" });
             }
 
             // Verificar se o nome da subcategoria é fornecido
             if (!sub_categoryName) {
-                return res.status(400).json({ success: false, error: "Nome da sub_categoria não fornecida" });
+                return res.status(400).json({ success: false, message: "Nome da sub_categoria não fornecida" });
             }
 
             // Verificar se o nome da subcategoria já existe na lista de subcategorias da subcategoria
             const existingSub_category = subCategory.sub_categories.find((sub) => sub.sub_categoryName.toLowerCase() === sub_categoryName.toLowerCase());
 
             if (existingSub_category) {
-                return res.status(400).json({ success: false, error: "Nome da sub_categoria já em uso. Escolha outro." });
+                return res.status(400).json({ success: false, message: "Nome da sub_categoria já em uso. Escolha outro." });
             }
 
             // Criar uma nova instância de Sub_category
@@ -210,7 +210,7 @@ class CategoryController {
 
             if (!category) {
                 // Se a categoria não for encontrada, retornar um erro 404
-                return res.status(404).json({ error: "Categoria não encontrada." });
+                return res.status(404).json({ message: "Categoria não encontrada." });
             }
 
             // Atualizar os campos da categoria, se fornecidos
@@ -236,7 +236,7 @@ class CategoryController {
 
             if (!category) {
                 // Se a categoria não for encontrada, retornar um erro 404
-                return res.status(404).json({ error: "Categoria não encontrada." });
+                return res.status(404).json({ message: "Categoria não encontrada." });
             }
 
             // Remover a categoria

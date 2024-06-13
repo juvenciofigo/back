@@ -6,29 +6,38 @@ const CustomerSchema = new mongoose.Schema(
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: [true, "Preencha o campo"],
+            required: [true, "Preencha o campo user"],
         },
-        name: { type: String, required: true },
+        firstName: {
+            type: String,
+            required: true,
+        },
+        lastName: {
+            type: String,
+            required: true,
+        },
         email: {
             type: String,
-            required: [true, "Preencha o campo"],
+            required: [true, "Preencha o campo email"],
             unique: [true, "Email em uso, digite um email diferente"],
             lowercase: true,
             index: true,
             match: [/\S+@\S+\.\S+/, "Formato inválido"],
         },
-        contacts: { type: String },
-        address: {
-            address: { type: String },
-            city: { type: String },
-            country: { type: String },
-            province: { type: String },
-            reference: { type: String },
+        cellNumber: {
+            type: String,
         },
+        addresses: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Address",
+            },
+        ],
         deleted: { type: Boolean, default: false },
         cart: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Cart",
+            required: [true, "Preencha o campo"],
         },
     },
     { timestamps: true }

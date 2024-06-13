@@ -63,28 +63,26 @@ app.use("/", payments);
 // Error Handling
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
-        // Erros do Multer (ex: tipo de arquivo não suportado, tamanho excedido)
         console.log(err);
-        res.status(400).json({ error: err.message });
+       return res.status(400).json({ message: err.message });
     } else {
-        // Outros erros
         console.error(err);
-        res.status(500).json({ error: "Erro interno do servidor" });
+       return res.status(500).json({ message: "Erro interno do servidor" });
     }
 });
 
 app.use((req, res, next) => {
     const err = new Error("Not found");
     err.status = 404;
-    res.status(404).json({ success: false, error: { message: err.message, status: 404 } });
+   return res.status(404).json({ success: false, message: { message: err.message, status: 404 } });
 });
 
 app.use((err, req, res, next) => {
-    res.status(err.status || 500);
     if (err.status !== 404) {
         console.warn("Error", err.message, new Date());
-        res.json({ success: false, error: { message: err.message, status: res.statusCode } });
+        return res.json({ success: false, message: { message: err.message, status: res.statusCode } });
     }
+    return res.status(err.status || 500);
 });
 
 app.listen(PORT, () => {
