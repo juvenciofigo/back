@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const dbs = require("../config/database");
 
 const isProduction = process.env.NODE_ENV === "production";
-const dbURI = isProduction ? dbs.dbProduction : dbs.dbTest;
+const dbURI = isProduction ? process.env.MONGO_URI : dbs.dbTest;
 
 mongoose
     .connect(dbURI, {
