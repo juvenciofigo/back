@@ -22,6 +22,7 @@ const variationsRouter = require("./routes/variations");
 const ordersRouter = require("./routes/orders");
 const deliveriesRouter = require("./routes/deliveries");
 const payments = require("./routes/payments");
+const statistics = require("./routes/statistics");
 
 const app = express();
 
@@ -63,6 +64,7 @@ app.use("/", variationsRouter);
 app.use("/", ordersRouter);
 app.use("/", deliveriesRouter);
 app.use("/", payments);
+app.use("/", statistics);
 
 // Error Handling
 app.use((err, req, res, next) => {

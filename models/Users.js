@@ -18,6 +18,9 @@ const UserSchema = new mongoose.Schema(
             required: [true, "Preencha o campo"],
             min: [4, "Nome Do Usuário deve ter no minimo 6 letras"],
         },
+        profilePhoto: {
+            type: String,
+        },
         password: {
             type: String,
             required: true,

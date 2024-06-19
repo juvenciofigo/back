@@ -20,7 +20,7 @@ class PaymentController {
             }
 
             const order = await Orders.findById(orderId).populate("payment");
-            console.log(order.payment._id);
+
             if (!order) {
                 return res.status(404).json({ message: "Pedido não encontrado!." });
             }
@@ -46,6 +46,10 @@ class PaymentController {
                         return "Número fora de área.";
                         break;
 
+                    case "INS-5":
+                        return "Transação cancelada pelo cliente.";
+                        break;
+
                     case "INS-6":
                         return "Falha na transação.";
                         break;
@@ -54,8 +58,20 @@ class PaymentController {
                         return "Tempo limite da solicitação.";
                         break;
 
+                    case "INS-13":
+                        return "Código inválido.";
+                        break;
+
                     case "INS-15":
                         return "Valor inválido usado.";
+                        break;
+
+                    case "INS-19":
+                        return "Referência de terceiros inválida.";
+                        break;
+
+                    case "INS-23":
+                        return "Status desconhecido. Entre em contato com o Suporte da M-Pesa.";
                         break;
 
                     case "INS-995":
@@ -75,25 +91,25 @@ class PaymentController {
                         break;
 
                     default:
-                        return "Erro.";
+                        return "Erro no pagamento.";
                         break;
                 }
             }
 
             const client_response = await responseClient(response.data);
-            if (response.status === 200 || response.status === 201) {
-                const payment = await Payments.findById(order.payment._id);
-                console.log("ïniciado", payment);
+            const payment = await Payments.findById(order.payment._id);
 
+            if (response.status === 200 || response.status === 201) {
+                payment.rescriptionResponse = response.data.output_ResponseCode;
                 payment.paymentDate = Date.now();
                 payment.paymentMethod = "Mpesa";
                 payment.status = "Pago";
                 payment.transactionId = response.data.output_TransactionID;
                 payment.reference = response.data.output_ThirdPartyReference;
                 payment.number = client_number;
-                console.log("pagamento feito");
                 await payment.save();
             }
+
             return res.status(response.status).json({ message: client_response });
         } catch (error) {
             console.log("mpesaPay", error);

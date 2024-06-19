@@ -7,6 +7,7 @@ const getAllOrdersAdmin = (req, res, next) => {
     const { error } = Joi.object({
         offset: Joi.number().optional(),
         limit: Joi.number().optional(),
+        sortType: Joi.string().optional(),
     }).validate(req.query);
 
     if (error) {

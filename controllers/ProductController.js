@@ -90,19 +90,15 @@ class ProductController {
 
     async showDetailsProductAdmin(req, res, next) {
         try {
-            // Busca o produto pelo ID, e popula as propriedades 'productVariations' e 'productRatings'
             const product = await Products.findById(req.params.id).populate(["productVariations", "productRatings"]);
 
-            // Verifica se o produto foi encontrado
             if (!product) {
-                // Retorna uma resposta 404 se o produto não for encontrado
                 return res.status(404).json({ msg: "Produto não encontrado!" });
             }
 
             // Correção: utilize product.productImage em vez de apenas productImage
             const productImagesWithUrl = product.productImage.map((image) => `${api}/public/images/${image}`);
 
-            // Retorna uma resposta 200 com o produto encontrado e suas propriedades populadas
             return res.status(200).json({ product: { ...product._doc, productImage: productImagesWithUrl } });
         } catch (error) {
             next(error);
@@ -111,7 +107,6 @@ class ProductController {
 
     // Update product
     async updateProduct(req, res, next) {
-        // Extrair dados do corpo da requisição
         const {
             productName,
             productDescription,
@@ -130,10 +125,8 @@ class ProductController {
         } = req.body;
 
         try {
-            // Encontrar o produto pelo ID fornecido na requisição
             const product = await Products.findById(req.params.id);
 
-            // Verificar se o produto foi encontrado
             if (!product) {
                 return res.status(404).json({ msg: "Produto não encontrado!" });
             }
@@ -178,10 +171,8 @@ class ProductController {
             await updateCategories(SubCategory, productSubcategory, "productSubcategory");
             await updateCategories(Sub_category, productSub_category, "productSub_category");
 
-            // Salvar as alterações no banco de dados
             await product.save();
 
-            // Responder com sucesso e os detalhes do produto atualizado
             return res.status(200).json({ success: true, product });
         } catch (error) {
             next(error);
@@ -193,10 +184,8 @@ class ProductController {
         try {
             const productId = req.params.id;
 
-            // Encontrar o produto pelo ID fornecido na requisição
             const product = await Products.findById(productId);
 
-            // Verificar se o produto foi encontrado
             if (!product) {
                 return res.status(404).json({ msg: "Produto não encontrado!" });
             }
@@ -212,10 +201,8 @@ class ProductController {
             // Adicionar as novas imagens ao array existente
             product.productImage = [...product.productImage, ...newImages];
 
-            // Salvar as alterações no banco de dados
             await product.save();
 
-            // Responder com sucesso e os detalhes do produto atualizado
             return res.status(200).json({ success: true, product });
         } catch (error) {
             next(error);
@@ -226,10 +213,8 @@ class ProductController {
 
     async deleteProduct(req, res, next) {
         try {
-            // Encontrar o produto pelo ID fornecido na requisição
             const product = await Products.findById(req.params.id);
 
-            // Verificar se o produto foi encontrado
             if (!product) {
                 return res.status(404).json({ message: "Produto não encontrado", success: false });
             }
@@ -252,7 +237,6 @@ class ProductController {
             // Deletar o produto
             await product.deleteOne();
 
-            // Retornar uma resposta de sucesso
             return res.status(200).json({ success: true });
         } catch (error) {
             next(error);
@@ -263,9 +247,9 @@ class ProductController {
     async getAllProductsAdmin(req, res, next) {
         // Opções de paginação e classificação
         const options = {
-            page: Number(req.query.offset) || 1, // Página padrão 1 se offset não fornecido
-            limit: Number(req.query.limit) || 10, // Limite padrão de 10 se limit não fornecido
-            sort: getSort(req.query.sortType), // Função getSort para obter configuração de classificação
+            page: Number(req.query.offset) || 1,
+            limit: Number(req.query.limit) || 10, 
+            sort: getSort(req.query.sortType),
         };
 
         try {
@@ -296,15 +280,14 @@ class ProductController {
     async availiableProducts(req, res, next) {
         // Opções de paginação e classificação
         const options = {
-            page: Number(req.query.offset) || 1, // Página padrão 1 se offset não fornecido
-            limit: Number(req.query.limit) || 10, // Limite padrão de 10 se limit não fornecido
-            sort: getSort(req.query.sortType), // Função getSort para obter configuração de classificação
+            page: Number(req.query.offset) || 1, 
+            limit: Number(req.query.limit) || 10, 
+            sort: getSort(req.query.sortType), 
         };
 
         try {
-            // Buscar todos os produtos paginados
             const products = await Products.paginate({ productAvailability: true }, options);
-            // Retornar uma resposta com a quantidade de produtos e a lista de produtos
+
             return res.status(200).json({ quantity: products.totalDocs, products: products.docs });
         } catch (error) {
             next(error);
@@ -319,9 +302,9 @@ class ProductController {
 
         // Opções de paginação e classificação
         const options = {
-            page: Number(req.query.offset) || 1, // Página padrão 1 se offset não fornecido
-            limit: Number(req.query.limit) || 10, // Limite padrão de 10 se limit não fornecido
-            sort: getSort(req.query.sortType), // Função getSort para obter configuração de classificação
+            page: Number(req.query.offset) || 1,
+            limit: Number(req.query.limit) || 10,
+            sort: getSort(req.query.sortType),
         };
 
         if (category) {
@@ -359,9 +342,9 @@ class ProductController {
     async searchProducts(req, res, next) {
         // Opções de paginação e classificação
         const options = {
-            page: Number(req.query.offset) || 0, // Página padrão 1 se offset não fornecido
-            limit: Number(req.query.limit) || 30, // Limite padrão de 10 se limit não fornecido
-            sort: getSort(req.query.sortType), // Função getSort para obter configuração de classificação
+            page: Number(req.query.offset) || 0,
+            limit: Number(req.query.limit) || 30,
+            sort: getSort(req.query.sortType),
             populate: ["productCategory"],
         };
 
@@ -369,22 +352,20 @@ class ProductController {
             // Cria uma expressão regular para a pesquisa, ignorando maiúsculas e minúsculas
             const search = new RegExp(req.params.search, "i");
 
-            // Executa a consulta no banco de dados para buscar produtos
             const products = await Products.paginate(
                 {
                     // Utiliza o operador $or para buscar em vários campos
                     $or: [
                         {
-                            productName: { $regex: search }, // Procura por correspondências no nome do produto
-                            productDescription: { $regex: search }, // Procura por correspondências na descrição do produto
-                            sku: { $regex: search }, // Procura por correspondências no SKU do produto
+                            productName: { $regex: search },
+                            productDescription: { $regex: search },
+                            sku: { $regex: search },
                         },
                     ],
                 },
                 options
             );
 
-            // Retorna a resposta com os produtos encontrados
             return res.status(200).json(products);
         } catch (error) {
             next(error);
@@ -394,18 +375,14 @@ class ProductController {
     // Show One
     async showDetailsProduct(req, res, next) {
         try {
-            // Busca o produto pelo ID, e popula as propriedades 'productVariations' e 'productRatings'
             const product = await Products.findById(req.params.id).select("-productVendor ").populate(["productVariations", "productRatings"]);
 
-            // Verifica se o produto foi encontrado
             if (!product) {
-                // Retorna uma resposta 404 se o produto não for encontrado
                 return res.status(404).json({ msg: "Produto não encontrado!" });
             }
 
             const productImagesWithUrl = product.productImage.map((image) => `${api}/public/images/${image}`);
 
-            // Retorna uma resposta 200 com o produto encontrado e suas propriedades populadas
             return res.status(200).json({ product: { ...product._doc, productImage: productImagesWithUrl } });
         } catch (error) {
             next(error);

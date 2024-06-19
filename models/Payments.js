@@ -11,7 +11,7 @@ const PaymentRouterSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
-        paymentAt: {
+        paymentDate: {
             type: Date,
         },
         paymentMethod: {
@@ -36,6 +36,9 @@ const PaymentRouterSchema = new mongoose.Schema(
             type: String,
             unique: true,
         },
+        rescriptionResponse: {
+            type: String,
+        },
         reference: {
             type: String,
             unique: true,
@@ -49,7 +52,6 @@ const PaymentRouterSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
-
 
 PaymentRouterSchema.plugin(mongoosePaginate);
 

@@ -19,6 +19,10 @@ const getSort = (sortType) => {
             return { productPrice: 1 };
         case "price-descending":
             return { productPrice: -1 };
+        case "createAt-descending":
+            return { createdAt: 1 };
+        case "createAt-descending":
+            return { createdAt: -1 };
         default:
             return { updatedAt: -1 };
     }
@@ -29,6 +33,7 @@ class OrderController {
             page: Number(req.query.offset) || 0,
             limit: Number(req.query.limit) || 10,
             populate: ["address ", "customer", "orderRegistration", "delivery", "payment"],
+            sort: getSort(req.query.sortType),
         };
 
         try {
@@ -132,8 +137,10 @@ class OrderController {
     //CLIENTE
 
     async getAllOrders(req, res, next) {
+        const authId = req.auth._id;
         const user = req.params.user;
 
+        if (authId !== user) return res.status(400).json({ message: "Sem autorização!" });
         if (!user) {
             return res.status(400).json({ success: false, message: "Payload ou ID do payload não definidos" });
         }
@@ -146,15 +153,19 @@ class OrderController {
         };
 
         try {
+            const userDetails = await Users.findById(user).select("-recovery -salt -password").populate("cart customer");
+
+            if (userDetails.deleted === true) {
+                return res.status(404).json({ message: "Conta apagada!" });
+            }
+
             const customer = await Customers.findOne({ user: user });
-            console.log(customer);
 
             if (!customer) {
                 return res.status(400).json({ success: false, message: "Não tem pedidos ainda!" });
             }
 
             const orders = await Orders.paginate({ customer: customer._id }, options);
-            console.log(orders);
 
             if (!orders) {
                 return res.status(400).json({ success: false, message: "Nenhum pedido encontrado" });
@@ -228,6 +239,12 @@ class OrderController {
             // }
 
             const customer = await Customers.findOne({ user: userID });
+
+            console.log(delivery.reference);
+            const existOrder = await Orders.find({ referenceOrder: delivery.reference });
+            if (existOrder) {
+                return res.status(400).json({ message: "Referência existente, vá para pedidos" });
+            }
 
             if (!customer) {
                 const user = await Users.findById(userID).select("-recovery -salt -password -role");

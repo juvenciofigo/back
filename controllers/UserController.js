@@ -4,6 +4,10 @@ const Carts = require("../models/Carts");
 const sendEmailRecovery = require("../helpers/email-recovery");
 
 class UserController {
+    /*
+     Admin
+    */
+
     // Show all
     async getAllUsers(req, res, next) {
         try {
@@ -17,15 +21,26 @@ class UserController {
         }
     }
 
+    /*
+    Client
+    */
+
     // Show Details
     async getUserDetails(req, res, next) {
-        const id = req.params.id;
+        const authId = req.auth._id;
+        const user = req.params.id;
+
+        if (authId !== user) return res.status(400).json({ message: "Sem autorização!" });
+
         try {
-            const user = await Users.findById(id).select("-recovery -salt -password").populate("cart");
+            const userDetails = await Users.findById(user).select("-recovery -salt -password").populate("cart customer");
+            if (userDetails.deleted === true) {
+                return res.status(404).json({ message: "Conta apagada!" });
+            }
 
-            if (!user) return res.status(404).json({ message: "Usuário não encontrado!" });
+            if (!userDetails) return res.status(404).json({ message: "Usuário não encontrado!" });
 
-            return res.status(200).json(user);
+            return res.status(200).json(userDetails);
         } catch (error) {
             next(error);
         }
@@ -64,11 +79,16 @@ class UserController {
     // Update user
 
     async updateUser(req, res, next) {
+        const authId = req.auth._id;
+        const user = req.params.id;
+
+        if (authId !== user) return res.status(400).json({ message: "Sem autorização!" });
+
         const { firstName, lastName, email, password } = req.body;
         try {
             const emailLowerCase = email.toLowerCase();
 
-            const user = await Users.findById(req.params.id);
+            const user = await Users.findById(user);
 
             if (!user) {
                 return res.status(404).json({ message: "Usuário não encontrado!", success: false });
@@ -121,6 +141,9 @@ class UserController {
 
             const user = await Users.findOne({ email: emailLowerCase });
 
+            if (user.deleted === true) {
+                return res.status(404).json({ message: "Conta apagada!" });
+            }
             if (!user) return res.status(404).json({ success: false, message: "Usuário não encontrado! Verifique o  email" });
 
             if (!user.validPass(password)) {

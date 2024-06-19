@@ -6,18 +6,39 @@ const CustomerValidator = require("../controllers/validations/customerValidator"
 
 const auth = require("./auth");
 
-// autenticar um usuário
-
-router.post("/login", UserValidation.authenticateUser, UserController.authenticateUser); //testado
-
 router.get("/", UserController.default);
 
-// criar um novo usuário
-router.post("/user", UserValidation.create, UserController.createUser); // testado
+////////// Admin ///////////
+
+// obter todos os usuários
+router.get("/users/admin", auth.require, AdminValidator, UserController.getAllUsers); // testado
+
+// obter detalhes de um usuário específico
+router.get("/user/:id/admin", auth.require, AdminValidator, UserValidation.show, UserController.getUserDetails); // testado
+
+// atualizar informações de um usuário
+router.put("/user/:id/admin", auth.require, AdminValidator, UserValidation.update, UserController.updateUser); // nao aprovado
+
+//Delete a user.
+router.delete("/user/:id/ admin", auth.require, AdminValidator, AdminValidator, UserController.deleteUser); // testado
 
 //
 
-// // // // // //  recuperacao de senha // // // // // //
+//////////// Client //////////
+
+
+// obter detalhes de um usuário específico
+router.get("/user/:id", auth.require, UserValidation.show, UserController.getUserDetails); // testado
+
+// atualizar informações de um usuário
+router.put("/user/:id", auth.require, UserValidation.update, UserController.updateUser); // nao aprovado
+
+//Delete a user.
+router.delete("/user/:id", auth.require, AdminValidator, UserController.deleteUser); // testado
+
+router.post("/login", UserValidation.authenticateUser, UserController.authenticateUser); //testado
+
+router.post("/user", UserValidation.create, UserController.createUser); // testado
 
 // solicitar recuperação de senha
 router.get("/showRecovery", UserController.showRecovery); // testado
@@ -30,19 +51,5 @@ router.get("/recoverPass", UserController.GetCompleteRecovery); // testado
 
 // para concluir a recuperação de senha
 router.post("/recoverPass", UserController.completeRecovery); // testado
-
-// // // // // Rotas protegidas // // // // //
-
-// obter todos os usuários
-router.get("/users", auth.require, AdminValidator, UserController.getAllUsers); // testado
-
-// obter detalhes de um usuário específico
-router.get("/user/:id", auth.require, UserValidation.show, UserController.getUserDetails); // testado
-
-// atualizar informações de um usuário
-router.put("/user/:id", auth.require, UserValidation.update, UserController.updateUser); // nao aprovado
-
-//Delete a user.
-router.delete("/user/:id", auth.require, AdminValidator, UserController.deleteUser); // testado
 
 module.exports = router;
