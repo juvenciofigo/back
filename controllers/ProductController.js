@@ -15,7 +15,7 @@ const getSort = (sortType) => {
         case "price-descending":
             return { productPrice: -1 };
         default:
-            return {};
+            return { createdAt: -1 };
     }
 };
 
@@ -248,7 +248,7 @@ class ProductController {
         // Opções de paginação e classificação
         const options = {
             page: Number(req.query.offset) || 1,
-            limit: Number(req.query.limit) || 10, 
+            limit: Number(req.query.limit) || 10,
             sort: getSort(req.query.sortType),
         };
 
@@ -280,9 +280,9 @@ class ProductController {
     async availiableProducts(req, res, next) {
         // Opções de paginação e classificação
         const options = {
-            page: Number(req.query.offset) || 1, 
-            limit: Number(req.query.limit) || 10, 
-            sort: getSort(req.query.sortType), 
+            page: Number(req.query.offset) || 1,
+            limit: Number(req.query.limit) || 10,
+            sort: getSort(req.query.sortType),
         };
 
         try {

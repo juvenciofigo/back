@@ -8,7 +8,7 @@ const upload = require("../config/multer");
 router.get("/variations", variationValidation.getAllVariations, VariationController.getAllVariations); // testado
 router.get("/variations/:id", variationValidation.getVariatiosProduct, VariationController.getVariatiosProduct); // testado
 
-router.post("/variation/new", auth.require, AdminValidator, variationValidation.createVariation, VariationController.createVariation); // testado
+router.post("/variation/:product", auth.require, AdminValidator, variationValidation.createVariation, VariationController.createVariation); // testado
 router.put("/variation/:id", auth.require, AdminValidator, variationValidation.updateVariation, VariationController.updateVariation); // testado
 router.put("/variation/:id/image", auth.require, variationValidation.imageVariation, AdminValidator, upload.array("files", 5), VariationController.imageVariation); // testado
 

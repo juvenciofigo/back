@@ -61,28 +61,29 @@ class VariationController {
 
     async createVariation(req, res, next) {
         // Extrai os dados necessários do corpo da requisição e da consulta
-        const { variationCode, variationName, variationPrice, variationPromotion, variationStock, delivery, variationQuantity } = req.body;
-        const { product } = req.query;
+        const { variationProduct, variationType, variationValue, sku, variationPrice, variationPromotion, variationStock, variationImage, delivery } = req.body;
+
+        const { product } = req.params;
 
         try {
             // Verifica se o produto existe
             const _product = await Products.findById(product);
 
             // Se o produto não existir, retorna um erro 400
-            if (!_product) {
+            if (!_product ) {
                 return res.status(400).json({ message: "Produto não existente", success: false });
             }
 
             // Cria uma nova instância da variação
             const variation = new Variations({
-                variationCode,
-                variationName,
+                variationProduct,
+                variationType,
+                variationValue,
+                sku,
                 variationPrice,
                 variationPromotion,
                 variationStock,
                 delivery,
-                variationQuantity,
-                variationProduct: product,
             });
 
             // Adiciona a nova variação ao array de variações do produto
@@ -104,7 +105,7 @@ class VariationController {
 
     // Update Variation
     async updateVariation(req, res, next) {
-        const { variationCode, variationAvailable, variationName, variationPrice, variationPromotion, variationStock, delivery, variationQuantity } = req.body;
+        const { sku, variationAvailable, variationName, variationPrice, variationPromotion, variationStock, delivery, variationQuantity } = req.body;
         const { product } = req.query;
 
         try {
@@ -115,7 +116,7 @@ class VariationController {
             }
 
             // Atualiza as propriedades da variação com os valores fornecidos
-            if (variationCode) variation.variationCode = variationCode;
+            if (sku) variation.sku = sku;
             if (variationAvailable !== undefined) variation.variationAvailable = variationAvailable;
             if (variationName) variation.variationName = variationName;
             if (variationPrice) variation.variationPrice = variationPrice;

@@ -6,7 +6,7 @@ const getAllVariations = (req, res, next) => {
     }).validate(req.query);
 
     if (error) {
-        next(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -19,7 +19,7 @@ const getVariatiosProduct = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        next(error);
+        return res.status(400).json({ message: paramsError.details[0].message });
     }
     const querySchema = Joi.object({
         product: Joi.string().alphanum().length(24).required(),
@@ -28,44 +28,51 @@ const getVariatiosProduct = (req, res, next) => {
     const { error: queryError } = querySchema.validate(req.query);
 
     if (queryError) {
-        next(error);
+        return res.status(400).json({ message: queryError.details[0].message });
     }
     next();
 };
 
 const createVariation = (req, res, next) => {
-    const querySchema = Joi.object({
+    const paramsSchema = Joi.object({
         product: Joi.string().alphanum().length(24).required(),
     });
 
-    const { error: queryError } = querySchema.validate(req.query);
+    const { error: paramsError } = paramsSchema.validate(req.params);
 
-    if (queryError) {
-        next(error);
+    if (paramsError) {
+        return res.status(400).json({ message: paramsError.details[0].message });
     }
 
     const bodySchema = Joi.object({
-        variationCode: Joi.string().required(),
-        variationName: Joi.string().required(),
-        variationPrice: Joi.number().required(),
-        variationPromotion: Joi.number().optional(),
-        variationStock: Joi.boolean().optional(),
+        sku: Joi.string().required(),
+        variationProduct: Joi.string().alphanum().length(24).required(),
+        variationType: Joi.string().required(),
+        variationValue: Joi.string().required(),
+        variationPrice: Joi.number().optional().allow(null),
+        variationImage: Joi.array().optional(),
+        variationPromotion: Joi.number().optional().allow(null),
+        variationStock: Joi.boolean().optional().allow(null),
         delivery: Joi.object({
             dimensions: Joi.object({
-                heightCm: Joi.number().required(),
-                widthCm: Joi.number().required(),
-                depthCm: Joi.number().required(),
-            }).required(),
-            weight: Joi.number().required(),
-            shippingFree: Joi.boolean().optional(),
-        }).required(),
-        variationQuantity: Joi.number().optional(),
+                heightCm: Joi.number().optional().allow(null),
+                widthCm: Joi.number().optional().allow(null),
+                depthCm: Joi.number().optional().allow(null),
+            })
+                .optional()
+                .allow(null),
+            weight: Joi.number().optional().allow(null),
+            shippingFree: Joi.boolean().optional().allow(null),
+        })
+            .optional()
+            .allow(null),
     });
 
     const { error: bodyError } = bodySchema.validate(req.body);
 
     if (bodyError) {
-        next(error);
+        console.log(bodyError);
+        return res.status(400).json({ message: bodyError.details[0].message });
     }
 
     next();
@@ -73,8 +80,9 @@ const createVariation = (req, res, next) => {
 
 const updateVariation = (req, res, next) => {
     const bodySchema = Joi.object({
-        variationCode: Joi.string().optional(),
-        variationName: Joi.string().optional(),
+        sku: Joi.string().required(),
+        variationType: Joi.string().required(),
+        variationValue: Joi.string().required(),
         variationPrice: Joi.number().optional(),
         variationPromotion: Joi.number().optional(),
         variationStock: Joi.boolean().optional(),
@@ -83,18 +91,16 @@ const updateVariation = (req, res, next) => {
                 heightCm: Joi.number().optional(),
                 widthCm: Joi.number().optional(),
                 depthCm: Joi.number().optional(),
-            }).optional(),
+            }),
             weight: Joi.number().optional(),
             shippingFree: Joi.boolean().optional(),
-        }).optional(),
-        variationQuantity: Joi.number().optional(),
-        variationAvailable: Joi.boolean().optional(),
+        }).required(),
     });
 
     const { error: bodyError } = bodySchema.validate(req.body);
 
     if (bodyError) {
-        next(error);
+        return res.status(400).json({ message: bodyError.details[0].message });
     }
 
     const querySchema = Joi.object({
@@ -104,17 +110,17 @@ const updateVariation = (req, res, next) => {
     const { error: queryError } = querySchema.validate(req.query);
 
     if (queryError) {
-        next(error);
+        return res.status(400).json({ message: queryError.details[0].message });
     }
 
     const paramsSchema = Joi.object({
         id: Joi.string().alphanum().length(24).required(),
-    });
+    });  
 
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        next(error);
+        return res.status(400).json({ message: paramsError.details[0].message });
     }
     next();
 };
@@ -127,7 +133,7 @@ const imageVariation = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        next(error);
+        return res.status(400).json({ message: paramsError.details[0].message });
     }
     const querySchema = Joi.object({
         product: Joi.string().alphanum().length(24).required(),
@@ -136,7 +142,7 @@ const imageVariation = (req, res, next) => {
     const { error: queryError } = querySchema.validate(req.query);
 
     if (queryError) {
-        next(error);
+        return res.status(400).json({ message: queryError.details[0].message });
     }
     next();
 };
@@ -149,7 +155,7 @@ const deleteVariation = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        next(error);
+        return res.status(400).json({ message: paramsError.details[0].message });
     }
     const querySchema = Joi.object({
         product: Joi.string().alphanum().length(24).required(),
@@ -158,7 +164,7 @@ const deleteVariation = (req, res, next) => {
     const { error: queryError } = querySchema.validate(req.query);
 
     if (queryError) {
-        next(error);
+        return res.status(400).json({ message: queryError.details[0].message });
     }
     next();
 };
