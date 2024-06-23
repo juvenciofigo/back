@@ -1,5 +1,7 @@
 require("../models/Carts");
+const { populate } = require("dotenv");
 const mongoose = require("../database/connection");
+const Variations = require("../models/Variations");
 const Cart = mongoose.model("Cart");
 const Product = mongoose.model("Product");
 const api = require("../config/index").api;
@@ -48,48 +50,72 @@ class CartController {
                     }
                 }
             } else {
-                const { productId, quantity } = req.body;
+                const { productId, quantity, variation } = req.body;
 
-                const existingProductIndex = cart.cartItens.findIndex((item) => item.productId.equals(productId));
+                const existingProductIndex = cart.cartItens.findIndex((item) => {
+                    if (item.productId == productId) {
+                        if (item.variation.color == variation.color) {
+                            if (item.variation.model == variation.model) {
+                                if (item.variation.material == variation.material) {
+                                    return item.variation.size == variation.size;
+                                }
+                                return false;
+                            }
+                            return false;
+                        }
+                        return false;
+                    }
+                    return false;
+                });
 
                 if (existingProductIndex !== -1) {
                     cart.cartItens[existingProductIndex].quantity += Number(quantity) || 1;
                 } else {
-                    cart.cartItens.push({ productId, quantity: Number(quantity) || 1 });
+                    cart.cartItens.push({
+                        item: Date.now().toString(),
+                        productId,
+                        quantity: Number(quantity) || 1,
+                        variation: {
+                            color: variation.color,
+                            model: variation.model,
+                            size: variation.size,
+                            material: variation.material,
+                        },
+                    });
                 }
             }
 
-            // Salvar as alterações no carrinho
             await cart.save();
-            return res.status(200).json({ success: true, msg: "Produto adicionado" });
+            return res.status(200).json({ success: true, message: "Produto adicionado" });
         } catch (error) {
             next(error);
         }
     }
 
     async removeProductCart(req, res, next) {
-        const { userId, productId } = req.params;
+        const { userId, item } = req.params;
         try {
             // Encontrar o carrinho do usuário
             let cart = await Cart.findOne({ cartUser: userId });
 
             if (!cart) {
-                return res.status(404).json({ msg: "Carrinho não encontrado" });
+                return res.status(404).json({ message: "Carrinho não encontrado" });
             }
 
             // Filtrar os itens do carrinho para remover o produto
             const initialCartItemCount = cart.cartItens.length;
-            cart.cartItens = cart.cartItens.filter((item) => !item.productId.equals(productId));
+
+            cart.cartItens = cart.cartItens.filter((item) => !item.item.equals(item));
 
             // Verificar se algum item foi removido
             if (initialCartItemCount === cart.cartItens.length) {
-                return res.status(404).json({ msg: "Produto não encontrado no carrinho" });
+                return res.status(404).json({ message: "Produto não encontrado no carrinho" });
             }
 
             // Salvar as alterações no carrinho
             await cart.save();
 
-            return res.status(200).json({ msg: "Produto removido do carrinho" });
+            return res.status(200).json({ message: "Produto removido do carrinho" });
         } catch (error) {
             next(error);
         }
@@ -138,6 +164,7 @@ class CartController {
         try {
             if (userId !== "false") {
                 const cart = await Cart.findOne({ cartUser: userId });
+
                 if (!cart || !cart.cartItens || cart.cartItens.length === 0) {
                     return res.status(200).json(cartProducts);
                 }
@@ -145,7 +172,6 @@ class CartController {
             } else {
                 Products = req.body;
             }
-
             if (!Array.isArray(Products) || Products.length === 0) {
                 return res.status(200).json(cartProducts);
             }
@@ -155,17 +181,50 @@ class CartController {
                 if (!productDetails) {
                     throw new Error(`Product com ID ${product.productId} not found`);
                 }
+                const color = await Variations.findById(product.variation.color);
+                const model = await Variations.findById(product.variation.model);
+                const size = await Variations.findById(product.variation.size);
+                const material = await Variations.findById(product.variation.material);
+
+                let price = 0;
+                if (color) {
+                    price += color.variationPrice;
+                }
+                if (model) {
+                    price += model.variationPrice;
+                }
+                if (material) {
+                    price += material.variationPrice;
+                }
+                if (size) {
+                    price += size.variationPrice;
+                }
+                let productPrice = (productDetails.productPrice += price);
+
                 cartProducts.push({
+                    item: product.item,
                     productId: productDetails._id,
                     productName: productDetails.productName,
-                    productPrice: productDetails.productPrice,
                     picture: `${api}/public/images/${productDetails.productImage[0]}`,
+                    variation: {
+                        color: color,
+                        model: model,
+                        size: size,
+                        material: material,
+                    },
+                    productPrice: productPrice,
                     quantity: Number(product.quantity),
-                    subtotal: product.quantity * productDetails.productPrice,
+                    subtotal: (productPrice *= Number(product.quantity)),
                 });
+                price = 0;
             }
 
-            return res.status(200).json(cartProducts);
+            async function calculatePriceTotal(cart) {
+                console.log(cart);
+                return await cart.reduce((total, item) => total + item.subtotal, 0);
+            }
+            // console.log(calculatePriceTotal(cartProducts));
+            return res.status(200).json({ totalProducts: calculatePriceTotal(cartProducts), cartProducts });
         } catch (error) {
             next(error);
         }
@@ -190,9 +249,9 @@ class CartController {
             );
 
             if (cart) {
-                return res.status(200).json({ msg: "Produto atualizado!" });
+                return res.status(200).json({ message: "Produto atualizado!" });
             } else {
-                return res.status(404).json({ msg: "Produto não encontrado!" });
+                return res.status(404).json({ message: "Produto não encontrado!" });
             }
         } catch (error) {
             next(error);
@@ -201,22 +260,23 @@ class CartController {
 
     // Update cart
     async updateQuantity(req, res, next) {
-        const { userId, productId, quantity } = req.params;
+        const { userId, item, quantity } = req.params;
+        console.log(item);
 
         try {
             // Encontrar o carrinho do usuário
             let cart = await Cart.findOne({ cartUser: userId });
 
             if (!cart) {
-                return res.status(404).json({ msg: "Carrinho não encontrado" });
+                return res.status(404).json({ message: "Carrinho não encontrado" });
             }
-            const productIndex = cart.cartItens.findIndex((item) => item.productId.equals(productId));
+            const productIndex = cart.cartItens.findIndex((e) => e.item == item);
 
             if (productIndex !== -1) {
                 cart.cartItens[productIndex].quantity = Number(quantity);
             }
             await cart.save();
-            return res.status(200).json({ msg: "Produto atualizado!" });
+            return res.status(200).json({ message: "Produto atualizado!" });
         } catch (error) {
             next(error);
         }
@@ -227,9 +287,9 @@ class CartController {
     //     try {
     //         const deleteCart = await Cart.findByIdAndDelete({ _id: req.params.id });
     //         if (deleteCart) {
-    //             return res.status(200).json({ msg: "Produto Deletado!" });
+    //             return res.status(200).json({ message: "Produto Deletado!" });
     //         } else {
-    //             return res.status(404).json({ msg: "Produto não encontrado!" });
+    //             return res.status(404).json({ message: "Produto não encontrado!" });
     //         }
     //     } catch (error) {
     //                    next(error);

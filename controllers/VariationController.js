@@ -60,7 +60,6 @@ class VariationController {
     // Save Variations
 
     async createVariation(req, res, next) {
-        // Extrai os dados necessários do corpo da requisição e da consulta
         const { variationProduct, variationType, variationValue, sku, variationPrice, variationPromotion, variationStock, variationImage, delivery } = req.body;
 
         const { product } = req.params;
@@ -70,7 +69,7 @@ class VariationController {
             const _product = await Products.findById(product);
 
             // Se o produto não existir, retorna um erro 400
-            if (!_product ) {
+            if (!_product) {
                 return res.status(400).json({ message: "Produto não existente", success: false });
             }
 

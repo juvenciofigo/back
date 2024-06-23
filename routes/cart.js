@@ -13,8 +13,8 @@ router.post("/carts/:user_id", auth.require, CartController.createCart);
 
 router.post("/cart/:userId/addProduct", auth.require, CartController.addProductsCart); //Add a product to a user's cart.
 
-router.delete("/cart/:userId/remove/:productId", auth.require, CartController.removeProductCart); //Remove a product from a user's cart.
+router.delete("/cart/:userId/remove/:item", auth.require, CartController.removeProductCart); //Remove a product from a user's cart.
 
-router.put("/cart/:userId/update/:productId/:quantity", auth.require, CartController.updateQuantity); //Update quantity of a product in the cart.
+router.put("/cart/:userId/update/:item/:quantity", auth.require, CartController.updateQuantity); //Update quantity of a product in the cart.
 
 module.exports = router;

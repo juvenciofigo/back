@@ -63,7 +63,7 @@ const getAllOrders = (req, res, next) => {
 
     if (queryError) {
         console.log(queryError);
-        next(queryError);6
+        next(queryError);
     }
     if (paramsError) {
         console.log(paramsError);

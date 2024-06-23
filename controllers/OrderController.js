@@ -240,7 +240,6 @@ class OrderController {
 
             const customer = await Customers.findOne({ user: userID });
 
-            console.log(delivery.reference);
             const existOrder = await Orders.find({ referenceOrder: delivery.reference });
             if (existOrder) {
                 return res.status(400).json({ message: "Referência existente, vá para pedidos" });
