@@ -219,12 +219,11 @@ class CartController {
                 price = 0;
             }
 
-            async function calculatePriceTotal(cart) {
-                console.log(cart);
-                return await cart.reduce((total, item) => total + item.subtotal, 0);
-            }
-            // console.log(calculatePriceTotal(cartProducts));
-            return res.status(200).json({ totalProducts: calculatePriceTotal(cartProducts), cartProducts });
+            const calculatePriceTotal = (cartProducts) => {
+                return cartProducts.reduce((total, product) => total + product.subtotal, 0);
+            };
+            // console.log(cartProducts);
+            return res.status(200).json({ totalProducts: calculatePriceTotal(cartProducts),cartProducts });
         } catch (error) {
             next(error);
         }
