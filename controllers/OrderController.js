@@ -7,6 +7,7 @@ const Products = require("../models/Products"),
     OrderRegistrations = require("../models/OrderRegistrations"),
     Cart = require("../models/Carts"),
     Users = require("../models/Users"),
+    Product = require("../models/Products"),
     CartValidation = require("./validations/cartValidation");
 
 const getSort = (sortType) => {
@@ -219,34 +220,23 @@ class OrderController {
     }
 
     async createOrder(req, res, next) {
-        const { cart, payment, delivery } = req.body;
+        const { cart, delivery } = req.body;
         const userID = req.auth._id;
+        let cartProducts = [];
+        let shippingPrice = 10;
 
         try {
-            // // Check Data Cart
-            // if (!CartValidation(cart)) {
-            //     return res.status(400).json({ success: false, msg: "Dados do carrinho inválidos" });
-            // }
-
-            // // Check Data Delivery
-            // if (!DeliveryValidation(cart)) {
-            //     return res.status(400).json({ success: false, msg: "Dados da entrega inválidos" });
-            // }
-
-            // // Check Data Payment
-            // if (!PaymentValidation(cart)) {
-            //     return res.status(400).json({ success: false, msg: "Dados do pagamento inválidos" });
-            // }
-
-            const customer = await Customers.findOne({ user: userID });
-
-            const existOrder = await Orders.find({ referenceOrder: delivery.reference });
-            if (existOrder) {
-                return res.status(400).json({ message: "Referência existente, vá para pedidos" });
+            // vereficar existencia do carrinho
+            const existCart = await Cart.findOne({ cartUser: userID });
+            if (!existCart) {
+                return res.status(400).json({ success: false, message: "Carrinho inválido!" });
             }
 
+            // verificar se cliente existe e criar, caso nao
+            const customer = await Customers.findOne({ user: userID });
+
             if (!customer) {
-                const user = await Users.findById(userID).select("-recovery -salt -password -role");
+                const user = await Users.findById(userID);
 
                 const customer = new Customers({
                     email: user.email,
@@ -263,26 +253,86 @@ class OrderController {
                 await user.save();
             }
 
+            // verificar se a referencia do pedido ja existe
+            const existOrder = await Orders.findOne({ referenceOrder: delivery.reference });
+            if (existOrder) {
+                return res.status(400).json({ message: "Referência existente, vá para pedidos" });
+            }
+
+            //  prcessar cada item do carrinho
+            for (const product of existCart.cartItens) {
+                const productDetails = await Product.findById(product.productId);
+
+                if (!productDetails) {
+                    throw new Error(`Product com ID ${product.productId} not found`);
+                }
+
+                // buscar por variacoes
+                const color = await Variations.findById(product.variation.color);
+                const model = await Variations.findById(product.variation.model);
+                const size = await Variations.findById(product.variation.size);
+                const material = await Variations.findById(product.variation.material);
+
+                // calculcar o preco total do produto com base nas variacoes
+                let price = 0;
+                if (color) {
+                    price += color.variationPrice;
+                }
+                if (model) {
+                    price += model.variationPrice;
+                }
+                if (material) {
+                    price += material.variationPrice;
+                }
+                if (size) {
+                    price += size.variationPrice;
+                }
+
+                let productPrice = (productDetails.productPrice += price);
+                let subtotal = productPrice * product.quantity;
+
+                cartProducts.push({
+                    item: product.item,
+                    productId: productDetails._id,
+                    productName: productDetails.productName,
+                    variation: {
+                        color: color,
+                        model: model,
+                        size: size,
+                        material: material,
+                    },
+                    productPrice: productPrice,
+                    quantity: Number(product.quantity),
+                    subtotal: subtotal,
+                });
+            }
+
+            // calcular o preco total dos produtos
+            const totalProductsPrice = cartProducts.reduce((total, product) => total + product.subtotal, 0);
+
+            // criar novo pagamento
             const newPayment = new Payments({
-                amount: payment.total,
-                totalProductsPrice: payment.totalProductsPrice,
+                amount: shippingPrice + totalProductsPrice,
+                totalProductsPrice: totalProductsPrice,
                 reference: delivery.reference,
             });
 
+            // criar nova entrega
             const newDelivery = new Deliveries({
-                cost: payment.shippingPrice,
+                cost: shippingPrice,
                 address: delivery.address,
             });
 
+            // criar e salvar novo pedido
             const order = new Orders({
                 customer: customer._id,
-                cart: cart,
+                cart: existCart.cartItens,
                 address: delivery.address,
                 payment: newPayment._id,
                 delivery: newDelivery._id,
                 referenceOrder: delivery.reference,
-                totalPrice: payment.total,
-                totalProductsPrice: payment.totalProductsPrice,
+                totalPrice: shippingPrice + totalProductsPrice,
+                totalProductsPrice: totalProductsPrice,
             });
             const newOrderReg = new OrderRegistrations({
                 order: order._id,
@@ -299,49 +349,72 @@ class OrderController {
             await newOrderReg.save();
 
             // resetar o carrinho
-            const userCart = await Cart.findOne({ cartUser: userID });
-            userCart.cartItens = [];
-            userCart.save();
-            // Notificar via email - cliente e admin = New order
+            existCart.cartItens = [];
+            existCart.save();
 
-            return res.status(200).json({ success: true, order: Object.assign({}, order._doc, { delivery: newDelivery, payment: newPayment, customer, newOrderReg }) });
+            return res.status(200).json({
+                success: true,
+                order: {
+                    ...order._doc,
+                    delivery: newDelivery,
+                    payment: newPayment,
+                    customer,
+                    newOrderReg,
+                },
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+    async updateOrders(req, res, next) {
+        try {
+            const result = await Orders.updateMany(
+                { deleted: { $exists: false } }, // Filtra documentos que ainda não possuem o novo campo
+                { $set: { deleted: false } } // Define um valor padrão para o novo campo
+            );
+
+            console.log(`${result.modifiedCount} documentos atualizados`);
+            return res.status(200).json({ result, count: result.matchedCount });
         } catch (error) {
             next(error);
         }
     }
 
-    async deleteOrder(req, res) {
+    async deleteOrder(req, res, next) {
+        const orderId = req.params.id;
         try {
             const customer = await Customers.findOne({ user: req.auth._id });
 
             if (!customer) {
                 return res.status(400).json({ success: false, message: "Cliente não encontrado" });
             }
-            const order = await Orders.findOne({ customerOrder: customer._id, _id: req.params.id }).populate("customerOrder paymentOrder deliveryOrder");
+
+            const order = await Orders.findOne({ customer: customer._id, _id: orderId }).populate("payment delivery orderRegistration");
 
             if (!order) {
                 return res.status(400).json({ success: false, message: "Pedido não encontrado" });
             }
-            if (order.orderCancel === true) {
-                return res.status(400).json({ success: false, message: "Esse pedido ja foi cancelado" });
+            const payment = await Payments.findOne({ order: orderId });
+            const delivery = await Deliveries.findOne({ order: orderId });
+            const reg = await OrderRegistrations.findOne({ order: orderId });
+
+            if (order.payment.status === "Esperando") {
+                await payment.deleteOne();
+                await delivery.deleteOne();
+                await reg.deleteOne();
+                await order.deleteOne();
+            } else {
+                payment.status = "Pedido Cancelado";
+                order.status = "Pedido Cancelado";
+                reg.orderStatus = "Pedido Cancelado";
+                payment.save();
+                order.save();
+                reg.save();
             }
-            order.orderCancel = true;
 
-            const orderReg = new OrderRegistrations({
-                order: order._id,
-                type: "pedido",
-                situation: "pedido_cancelado",
-            });
-            await orderReg.save();
-
-            //Registro de atividade = pedido cancelado
-            // Enviar email para Admin!
-
-            await order.save();
-
-            return res.status(200).json({ success: true, order });
+            return res.status(200).json({ message: "Pedido apagado" });
         } catch (error) {
-            next();
+            next(error);
         }
     }
 
@@ -369,7 +442,7 @@ class OrderController {
 
             return res.status(200).json({ success: true, order });
         } catch (error) {
-            next();
+            next(error);
         }
     }
 }

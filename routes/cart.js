@@ -6,7 +6,7 @@ const AdminValidator = require("../controllers/validations/adminValidator");
 
 router.get("/carts/admin", auth.require, AdminValidator, CartController.allCarts);
 
-router.get("/cart/:userId/prices", auth.require, CartController.showDetailsCartPrices); //Retrieve items in the cart for a specific user.
+router.post("/cart/:userId/prices", CartController.showDetailsCartPrices); //Retrieve items in the cart for a specific user.
 router.post("/cart/:userId/products", CartController.showDetailsCart); //Retrieve items in the cart for a specific user.
 
 router.post("/carts/:user_id", auth.require, CartController.createCart);

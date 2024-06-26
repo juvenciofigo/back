@@ -25,7 +25,7 @@ const PaymentRouterSchema = new mongoose.Schema(
         status: {
             type: String,
             required: true,
-            enum: ["Esperando", "Pagamento recusado", "Fraude suspeita", "Pago"],
+            enum: ["Esperando", "Pagamento recusado", "Fraude suspeita", "Pago","Pedido Cancelado"],
             default: "Esperando",
         },
         order: {

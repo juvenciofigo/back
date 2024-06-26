@@ -13,7 +13,7 @@ class VariationController {
 
             if (!_product) {
                 // Responde com um erro 400 se 'product' não estiver presente
-                return res.status(400).json({ success: false, msg: "O produto não foi encontrado." });
+                return res.status(400).json({ success: false, message: "O produto não foi encontrado." });
             }
 
             // Consulta o banco de dados para obter as variações do produto
@@ -22,11 +22,11 @@ class VariationController {
             // Verifica se foram encontradas variações para o produto
             if (!variations || variations.length === 0) {
                 // Responde com um erro 404 se não houver variações encontradas
-                return res.status(404).json({ success: false, msg: "Sem variações encontradas para o produto especificado." });
+                return res.status(404).json({ success: false, message: "Sem variações encontradas para o produto especificado." });
             }
 
             // Responde com as variações encontradas
-            return res.status(200).json({ success: true, msg: "Variações encontradas com sucesso.", variations });
+            return res.status(200).json({ success: true, message: "Variações encontradas com sucesso.", variations });
         } catch (error) {
             // Trata erros, repassando para o middleware de erro
             next(error);
@@ -46,11 +46,11 @@ class VariationController {
             // Verifica se a variação foi encontrada
             if (!variation) {
                 // Responde com um erro 404 se a variação não for encontrada
-                return res.status(404).json({ success: false, msg: "Sem variações encontradas para o produto e ID especificados." });
+                return res.status(404).json({ success: false, message: "Sem variações encontradas para o produto e ID especificados." });
             }
 
             // Responde com a variação encontrada
-            return res.status(200).json({ success: true, msg: "Variação encontrada com sucesso.", variation });
+            return res.status(200).json({ success: true, message: "Variação encontrada com sucesso.", variation });
         } catch (error) {
             // Trata erros, repassando para o middleware de erro
             next(error);
@@ -95,7 +95,7 @@ class VariationController {
             await variation.save();
 
             // Responde com sucesso e a nova variação criada
-            return res.status(200).json({ variation, success: true, msg: "Variação Criada!" });
+            return res.status(200).json({ variation, success: true, message: "Variação Criada!" });
         } catch (error) {
             // Trata erros, repassando para o middleware de erro
             next(error);
@@ -128,7 +128,7 @@ class VariationController {
             await variation.save();
 
             // Retorna uma resposta de sucesso com a variação atualizada
-            return res.status(200).json({ variation, success: true, msg: "Variação atualizada com sucesso!" });
+            return res.status(200).json({ variation, success: true, message: "Variação atualizada com sucesso!" });
         } catch (error) {
             // Trata erros, repassando para o middleware de erro
             next(error);

@@ -74,24 +74,7 @@ const getAllOrders = (req, res, next) => {
 
 const createOrder = (req, res, next) => {
     const bodySchema = Joi.object({
-        cart: Joi.array()
-            .items(
-                Joi.object({
-                    picture: Joi.string().required(),
-                    productId: Joi.string().alphanum().length(24).required(),
-                    productName: Joi.string().required(),
-                    productPrice: Joi.number().required(),
-                    quantity: Joi.number().required(),
-                    subtotal: Joi.number().required(),
-                    // variation: Joi.string().alphanum().length(24).required(),
-                })
-            )
-            .required(),
-        payment: Joi.object({
-            total: Joi.number().required(),
-            totalProductsPrice: Joi.number().required(),
-            shippingPrice: Joi.number().required(),
-        }).required(),
+        cart: Joi.string().alphanum().length(24).required(),
         delivery: Joi.object({
             address: Joi.string().alphanum().length(24).required(),
             reference: Joi.string().required(),

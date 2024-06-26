@@ -15,6 +15,8 @@ const OrderRegistrationSchema = new mongoose.Schema(
         orderStatus: {
             type: String,
             required: true,
+            enem: ["Pendente", "Confirmado", "Em Processamento", "Pronto para Envio", "Enviado", "Concluído", "Pedido Cancelado", "Devolvido", "Reembolsado", "Falha", "Em Espera"],
+            default: "Pendente",
         },
     },
     { timestamps: true }

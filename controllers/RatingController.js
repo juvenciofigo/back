@@ -42,7 +42,7 @@ class RatingController {
             const rating = await Ratings.findOne({ _id: id, ratingProduct: product });
 
             if (!rating) {
-                return res.status(404).json({ msg: "Sem avaliações!" });
+                return res.status(404).json({ message: "Sem avaliações!" });
             }
 
             return res.status(200).json({ rating });
@@ -71,7 +71,7 @@ class RatingController {
             // Salva o novo produto e a categoria associada no banco de dados
             await _product.save();
             await rating.save();
-            return res.status(200).json({ rating, success: true, msg: "Avaliação Criada!" });
+            return res.status(200).json({ rating, success: true, message: "Avaliação Criada!" });
         } catch (error) {
             next(error);
         }

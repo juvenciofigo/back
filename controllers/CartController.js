@@ -1,10 +1,8 @@
-require("../models/Carts");
-const { populate } = require("dotenv");
-const mongoose = require("../database/connection");
-const Variations = require("../models/Variations");
-const Cart = mongoose.model("Cart");
-const Product = mongoose.model("Product");
-const api = require("../config/index").api;
+const mongoose = require("mongoose"),
+    Variations = require("../models/Variations"),
+    Cart = require("../models/Carts"),
+    Product = require("../models/Products"),
+    api = require("../config/index").api;
 
 async function newCart(userId, bodyData) {
     const cart = new Cart({
@@ -21,6 +19,14 @@ class CartController {
         const bodyData = req.body;
 
         try {
+            async function newCart(userId, bodyData) {
+                const cart = new Cart({
+                    cartUser: userId,
+                    cartItens: bodyData,
+                });
+                return cart.save();
+            }
+
             const createCart = await newCart(user_id, bodyData);
 
             return res.status(200).json({ success: true });
@@ -35,18 +41,49 @@ class CartController {
             let cart = await Cart.findOne({ cartUser: userId });
 
             if (!cart) {
-                const newCart = await newCart(userId, bodyData);
-                cart = newCart;
+                async function newCart(userId, bodyData) {
+                    const cart = new Cart({
+                        cartUser: userId,
+                        cartItens: bodyData,
+                    });
+                    return cart.save();
+                }
+
+                cart = await newCart(userId, req.body);
             }
 
-            if (typeof req.body === "object" && Array.isArray(req.body)) {
+            if (Array.isArray(req.body)) {
                 for (const product of req.body) {
-                    const existingProductIndex = cart.cartItens.findIndex((item) => item.productId.equals(product.productId));
+                    const existingProductIndex = cart.cartItens.findIndex((item) => {
+                        if (item.productId == product.productId) {
+                            if (item.variation.color == product.variation.color) {
+                                if (item.variation.model == product.variation.model) {
+                                    if (item.variation.material == product.variation.material) {
+                                        return item.variation.size == product.variation.size;
+                                    }
+                                    return false;
+                                }
+                                return false;
+                            }
+                            return false;
+                        }
+                        return false;
+                    });
 
                     if (existingProductIndex !== -1) {
                         cart.cartItens[existingProductIndex].quantity += Number(product.quantity) || 1;
                     } else {
-                        cart.cartItens.push({ productId: product.productId, quantity: Number(product.quantity) || 1 });
+                        cart.cartItens.push({
+                            productId: product.productId,
+                            quantity: Number(product.quantity) || 1,
+                            variation: {
+                                color: product.variation.color,
+                                model: product.variation.model,
+                                size: product.variation.size,
+                                material: product.variation.material,
+                            },
+                            item: new mongoose.Types.ObjectId(),
+                        });
                     }
                 }
             } else {
@@ -72,7 +109,6 @@ class CartController {
                     cart.cartItens[existingProductIndex].quantity += Number(quantity) || 1;
                 } else {
                     cart.cartItens.push({
-                        item: Date.now().toString(),
                         productId,
                         quantity: Number(quantity) || 1,
                         variation: {
@@ -81,12 +117,13 @@ class CartController {
                             size: variation.size,
                             material: variation.material,
                         },
+                        item: new mongoose.Types.ObjectId(),
                     });
                 }
             }
 
             await cart.save();
-            return res.status(200).json({ success: true, message: "Produto adicionado" });
+            return res.status(200).json({ message: "Produto adicionado" });
         } catch (error) {
             next(error);
         }
@@ -101,11 +138,11 @@ class CartController {
             if (!cart) {
                 return res.status(404).json({ message: "Carrinho não encontrado" });
             }
-
+            console.log(cart);
             // Filtrar os itens do carrinho para remover o produto
             const initialCartItemCount = cart.cartItens.length;
 
-            cart.cartItens = cart.cartItens.filter((item) => !item.item.equals(item));
+            cart.cartItens = cart.cartItens.filter((cartItem) => !cartItem.item.equals(item));
 
             // Verificar se algum item foi removido
             if (initialCartItemCount === cart.cartItens.length) {
@@ -137,29 +174,68 @@ class CartController {
     // // Show One prices
     async showDetailsCartPrices(req, res, next) {
         const { userId } = req.params;
-        try {
-            let cart = await Cart.findOne({ cartUser: userId });
-            if (!cart) {
-                cart = await newCart(userId);
-            }
-            const Products = cart.cartItens;
+        let Products = [];
+        let totalProductsPrice = 0;
 
-            const Prices = [];
+        try {
+            if (userId !== "false") {
+                const cart = await Cart.findOne({ cartUser: userId });
+
+                if (!cart || !cart.cartItens || cart.cartItens.length === 0) {
+                    return res.status(200).json({ totalProducts: totalProductsPrice });
+                }
+                Products = cart.cartItens;
+            } else {
+                Products = req.body;
+            }
+
+            if (!Array.isArray(Products) || Products.length === 0) {
+                return res.status(200).json({ totalProducts: totalProductsPrice });
+            }
+
             for (const product of Products) {
                 const productDetails = await Product.findById(product.productId);
-                Prices.push(product.quantity * productDetails.productPrice);
+                if (!productDetails) {
+                    throw new Error(`Product com ID ${product.productId} não encontrado`);
+                }
+                const color = await Variations.findById(product.variation.color);
+                const model = await Variations.findById(product.variation.model);
+                const size = await Variations.findById(product.variation.size);
+                const material = await Variations.findById(product.variation.material);
+
+                let price = 0;
+
+                if (color) {
+                    price += color.variationPrice;
+                }
+                if (model) {
+                    price += model.variationPrice;
+                }
+                if (material) {
+                    price += material.variationPrice;
+                }
+                if (size) {
+                    price += size.variationPrice;
+                }
+
+                let productPrice = productDetails.productPrice + price;
+                let subtotal = productPrice * product.quantity;
+
+                totalProductsPrice += subtotal;
             }
 
-            return res.status(200).json(Prices);
+            return res.status(200).json({ totalProducts: totalProductsPrice });
         } catch (error) {
             next(error);
         }
     }
+
     // // Detalhes
     async showDetailsCart(req, res, next) {
         const { userId } = req.params;
         let Products = [];
         let cartProducts = [];
+        let cartId = "";
 
         try {
             if (userId !== "false") {
@@ -169,6 +245,7 @@ class CartController {
                     return res.status(200).json(cartProducts);
                 }
                 Products = cart.cartItens;
+                cartId = cart._id;
             } else {
                 Products = req.body;
             }
@@ -187,6 +264,7 @@ class CartController {
                 const material = await Variations.findById(product.variation.material);
 
                 let price = 0;
+
                 if (color) {
                     price += color.variationPrice;
                 }
@@ -199,7 +277,9 @@ class CartController {
                 if (size) {
                     price += size.variationPrice;
                 }
+
                 let productPrice = (productDetails.productPrice += price);
+                let subtotal = productPrice * product.quantity;
 
                 cartProducts.push({
                     item: product.item,
@@ -214,16 +294,13 @@ class CartController {
                     },
                     productPrice: productPrice,
                     quantity: Number(product.quantity),
-                    subtotal: (productPrice *= Number(product.quantity)),
+                    subtotal: subtotal,
                 });
-                price = 0;
             }
 
-            const calculatePriceTotal = (cartProducts) => {
-                return cartProducts.reduce((total, product) => total + product.subtotal, 0);
-            };
-            // console.log(cartProducts);
-            return res.status(200).json({ totalProducts: calculatePriceTotal(cartProducts),cartProducts });
+            const totalProductsPrice = cartProducts.reduce((total, product) => total + product.subtotal, 0);
+
+            return res.status(200).json({ totalProducts: totalProductsPrice, items: cartProducts, cartId });
         } catch (error) {
             next(error);
         }

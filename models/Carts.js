@@ -1,4 +1,3 @@
-const { number, string } = require("joi");
 const mongoose = require("mongoose");
 
 const CartSchema = new mongoose.Schema(
@@ -36,7 +35,8 @@ const CartSchema = new mongoose.Schema(
                     },
                 },
                 item: {
-                    type: String,
+                    type: mongoose.Schema.Types.ObjectId,
+                    default: () => new mongoose.Types.ObjectId(),
                     unique: true,
                 },
             },
@@ -50,6 +50,4 @@ const CartSchema = new mongoose.Schema(
     { timestamps: true, _id: true }
 );
 
-const Cart = mongoose.model("Cart", CartSchema, "carts");
-
-module.exports = Cart;
+module.exports = mongoose.model("Cart", CartSchema, "carts");

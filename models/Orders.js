@@ -1,3 +1,4 @@
+const { types } = require("joi");
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate-v2");
 
@@ -8,21 +9,80 @@ const OrderSchema = new mongoose.Schema(
             ref: "Customer",
             required: true,
         },
-        cart: {
-            type: [
-                // { type: mongoose.Schema.Types.ObjectId, ref: "Cart", required: true },
-
-                {
-                    picture: { type: String },
-                    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
-                    productName: { type: String },
-                    productPrice: { type: Number },
-                    quantity: { type: Number },
-                    subtotal: { type: Number },
-                    // variation: { type: mongoose.Schema.Types.ObjectId, ref: "Variation", required: true },
+        cart: [
+            {
+                productId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Product",
+                    required: true,
                 },
-            ],
-        },
+                quantity: {
+                    type: Number,
+                    default: 1,
+                    required: true,
+                },
+                variation: {
+                    type: {
+                        color: {
+                            type: mongoose.Schema.Types.ObjectId,
+                            ref: "Variation",
+                        },
+                        model: {
+                            type: mongoose.Schema.Types.ObjectId,
+                            ref: "Variation",
+                        },
+                        size: {
+                            type: mongoose.Schema.Types.ObjectId,
+                            ref: "Variation",
+                        },
+                        material: {
+                            type: mongoose.Schema.Types.ObjectId,
+                            ref: "Variation",
+                        },
+                    },
+                },
+                item: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    default: () => new mongoose.Types.ObjectId(),
+                    unique: true,
+                },
+            },
+        ],
+        cartPayd: [
+            {
+                productId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Product",
+                    required: true,
+                },
+                quantity: {
+                    type: Number,
+                    default: 1,
+                    required: true,
+                },
+                variation: {
+                    type: {
+                        color: {
+                            type: String,
+                        },
+                        model: {
+                            type: String,
+                        },
+                        size: {
+                            type: String,
+                        },
+                        material: {
+                            type: String,
+                        },
+                    },
+                },
+                item: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    default: () => new mongoose.Types.ObjectId(),
+                    unique: true,
+                },
+            },
+        ],
         address: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Address",
@@ -60,7 +120,7 @@ const OrderSchema = new mongoose.Schema(
         status: {
             type: String,
             required: true,
-            enem: ["Pendente", "Confirmado", "Em Processamento", "Pronto para Envio", "Enviado", "Concluído", "Cancelado", "Devolvido", "Reembolsado", "Falha", "Em Espera"],
+            enem: ["Pendente", "Confirmado", "Em Processamento", "Pronto para Envio", "Enviado", "Concluído", "Pedido Cancelado", "Devolvido", "Reembolsado", "Falha", "Em Espera"],
             default: "Pendente",
             // Pending (Pendente): O pedido foi criado, mas ainda não foi processado.
             // Confirmed (Confirmado): O pedido foi confirmado pelo sistema ou pelo vendedor.
@@ -73,6 +133,10 @@ const OrderSchema = new mongoose.Schema(
             // Refunded (Reembolsado): O valor do pedido foi reembolsado ao cliente.
             // Failed (Falha): O processamento do pedido falhou (ex.: pagamento não autorizado).
             // On Hold (Em Espera): O pedido está em espera por algum motivo (ex.: aguardando pagamento adicional ou verificação de informações).
+        },
+        deleted: {
+            type: Boolean,
+            default: false,
         },
     },
     { timestamps: true }

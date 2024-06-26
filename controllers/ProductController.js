@@ -82,7 +82,7 @@ class ProductController {
 
             await product.save();
 
-            return res.status(200).json({ product, success: true, msg: "Produto Criado!" });
+            return res.status(200).json({ product, success: true, message: "Produto Criado!" });
         } catch (error) {
             next(error);
         }
@@ -93,7 +93,7 @@ class ProductController {
             const product = await Products.findById(req.params.id).populate(["productVariations", "productRatings"]);
 
             if (!product) {
-                return res.status(404).json({ msg: "Produto não encontrado!" });
+                return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
             // Correção: utilize product.productImage em vez de apenas productImage
@@ -128,7 +128,7 @@ class ProductController {
             const product = await Products.findById(req.params.id);
 
             if (!product) {
-                return res.status(404).json({ msg: "Produto não encontrado!" });
+                return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
             // Atualizar as propriedades do produto com os valores fornecidos
@@ -187,12 +187,12 @@ class ProductController {
             const product = await Products.findById(productId);
 
             if (!product) {
-                return res.status(404).json({ msg: "Produto não encontrado!" });
+                return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
             // Verificar se há arquivos enviados na requisição
             if (!req.files || req.files.length === 0) {
-                return res.status(400).json({ msg: "Nenhuma imagem enviada!" });
+                return res.status(400).json({ message: "Nenhuma imagem enviada!" });
             }
 
             // Obter os nomes dos novos arquivos de imagem a partir dos arquivos enviados na requisição
@@ -378,7 +378,7 @@ class ProductController {
             const product = await Products.findById(req.params.id).select("-productVendor ").populate(["productVariations", "productRatings"]);
 
             if (!product) {
-                return res.status(404).json({ msg: "Produto não encontrado!" });
+                return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
             const productImagesWithUrl = product.productImage.map((image) => `${api}/public/images/${image}`);
@@ -393,7 +393,7 @@ class ProductController {
         try {
             const ratings = await Ratings.find({ ratingProduct: req.params.id });
             if (!ratings) {
-                return res.status(400).json({ msg: "Nenhuma avaliaçã encotrada", success: false });
+                return res.status(400).json({ message: "Nenhuma avaliaçã encotrada", success: false });
             }
             return res.status(200).json({ ratings });
         } catch (error) {
@@ -404,12 +404,12 @@ class ProductController {
         try {
             const variations = await Variations.find({ variationProduct: req.params.id });
             if (!variations) {
-                return res.status(400).json({ msg: "Nenhuma variação encotrada", success: false });
+                return res.status(400).json({ message: "Nenhuma variação encotrada", success: false });
             }
             if (variations.length > 0) {
                 return res.status(200).json({ variations });
             } else {
-                return res.status(200).json({ variations, msg: "Não existem variações para esse produto!", success: true });
+                return res.status(200).json({ variations, message: "Não existem variações para esse produto!", success: true });
             }
         } catch (error) {
             next(error);
