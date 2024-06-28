@@ -16,10 +16,17 @@ const OrderSchema = new mongoose.Schema(
                     ref: "Product",
                     required: true,
                 },
+                product: {
+                    type: String,
+                    required: true,
+                },
                 quantity: {
                     type: Number,
                     default: 1,
                     required: true,
+                },
+                picture: {
+                    type: String,
                 },
                 variation: {
                     type: {
@@ -45,6 +52,12 @@ const OrderSchema = new mongoose.Schema(
                     type: mongoose.Schema.Types.ObjectId,
                     default: () => new mongoose.Types.ObjectId(),
                     unique: true,
+                },
+                productPrice: {
+                    type: Number,
+                },
+                subtotal: {
+                    type: Number,
                 },
             },
         ],
@@ -55,31 +68,40 @@ const OrderSchema = new mongoose.Schema(
                     ref: "Product",
                     required: true,
                 },
-                quantity: {
-                    type: Number,
-                    default: 1,
+                product: {
+                    type: String,
                     required: true,
+                },
+                picture: {
+                    type: String,
                 },
                 variation: {
                     type: {
                         color: {
-                            type: String,
+                            type: Object,
                         },
                         model: {
-                            type: String,
+                            type: Object,
                         },
                         size: {
-                            type: String,
+                            type: Object,
                         },
                         material: {
-                            type: String,
+                            type: Object,
                         },
                     },
                 },
                 item: {
                     type: mongoose.Schema.Types.ObjectId,
-                    default: () => new mongoose.Types.ObjectId(),
-                    unique: true,
+                },
+                productPrice: {
+                    type: Number,
+                },
+                quantity: {
+                    type: Number,
+                },
+                subtotal: {
+                    type: Number,
                 },
             },
         ],

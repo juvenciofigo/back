@@ -80,21 +80,27 @@ const createVariation = (req, res, next) => {
 
 const updateVariation = (req, res, next) => {
     const bodySchema = Joi.object({
-        sku: Joi.string().required(),
-        variationType: Joi.string().required(),
-        variationValue: Joi.string().required(),
-        variationPrice: Joi.number().optional(),
-        variationPromotion: Joi.number().optional(),
-        variationStock: Joi.boolean().optional(),
+        sku: Joi.string().optional(),
+        variationProduct: Joi.string().alphanum().length(24).required(),
+        variationType: Joi.string().optional(),
+        variationValue: Joi.string().optional(),
+        variationPrice: Joi.number().optional().allow(null),
+        variationImage: Joi.array().optional(),
+        variationPromotion: Joi.number().optional().allow(null),
+        variationStock: Joi.boolean().optional().allow(null),
         delivery: Joi.object({
             dimensions: Joi.object({
-                heightCm: Joi.number().optional(),
-                widthCm: Joi.number().optional(),
-                depthCm: Joi.number().optional(),
-            }),
-            weight: Joi.number().optional(),
-            shippingFree: Joi.boolean().optional(),
-        }).required(),
+                heightCm: Joi.number().optional().allow(null),
+                widthCm: Joi.number().optional().allow(null),
+                depthCm: Joi.number().optional().allow(null),
+            })
+                .optional()
+                .allow(null),
+            weight: Joi.number().optional().allow(null),
+            shippingFree: Joi.boolean().optional().allow(null),
+        })
+            .optional()
+            .allow(null),
     });
 
     const { error: bodyError } = bodySchema.validate(req.body);
@@ -103,19 +109,9 @@ const updateVariation = (req, res, next) => {
         return res.status(400).json({ message: bodyError.details[0].message });
     }
 
-    const querySchema = Joi.object({
-        product: Joi.string().alphanum().length(24).required(),
-    });
-
-    const { error: queryError } = querySchema.validate(req.query);
-
-    if (queryError) {
-        return res.status(400).json({ message: queryError.details[0].message });
-    }
-
     const paramsSchema = Joi.object({
         id: Joi.string().alphanum().length(24).required(),
-    });  
+    });
 
     const { error: paramsError } = paramsSchema.validate(req.params);
 

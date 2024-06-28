@@ -9,7 +9,7 @@ class VariationController {
 
         try {
             // Verifica se o parâmetro 'product' está presente
-            const _product = await Products.findById(product);
+            const _product = await Products.findById(product).sort({ variationType: -1 });
 
             if (!_product) {
                 // Responde com um erro 400 se 'product' não estiver presente
@@ -34,7 +34,7 @@ class VariationController {
     }
 
     // Variações do porduto
-    async getVariatiosProduct(req, res, next) {
+    async getVariation(req, res, next) {
         // Extrai os parâmetros 'product' e 'id' da consulta
         const { product } = req.query;
         const { id } = req.params;
@@ -50,7 +50,7 @@ class VariationController {
             }
 
             // Responde com a variação encontrada
-            return res.status(200).json({ success: true, message: "Variação encontrada com sucesso.", variation });
+            return res.status(200).json({ variation });
         } catch (error) {
             // Trata erros, repassando para o middleware de erro
             next(error);
@@ -104,8 +104,7 @@ class VariationController {
 
     // Update Variation
     async updateVariation(req, res, next) {
-        const { sku, variationAvailable, variationName, variationPrice, variationPromotion, variationStock, delivery, variationQuantity } = req.body;
-        const { product } = req.query;
+        const { sku, variationType, variationValue, variationPrice, variationPromotion, variationStock, delivery } = req.body;
 
         try {
             const variation = await Variations.findById(req.params.id);
@@ -116,13 +115,12 @@ class VariationController {
 
             // Atualiza as propriedades da variação com os valores fornecidos
             if (sku) variation.sku = sku;
-            if (variationAvailable !== undefined) variation.variationAvailable = variationAvailable;
-            if (variationName) variation.variationName = variationName;
+            if (variationType) variation.variationType = variationType;
+            if (variationValue) variation.variationValue = variationValue;
             if (variationPrice) variation.variationPrice = variationPrice;
             if (variationPromotion) variation.variationPromotion = variationPromotion;
-            if (variationStock !== undefined) variation.variationStock = variationStock;
+            if (variationStock) variation.variationStock = variationStock;
             if (delivery) variation.delivery = delivery;
-            if (variationQuantity) variation.variationQuantity = variationQuantity;
 
             // Salva a variação atualizada no banco de dados
             await variation.save();

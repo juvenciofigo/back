@@ -8,7 +8,7 @@ const Products = require("../models/Products"),
     Cart = require("../models/Carts"),
     Users = require("../models/Users"),
     Product = require("../models/Products"),
-    CartValidation = require("./validations/cartValidation");
+    api = require("../config/index").api;
 
 const getSort = (sortType) => {
     switch (sortType) {
@@ -43,18 +43,6 @@ class OrderController {
             if (!orders.docs || orders.docs.length === 0) {
                 return res.status(200).json({ success: true, message: "Nenhum pedido encontrado" });
             }
-
-            // await Promise.all(
-            //     orders.docs.map(async (order) => {
-            //         order.cart = await Promise.all(
-            //             order.cart.map(async (item) => {
-            //                 item.productOrder = await Products.findById(item.productOrder);
-            //                 item.variationOrder = await Variations.findById(item.variationOrder);
-            //                 return item;
-            //             })
-            //         );
-            //     })
-            // );
             return res.status(200).json({ success: true, orders });
         } catch (error) {
             next();
@@ -258,7 +246,7 @@ class OrderController {
             if (existOrder) {
                 return res.status(400).json({ message: "Referência existente, vá para pedidos" });
             }
-
+            let cart = [];
             //  prcessar cada item do carrinho
             for (const product of existCart.cartItens) {
                 const productDetails = await Product.findById(product.productId);
@@ -290,17 +278,18 @@ class OrderController {
 
                 let productPrice = (productDetails.productPrice += price);
                 let subtotal = productPrice * product.quantity;
-
-                cartProducts.push({
+                console.log("productDetails.productName", typeof productDetails.productName);
+                cart.push({
                     item: product.item,
                     productId: productDetails._id,
-                    productName: productDetails.productName,
+                    product: productDetails.productName,
                     variation: {
-                        color: color,
-                        model: model,
-                        size: size,
-                        material: material,
+                        color: color ? color : null,
+                        model: model ? model : null,
+                        size: size ? size : null,
+                        material: material ? material : null,
                     },
+                    picture: `${api}/public/images/${productDetails.productImage[0]}`,
                     productPrice: productPrice,
                     quantity: Number(product.quantity),
                     subtotal: subtotal,
@@ -326,7 +315,7 @@ class OrderController {
             // criar e salvar novo pedido
             const order = new Orders({
                 customer: customer._id,
-                cart: existCart.cartItens,
+                cart: cart,
                 address: delivery.address,
                 payment: newPayment._id,
                 delivery: newDelivery._id,

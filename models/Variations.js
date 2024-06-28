@@ -24,6 +24,7 @@ const VariationRouterSchema = new mongoose.Schema(
         },
         variationPromotion: {
             type: Number,
+            default: null,
         },
         variationStock: {
             type: Boolean,
@@ -38,14 +39,30 @@ const VariationRouterSchema = new mongoose.Schema(
             type: {
                 dimensions: {
                     type: {
-                        heightCm: { type: Number },
-                        widthCm: { type: Number },
-                        depthCm: { type: Number },
+                        heightCm: {
+                            type: Number,
+                            default: null,
+                        },
+                        widthCm: {
+                            type: Number,
+                            default: null,
+                        },
+                        depthCm: {
+                            type: Number,
+                            default: null,
+                        },
                     },
                     required: false,
                 },
-                weight: { type: Number, required: false },
-                shippingFree: { type: Boolean, default: false },
+                weight: {
+                    type: Number,
+                    required: false,
+                    default: null,
+                },
+                shippingFree: {
+                    type: Boolean,
+                    default: false,
+                },
             },
         },
     },
