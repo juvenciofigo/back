@@ -31,20 +31,16 @@ const OrderSchema = new mongoose.Schema(
                 variation: {
                     type: {
                         color: {
-                            type: mongoose.Schema.Types.ObjectId,
-                            ref: "Variation",
+                            type: Object,
                         },
                         model: {
-                            type: mongoose.Schema.Types.ObjectId,
-                            ref: "Variation",
+                            type: Object,
                         },
                         size: {
-                            type: mongoose.Schema.Types.ObjectId,
-                            ref: "Variation",
+                            type: Object,
                         },
                         material: {
-                            type: mongoose.Schema.Types.ObjectId,
-                            ref: "Variation",
+                            type: Object,
                         },
                     },
                 },

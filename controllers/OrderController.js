@@ -215,7 +215,7 @@ class OrderController {
 
         try {
             // vereficar existencia do carrinho
-            const existCart = await Cart.findOne({ cartUser: userID });
+            const existCart = await Cart.findOne({ cartUser: userID, _id: cart });
             if (!existCart) {
                 return res.status(400).json({ success: false, message: "Carrinho inválido!" });
             }
@@ -246,7 +246,6 @@ class OrderController {
             if (existOrder) {
                 return res.status(400).json({ message: "Referência existente, vá para pedidos" });
             }
-            let cart = [];
             //  prcessar cada item do carrinho
             for (const product of existCart.cartItens) {
                 const productDetails = await Product.findById(product.productId);
@@ -263,6 +262,7 @@ class OrderController {
 
                 // calculcar o preco total do produto com base nas variacoes
                 let price = 0;
+
                 if (color) {
                     price += color.variationPrice;
                 }
@@ -279,7 +279,7 @@ class OrderController {
                 let productPrice = (productDetails.productPrice += price);
                 let subtotal = productPrice * product.quantity;
                 console.log("productDetails.productName", typeof productDetails.productName);
-                cart.push({
+                cartProducts.push({
                     item: product.item,
                     productId: productDetails._id,
                     product: productDetails.productName,
@@ -315,7 +315,7 @@ class OrderController {
             // criar e salvar novo pedido
             const order = new Orders({
                 customer: customer._id,
-                cart: cart,
+                cart: cartProducts,
                 address: delivery.address,
                 payment: newPayment._id,
                 delivery: newDelivery._id,
@@ -355,6 +355,7 @@ class OrderController {
             next(error);
         }
     }
+    
     async updateOrders(req, res, next) {
         try {
             const result = await Orders.updateMany(

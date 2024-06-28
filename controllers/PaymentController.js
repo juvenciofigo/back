@@ -95,10 +95,10 @@ class PaymentController {
                         throw new Error(`Produto com ID ${item.productId} não encontrado`);
                     }
 
-                    const color = await Variations.findById(item.variation.color);
-                    const model = await Variations.findById(item.variation.model);
-                    const size = await Variations.findById(item.variation.size);
-                    const material = await Variations.findById(item.variation.material);
+                    const color = await Variations.findById(item.variation.color._id);
+                    const model = await Variations.findById(item.variation.model._id);
+                    const size = await Variations.findById(item.variation.size._id);
+                    const material = await Variations.findById(item.variation.material._id);
 
                     let price = product.productPrice;
 
