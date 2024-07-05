@@ -23,7 +23,8 @@ router.get("/product/admin/:id", auth.require, AdminValidator, productValidation
 
 router.get("/product/:id", productValidation.getBtId, ProductController.showDetailsProduct); //testado
 
-router.get("/products", productValidation.All, ProductController.getAllProducts);
+// router.get("/products", productValidation.All, ProductController.getAllProducts);
+router.get("/products", productValidation.All, ProductController.availiableProducts);
 
 router.get("/products/search/:search", ProductController.searchProducts); // nao aprovado
 

@@ -13,16 +13,19 @@ const RatingRouterSchema = new mongoose.Schema(
         ratingScore: {
             type: Number,
             default: 0,
+            min: 1,
+            max: 5,
         },
         ratingProduct: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Product",
             required: true,
-        },customer:{
+        },
+        customer: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Customer",
             required: true,
-        }
+        },
     },
     { timestamps: true }
 );

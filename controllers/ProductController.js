@@ -1,8 +1,9 @@
-const Products = require("../models/Products");
-const { Category, SubCategory, Sub_category } = require("../models/Categories");
-const Ratings = require("../models/Ratings");
-const Variations = require("../models/Variations");
-const api = require("../config/index").api;
+const { Category, SubCategory, Sub_category } = require("../models/Categories"),
+    Variations = require("../models/Variations"),
+    Products = require("../models/Products"),
+    Ratings = require("../models/Ratings"),
+    Orders = require("../models/Orders"),
+    api = require("../config/index").api;
 
 const getSort = (sortType) => {
     switch (sortType) {
@@ -91,14 +92,12 @@ class ProductController {
     async showDetailsProductAdmin(req, res, next) {
         try {
             const product = await Products.findById(req.params.id).populate(["productVariations", "productRatings"]);
-
             if (!product) {
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
             // Correção: utilize product.productImage em vez de apenas productImage
             const productImagesWithUrl = product.productImage.map((image) => `${api}/public/images/${image}`);
-
             return res.status(200).json({ product: { ...product._doc, productImage: productImagesWithUrl } });
         } catch (error) {
             next(error);
@@ -278,6 +277,11 @@ class ProductController {
     ///
 
     async availiableProducts(req, res, next) {
+        let query = {};
+        const category = req.query.category;
+        const subcategory = req.query.subcategory;
+        const sub_category = req.query.sub_category;
+
         // Opções de paginação e classificação
         const options = {
             page: Number(req.query.offset) || 1,
@@ -285,10 +289,31 @@ class ProductController {
             sort: getSort(req.query.sortType),
         };
 
-        try {
-            const products = await Products.paginate({ productAvailability: true }, options);
+        if (category) {
+            query.productCategory = category;
+        }
 
-            return res.status(200).json({ quantity: products.totalDocs, products: products.docs });
+        if (subcategory) {
+            query.productSubcategory = subcategory;
+        }
+
+        if (sub_category) {
+            query.productSub_category = sub_category;
+        }
+
+        try {
+            const products = await Products.paginate({ productAvailability: true }, { ...query, ...options, select: "-productVendor -order_items -timesPurchased -totalRevenue -sales" });
+
+            const imagesWithUrl = products.docs.map((product) => {
+                const imageUrls = product.productImage.map((image) => `${api}/public/images/${image}`);
+                return { ...product._doc, productImage: imageUrls };
+            });
+
+            const response = {
+                quantity: products.totalDocs,
+                products: imagesWithUrl,
+            };
+            return res.status(200).json(response);
         } catch (error) {
             next(error);
         }
@@ -375,7 +400,7 @@ class ProductController {
     // Show One
     async showDetailsProduct(req, res, next) {
         try {
-            const product = await Products.findById(req.params.id).select("-productVendor ").populate(["productVariations", "productRatings"]);
+            const product = await Products.findById(req.params.id).select("-productVendor -order_items -timesPurchased -totalRevenue -sales ").populate(["productVariations", "productRatings"]);
 
             if (!product) {
                 return res.status(404).json({ message: "Produto não encontrado!" });

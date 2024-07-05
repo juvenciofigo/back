@@ -1,13 +1,12 @@
-const Products = require("../models/Products"),
-    Orders = require("../models/Orders"),
-    Variations = require("../models/Variations"),
-    Payments = require("../models/Payments"),
+const OrderRegistrations = require("../models/OrderRegistrations"),
     Deliveries = require("../models/Deliveries"),
+    Variations = require("../models/Variations"),
     Customers = require("../models/Customers"),
-    OrderRegistrations = require("../models/OrderRegistrations"),
-    Cart = require("../models/Carts"),
+    Products = require("../models/Products"),
+    Payments = require("../models/Payments"),
+    Orders = require("../models/Orders"),
     Users = require("../models/Users"),
-    Product = require("../models/Products"),
+    Cart = require("../models/Carts"),
     api = require("../config/index").api;
 
 const getSort = (sortType) => {
@@ -248,7 +247,7 @@ class OrderController {
             }
             //  prcessar cada item do carrinho
             for (const product of existCart.cartItens) {
-                const productDetails = await Product.findById(product.productId);
+                const productDetails = await Products.findById(product.productId);
 
                 if (!productDetails) {
                     throw new Error(`Product com ID ${product.productId} not found`);
@@ -355,7 +354,7 @@ class OrderController {
             next(error);
         }
     }
-    
+
     async updateOrders(req, res, next) {
         try {
             const result = await Orders.updateMany(

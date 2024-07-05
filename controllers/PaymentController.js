@@ -95,10 +95,24 @@ class PaymentController {
                         throw new Error(`Produto com ID ${item.productId} não encontrado`);
                     }
 
-                    const color = await Variations.findById(item.variation.color._id);
-                    const model = await Variations.findById(item.variation.model._id);
-                    const size = await Variations.findById(item.variation.size._id);
-                    const material = await Variations.findById(item.variation.material._id);
+                    let color = null;
+                    let model = null;
+                    let size = null;
+                    let material = null;
+                    
+                    if (item.variation.color) {
+                        color = await Variations.findById(item.variation.color._id);
+                    }
+                    if (item.variation.model) {
+                        model = await Variations.findById(item.variation.model._id);
+                    }
+                    if (item.variation.size) {
+                        size = await Variations.findById(item.variation.size._id);
+                    }
+
+                    if (item.variation.material) {
+                        material = await Variations.findById(item.variation.material._id);
+                    }
 
                     let price = product.productPrice;
 
@@ -128,11 +142,14 @@ class PaymentController {
                             material: material ? material.variationValue : null,
                         },
                         productPrice: price,
-                        quantity: Number(item.quantity),
+                        quantity: item.quantity,
                         subtotal: subtotal,
                     });
 
                     product.order_items.push(orderId);
+                    product.timesPurchased += item.quantity;
+                    product.totalRevenue += subtotal;
+                    product.sales.push({ quantity: item.quantity, date: new Date() });
                     await product.save();
                 }
                 await order.save();

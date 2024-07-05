@@ -1,6 +1,21 @@
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate-v2");
 
+const SaleSchema = new mongoose.Schema(
+    {
+        quantity: {
+            type: Number,
+            required: true,
+        },
+        date: {
+            type: Date,
+            required: true,
+            default: Date.now,
+        },
+    },
+    { _id: false }
+);
+
 const ProductSchema = new mongoose.Schema(
     {
         productName: {
@@ -79,6 +94,15 @@ const ProductSchema = new mongoose.Schema(
                 ref: "Order",
             },
         ],
+        timesPurchased: {
+            type: Number,
+            default: 0,
+        },
+        totalRevenue: {
+            type: Number,
+            default: 0,
+        },
+        sales: [SaleSchema],
     },
     { timestamps: true }
 );
