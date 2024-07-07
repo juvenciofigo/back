@@ -1,5 +1,6 @@
 const { Category, SubCategory, Sub_category } = require("../models/Categories"),
     Variations = require("../models/Variations"),
+    Customers = require("../models/Customers"),
     Products = require("../models/Products"),
     Ratings = require("../models/Ratings"),
     Orders = require("../models/Orders"),
@@ -91,14 +92,60 @@ class ProductController {
 
     async showDetailsProductAdmin(req, res, next) {
         try {
-            const product = await Products.findById(req.params.id).populate(["productVariations", "productRatings"]);
+            const product = await Products.findById(req.params.id).populate([
+                { path: "productVariations" },
+                {
+                    path: "productRatings",
+                    populate: [
+                        { path: "customer", select: "firstName lastName email" },
+                        { path: "deletedby", select: "firstName lastName email role" },
+                    ],
+                },
+            ]);
+            
             if (!product) {
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
             // Correção: utilize product.productImage em vez de apenas productImage
             const productImagesWithUrl = product.productImage.map((image) => `${api}/public/images/${image}`);
-            return res.status(200).json({ product: { ...product._doc, productImage: productImagesWithUrl } });
+
+            // Calculate the average rating
+            function calculateAverageRating(scores) {
+                if (!scores || scores.length === 0) {
+                    return 0;
+                }
+                const sumScores = scores.reduce((total, rating) => total + rating.ratingScore, 0);
+                const average = sumScores / scores.length;
+                return average;
+            }
+
+            // Compute the general classification rating
+            const average = calculateAverageRating(product.productRatings);
+
+            // Criar o objeto de estatísticas
+            const ratingStats = [1, 2, 3, 4, 5].map((score) => {
+                // Ordenar as avaliações pelo valor da avaliação (ratingScore)
+                const sortedRatings = product.productRatings.sort((a, b) => b.ratingScore - a.ratingScore);
+
+                const ratings = sortedRatings.filter((rating) => rating.ratingScore === score);
+
+                const count = ratings.length;
+
+                const average = count > 0 ? ratings.reduce((sum, rating) => sum + rating.ratingScore, 0) / count : 0;
+
+                const percentage = (count / product.productRatings.length) * 100;
+                return {
+                    score,
+                    count,
+                    average,
+                    percentage,
+                };
+            });
+
+            return res.status(200).json({
+                product: { ...product._doc, productStatistc: { ratingAverage: average, ratingStats: ratingStats }, productImage: productImagesWithUrl },
+            });
         } catch (error) {
             next(error);
         }
@@ -399,8 +446,24 @@ class ProductController {
 
     // Show One
     async showDetailsProduct(req, res, next) {
+        const userId = req.auth ? req.auth._id : null;
+        const productId = req.params.id;
+        let canRate = false;
+
         try {
-            const product = await Products.findById(req.params.id).select("-productVendor -order_items -timesPurchased -totalRevenue -sales ").populate(["productVariations", "productRatings"]);
+            const product = await Products.findById(productId)
+                .select("-productVendor -order_items -timesPurchased -totalRevenue -sales ")
+                .populate([
+                    { path: "productVariations" },
+                    {
+                        path: "productRatings",
+                        match: { deleted: false },
+                        populate: {
+                            path: "customer",
+                            select: "firstName lastName email",
+                        },
+                    },
+                ]);
 
             if (!product) {
                 return res.status(404).json({ message: "Produto não encontrado!" });
@@ -408,7 +471,54 @@ class ProductController {
 
             const productImagesWithUrl = product.productImage.map((image) => `${api}/public/images/${image}`);
 
-            return res.status(200).json({ product: { ...product._doc, productImage: productImagesWithUrl } });
+            if (userId) {
+                const customer = await Customers.findOne({ user: userId });
+
+                if (customer) {
+                    const orders = await Orders.find({ customer: customer._id, "cartPayd.productId": productId });
+
+                    if (orders.length > 0) {
+                        canRate = true;
+                    }
+                }
+            }
+
+            // Calculate the average rating
+            function calculateAverageRating(scores) {
+                if (!scores || scores.length === 0) {
+                    return 0;
+                }
+                const sumScores = scores.reduce((total, rating) => total + rating.ratingScore, 0);
+                const average = sumScores / scores.length;
+                return average;
+            }
+
+            // Compute the general classification rating
+            const average = calculateAverageRating(product.productRatings);
+
+            // Criar o objeto de estatísticas
+            const ratingStats = [1, 2, 3, 4, 5].map((score) => {
+                // Ordenar as avaliações pelo valor da avaliação (ratingScore)
+                const sortedRatings = product.productRatings.sort((a, b) => b.ratingScore - a.ratingScore);
+
+                const ratings = sortedRatings.filter((rating) => rating.ratingScore === score);
+
+                const count = ratings.length;
+
+                const average = count > 0 ? ratings.reduce((sum, rating) => sum + rating.ratingScore, 0) / count : 0;
+
+                const percentage = (count / product.productRatings.length) * 100;
+                return {
+                    score,
+                    count,
+                    average,
+                    percentage,
+                };
+            });
+
+            return res.status(200).json({
+                product: { ...product._doc, productStatistc: { ratingAverage: average, ratingStats: ratingStats }, productImage: productImagesWithUrl, canRate },
+            });
         } catch (error) {
             next(error);
         }

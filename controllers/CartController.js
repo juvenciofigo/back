@@ -171,17 +171,20 @@ class CartController {
         }
     }
 
-    // // Show One prices
+    // Show One prices
     async showDetailsCartPrices(req, res, next) {
         const { userId } = req.params;
         let Products = [];
+        let cart = {};
         let totalProductsPrice = 0;
 
         try {
             if (userId !== "false") {
-                const cart = await Cart.findOne({ cartUser: userId });
+                cart = await Cart.findOne({ cartUser: userId });
+                console.log(cart);
 
                 if (!cart || !cart.cartItens || cart.cartItens.length === 0) {
+                    console.log("Carrinho vazio ou não encontrado");
                     return res.status(200).json({ totalProducts: totalProductsPrice });
                 }
                 Products = cart.cartItens;
@@ -190,14 +193,19 @@ class CartController {
             }
 
             if (!Array.isArray(Products) || Products.length === 0) {
+                console.log("Nenhum produto encontrado");
                 return res.status(200).json({ totalProducts: totalProductsPrice });
             }
 
             for (const product of Products) {
+                console.log(`Processando produto: ${product.productId}`);
                 const productDetails = await Product.findById(product.productId);
+
                 if (!productDetails) {
-                    throw new Error(`Product com ID ${product.productId} não encontrado`);
+                    console.log(`Produto não encontrado: ${product.productId}`);
+                    continue; // Pula este produto e continua com os outros
                 }
+
                 const color = await Variations.findById(product.variation.color);
                 const model = await Variations.findById(product.variation.model);
                 const size = await Variations.findById(product.variation.size);
@@ -224,8 +232,11 @@ class CartController {
                 totalProductsPrice += subtotal;
             }
 
+            console.log(totalProductsPrice);
+
             return res.status(200).json({ totalProducts: totalProductsPrice });
         } catch (error) {
+            console.error("Erro ao processar o carrinho:", error);
             next(error);
         }
     }
@@ -256,7 +267,8 @@ class CartController {
             for (const product of Products) {
                 const productDetails = await Product.findById(product.productId);
                 if (!productDetails) {
-                    throw new Error(`Product com ID ${product.productId} not found`);
+                    console.log(`Produto não encontrado: ${product.productId}`);
+                    continue;
                 }
                 const color = await Variations.findById(product.variation.color);
                 const model = await Variations.findById(product.variation.model);

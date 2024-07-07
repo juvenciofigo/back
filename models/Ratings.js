@@ -2,10 +2,6 @@ const mongoose = require("mongoose");
 
 const RatingRouterSchema = new mongoose.Schema(
     {
-        ratingName: {
-            type: String,
-            required: true,
-        },
         ratingText: {
             type: String,
             required: true,
@@ -25,6 +21,19 @@ const RatingRouterSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Customer",
             required: true,
+        },
+        deleted: {
+            type: Boolean,
+            default: false,
+        },
+        deletedAt: {
+            type: Date,
+            default: null,
+        },
+        deletedby: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
         },
     },
     { timestamps: true }

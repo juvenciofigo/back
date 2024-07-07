@@ -20,7 +20,7 @@ const auth = {
     optional: jwt({
         secret,
         userProperty: "auth",
-        credentialRequired: false,
+        credentialsRequired: false,
         algorithms: ["HS256"],
         getToken: getTokenFromHeader,
     }),

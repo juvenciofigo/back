@@ -1,5 +1,7 @@
-const Products = require("../models/Products");
-const Ratings = require("../models/Ratings");
+const Products = require("../models/Products"),
+    Customers = require("../models/Customers"),
+    Ratings = require("../models/Ratings"),
+    Orders = require("../models/Orders");
 
 // const getSort = (sortType) => {
 //     switch (sortType) {
@@ -54,24 +56,35 @@ class RatingController {
     // Save product
 
     async createRating(req, res, next) {
-        const { ratingName, ratingText, ratingScore } = req.body;
-        const { product } = req.query;
+        const { ratingText, ratingScore } = req.body;
+        const { productId } = req.params;
+        const userId = req.auth._id;
 
         try {
-            // Cria uma nova instância do modelo Ratings com os dados fornecidos
-            const rating = new Ratings({ ratingName, ratingText, ratingScore, ratingProduct: product });
+            if (!userId) return res.status(400).json({ success: false, message: "Não tem autorização para avaliar" });
 
-            const _product = await Products.findById(product);
+            // Verificar se o produto existe
+            const product = await Products.findById(productId);
+            if (!product) return res.status(400).json({ message: "Produto não existente", success: false });
 
-            if (!_product) return res.status(400).json({ message: "Produto não existente", success: false });
+            // Verificar se o cliente existe
+            const customer = await Customers.findOne({ user: userId });
+            if (!customer) return res.status(400).json({ success: false, message: "Não tem autorização para avaliar" });
 
-            // Adiciona o ID do novo produto à lista de produtos da categoria
-            await _product.productRatings.push(rating._id);
+            const orders = await Orders.find({ customer: customer._id, "cartPayd.productId": productId });
 
-            // Salva o novo produto e a categoria associada no banco de dados
-            await _product.save();
+            // Verificar se o cliente comprou o produto
+            if (orders.length <= 0) return res.status(400).json({ success: false, message: "Não tem autorização para avaliar" });
+
+            // Criar uma nova avaliação
+            const rating = new Ratings({ customer: customer._id, ratingText, ratingScore, ratingProduct: productId });
+
+            // Adicionar a avaliação ao produto
+            await product.productRatings.push(rating._id);
             await rating.save();
-            return res.status(200).json({ rating, success: true, message: "Avaliação Criada!" });
+            await product.save();
+
+            return res.status(200).json({ success: true, message: "Avaliação Criada!" });
         } catch (error) {
             next(error);
         }
@@ -86,7 +99,7 @@ class RatingController {
     }
 
     // Middleware para deletar um comentário (rating)
-    async deleteRating(req, res, next) {
+    async PerpenteDelete(req, res, next) {
         try {
             // Busca o comentário pelo ID nos parâmetros da requisição
             const rating = await Ratings.findById(req.params.id);
@@ -108,7 +121,25 @@ class RatingController {
             // Deleta o comentário
             await rating.deleteOne();
 
-            return res.status(200).json({ success: true });
+            return res.status(200).json({ success: true, message: "Avalição apagada" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteRating(req, res, next) {
+        const user = req.auth._id;
+        console.log(req.params);
+        try {
+            // Busca o comentário pelo ID nos parâmetros da requisição
+            const rating = await Ratings.findByIdAndUpdate(req.params.RatingId, { deleted: true, deletedAt: new Date(), deletedby: user }, { new: true });
+
+            // Se o comentário não existe, retorna um erro
+            if (!rating) {
+                return res.status(400).json({ success: false, message: "Comentário não encontrado" });
+            }
+
+            return res.status(200).json({ success: true, message: "Avalição apagada" });
         } catch (error) {
             next(error);
         }
