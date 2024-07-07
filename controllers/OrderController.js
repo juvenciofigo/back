@@ -250,7 +250,8 @@ class OrderController {
                 const productDetails = await Products.findById(product.productId);
 
                 if (!productDetails) {
-                    throw new Error(`Product com ID ${product.productId} not found`);
+                    console.log(`Product com ID ${product.productId} not found`);
+                    continue;
                 }
 
                 // buscar por variacoes
