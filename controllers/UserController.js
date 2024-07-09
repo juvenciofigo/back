@@ -62,7 +62,7 @@ class UserController {
             }
 
             const user = new Users({ firstName, lastName, email: emailLowerCase });
-            await user.setPass(password);
+            await user.setPassword(password);
 
             // Criar um carrinho vazio associado ao novo usuário
             const newCart = new Carts({ cartItens: [], cartUser: user._id });
@@ -70,7 +70,7 @@ class UserController {
             user.cart = newCart._id;
             await newCart.save();
             await user.save();
-            res.json({ user: user.sendAuthJson(), success: true });
+            res.json({ user: user.toAuthJSON(), success: true });
         } catch (error) {
             next(error);
         }
@@ -102,7 +102,7 @@ class UserController {
             }
 
             if (typeof password !== "undefined") {
-                await user.setPass(password);
+                await user.setPassword(password);
             }
 
             if (typeof email !== "undefined") {
@@ -111,7 +111,7 @@ class UserController {
 
             const updatedUser = await user.save();
 
-            return res.status(200).json({ user: updatedUser.sendAuthJson(), success: true, message: "Usuário atualizado!" });
+            return res.status(200).json({ user: updatedUser.toAuthJSON(), success: true, message: "Usuário atualizado!" });
         } catch (error) {
             next(error);
         }
@@ -146,11 +146,11 @@ class UserController {
             }
             if (!user) return res.status(404).json({ success: false, message: "Usuário não encontrado! Verifique o  email" });
 
-            if (!user.validPass(password)) {
+            if (!user.validatePassword(password)) {
                 return res.status(401).json({ success: false, message: "Senha inválida" });
             }
 
-            return res.status(200).json({ success: true, user: user.sendAuthJson() });
+            return res.status(200).json({ success: true, user: user.toAuthJSON() });
         } catch (error) {
             next(error);
         }
@@ -229,7 +229,7 @@ class UserController {
             }
 
             user.finalTokenRecoveryPass();
-            user.setPass(password);
+            user.setPassword(password);
             user.save();
 
             return res.render("recovery/store", { message: null, success: true, token: null });

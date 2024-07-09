@@ -4,19 +4,16 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const secret = require("../config").secret;
 const crypto = require("crypto");
-const { boolean } = require("joi");
 
 const UserSchema = new mongoose.Schema(
     {
         firstName: {
             type: String,
             required: [true, "Preencha o campo"],
-            min: [4, "Nome Do Usuário deve ter no minimo 6 letras"],
         },
         lastName: {
             type: String,
             required: [true, "Preencha o campo"],
-            min: [4, "Nome Do Usuário deve ter no minimo 6 letras"],
         },
         profilePhoto: {
             type: String,
@@ -24,7 +21,8 @@ const UserSchema = new mongoose.Schema(
         password: {
             type: String,
             required: true,
-            min: [6, "Senha deve ter no minimo 6 letras"],
+            min: [8, "Senha deve ter no minimo 6 letras"],
+            match: [/[a-z]/, "A senha deve conter pelo menos uma letra minúscula", /[A-Z]/, "A senha deve conter pelo menos uma letra maiúscula", /\d/, "A senha deve conter pelo menos um número"],
         },
         email: {
             type: String,
@@ -62,12 +60,12 @@ const UserSchema = new mongoose.Schema(
             default: {},
         },
     },
-    { timestamps: true } // colaca um campo com da data da criacao e data de actulizacao
+    { timestamps: true }
 );
 
-UserSchema.plugin(uniqueValidator, { message: "nome de usuário sendo usado, escolha outro" }); // validacao do nome de usuário
+UserSchema.plugin(uniqueValidator, { message: "nome de usuário sendo usado, escolha outro" });
 
-UserSchema.methods.setPass = function (password) {
+UserSchema.methods.setPassword = function (password) {
     return new Promise((resolve, reject) => {
         this.salt = bcrypt.genSaltSync(10);
         this.password = bcrypt.hashSync(password, this.salt);
@@ -75,11 +73,11 @@ UserSchema.methods.setPass = function (password) {
     });
 };
 
-UserSchema.methods.validPass = function (password) {
+UserSchema.methods.validatePassword = function (password) {
     return bcrypt.compareSync(password, this.password);
 };
 
-UserSchema.methods.tokenGer = function () {
+UserSchema.methods.generateJWT = function () {
     const dateToday = new Date();
     const dateExp = new Date(dateToday);
     dateExp.setDate(dateToday.getDate() + 15);
@@ -96,14 +94,14 @@ UserSchema.methods.tokenGer = function () {
     );
 };
 
-UserSchema.methods.sendAuthJson = function () {
+UserSchema.methods.toAuthJSON = function () {
     return {
         _id: this._id,
         email: this.email,
         firstName: this.firstName,
         lastName: this.lastName,
         role: this.role,
-        token: this.tokenGer(),
+        token: this.generateJWT(),
     };
 };
 
