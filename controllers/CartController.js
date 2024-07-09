@@ -1,11 +1,11 @@
 const mongoose = require("mongoose"),
     Variations = require("../models/Variations"),
-    Cart = require("../models/Carts"),
+    Carts = require("../models/Carts"),
     Product = require("../models/Products"),
     api = require("../config/index").api;
 
 async function newCart(userId, bodyData) {
-    const cart = new Cart({
+    const cart = new Carts({
         cartItens: bodyData || [],
         cartUser: userId,
     });
@@ -20,7 +20,7 @@ class CartController {
 
         try {
             async function newCart(userId, bodyData) {
-                const cart = new Cart({
+                const cart = new Carts({
                     cartUser: userId,
                     cartItens: bodyData,
                 });
@@ -37,29 +37,36 @@ class CartController {
 
     async addProductsCart(req, res, next) {
         const { userId } = req.params;
-        try {
-            let cart = await Cart.findOne({ cartUser: userId });
 
-            if (!cart) {
-                async function newCart(userId, bodyData) {
-                    const cart = new Cart({
+        try {
+            let cart = await Carts.findOne({ cartUser: userId });
+
+            if (!cart || cart === null) {
+                console.log(false);
+                async function newCart(userId) {
+                    const cart = new Carts({
                         cartUser: userId,
-                        cartItens: bodyData,
+                        cartItens: [],
                     });
                     return cart.save();
                 }
-
-                cart = await newCart(userId, req.body);
+                cart = await newCart(userId);
             }
 
-            if (Array.isArray(req.body)) {
-                for (const product of req.body) {
+            if (Array.isArray(req.body) && req.body.length > 0) {
+                for (const item of req.body) {
+                    console.log(item.productId == item.productId);
+                    console.log(item.variation.color == item.variation.color);
+                    console.log(item.variation.model == item.variation.model);
+                    console.log(item.variation.material == item.variation.material);
+                    console.log(item.variation.size == item.variation.size);
+
                     const existingProductIndex = cart.cartItens.findIndex((item) => {
-                        if (item.productId == product.productId) {
-                            if (item.variation.color == product.variation.color) {
-                                if (item.variation.model == product.variation.model) {
-                                    if (item.variation.material == product.variation.material) {
-                                        return item.variation.size == product.variation.size;
+                        if (item.productId == item.productId) {
+                            if (item.variation.color == item.variation.color) {
+                                if (item.variation.model == item.variation.model) {
+                                    if (item.variation.material == item.variation.material) {
+                                        return item.variation.size == item.variation.size;
                                     }
                                     return false;
                                 }
@@ -71,16 +78,16 @@ class CartController {
                     });
 
                     if (existingProductIndex !== -1) {
-                        cart.cartItens[existingProductIndex].quantity += Number(product.quantity) || 1;
+                        cart.cartItens[existingProductIndex].quantity += Number(item.quantity) || 1;
                     } else {
                         cart.cartItens.push({
-                            productId: product.productId,
-                            quantity: Number(product.quantity) || 1,
+                            productId: item.productId,
+                            quantity: Number(item.quantity) || 1,
                             variation: {
-                                color: product.variation.color,
-                                model: product.variation.model,
-                                size: product.variation.size,
-                                material: product.variation.material,
+                                color: item.variation.color,
+                                model: item.variation.model,
+                                size: item.variation.size,
+                                material: item.variation.material,
                             },
                             item: new mongoose.Types.ObjectId(),
                         });
@@ -133,9 +140,9 @@ class CartController {
         const { userId, item } = req.params;
         try {
             // Encontrar o carrinho do usuário
-            let cart = await Cart.findOne({ cartUser: userId });
+            let cart = await Carts.findOne({ cartUser: userId });
 
-            if (!cart) {
+            if (!cart || cart === null) {
                 return res.status(404).json({ message: "Carrinho não encontrado" });
             }
             console.log(cart);
@@ -161,7 +168,7 @@ class CartController {
     // // Show all
     async allCarts(req, res, next) {
         try {
-            const carts = await Cart.find();
+            const carts = await Carts.find();
             if (carts) {
                 return res.status(200).json({ quan: carts.length, carts });
             }
@@ -180,10 +187,10 @@ class CartController {
 
         try {
             if (userId !== "false") {
-                cart = await Cart.findOne({ cartUser: userId });
+                cart = await Carts.findOne({ cartUser: userId });
                 console.log(cart);
 
-                if (!cart || !cart.cartItens || cart.cartItens.length === 0) {
+                if (!cart || cart === null || !cart.cartItens || cart.cartItens.length === 0) {
                     console.log("Carrinho vazio ou não encontrado");
                     return res.status(200).json({ totalProducts: totalProductsPrice });
                 }
@@ -250,9 +257,9 @@ class CartController {
 
         try {
             if (userId !== "false") {
-                const cart = await Cart.findOne({ cartUser: userId });
+                const cart = await Carts.findOne({ cartUser: userId });
 
-                if (!cart || !cart.cartItens || cart.cartItens.length === 0) {
+                if (!cart || cart === null || !cart.cartItens || cart.cartItens.length === 0) {
                     return res.status(200).json(cartProducts);
                 }
                 Products = cart.cartItens;
@@ -321,7 +328,7 @@ class CartController {
     // Update cart
     async updatecart(req, res, next) {
         try {
-            const cart = await Cart.findByIdAndUpdate(
+            const cart = await Carts.findByIdAndUpdate(
                 { _id: req.params.id },
                 {
                     $set: {
@@ -353,9 +360,9 @@ class CartController {
 
         try {
             // Encontrar o carrinho do usuário
-            let cart = await Cart.findOne({ cartUser: userId });
+            let cart = await Carts.findOne({ cartUser: userId });
 
-            if (!cart) {
+            if (!cart || cart === null) {
                 return res.status(404).json({ message: "Carrinho não encontrado" });
             }
             const productIndex = cart.cartItens.findIndex((e) => e.item == item);
@@ -373,7 +380,7 @@ class CartController {
     // // Delete cart
     // async deletecCart(req, res,next) {
     //     try {
-    //         const deleteCart = await Cart.findByIdAndDelete({ _id: req.params.id });
+    //         const deleteCart = await Carts.findByIdAndDelete({ _id: req.params.id });
     //         if (deleteCart) {
     //             return res.status(200).json({ message: "Produto Deletado!" });
     //         } else {
