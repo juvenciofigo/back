@@ -202,7 +202,6 @@ class CustomerController {
             const user = await Users.findById(userId).select("-recovery -salt -password -role");
 
             if (!user.customer) {
-                
                 const customer = new Customers({
                     email: user.email,
                     firstName: user.firstName,
@@ -290,11 +289,9 @@ class CustomerController {
         try {
             const address = await Address.find({ user: userId, deleted: false }).populate({ path: "user" });
 
-            if (address) {
+            setTimeout(() => {
                 return res.status(200).json(address);
-            } else {
-                return res.status(404).json(false);
-            }
+            }, 5000);
         } catch (error) {
             next(error);
         }
