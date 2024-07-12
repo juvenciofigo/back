@@ -289,9 +289,7 @@ class CustomerController {
         try {
             const address = await Address.find({ user: userId, deleted: false }).populate({ path: "user" });
 
-            setTimeout(() => {
-                return res.status(200).json(address);
-            }, 5000);
+            return res.status(200).json(address);
         } catch (error) {
             next(error);
         }
