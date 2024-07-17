@@ -9,20 +9,23 @@ const Create = (req, res, next) => {
         productAvailability: Joi.boolean().required(),
         productPrice: Joi.number().required(),
         productStock: Joi.boolean().required(),
-        productCategory: Joi.array().items(Joi.string().length(24).alphanum().required()).required(),
-        productSubcategory: Joi.string().length(24).alphanum().optional(),
-        productSub_category: Joi.string().length(24).alphanum().optional(),
-        productPromotion: Joi.number().optional(),
         productImage: Joi.array().optional(),
-        sku: Joi.string().required(),
+        productCategory: Joi.array().items(Joi.string().length(24).alphanum().required()).required(),
+        productSubcategory: Joi.array().items(Joi.string().length(24).alphanum().optional()).optional(),
+        productSub_category: Joi.array().items(Joi.string().length(24).alphanum().optional()).optional(),
+        productPromotion: Joi.number().optional(),
         productVendor: Joi.string().required(),
         productModel: Joi.string().optional(),
-        productSize: Joi.string().optional(),
         productBrand: Joi.string().optional(),
+        productWeight: Joi.number().required(),
+        productLength: Joi.number().optional(),
+        productWidth: Joi.number().optional(),
+        productHeight: Joi.number().optional(),
+        sku: Joi.string().required(),
     }).validate(req.body);
 
     if (error) {
-        next(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -43,22 +46,25 @@ const Update = (req, res, next) => {
         productAvailability: Joi.boolean().optional(),
         productPrice: Joi.number().optional(),
         productStock: Joi.boolean().optional(),
-        productCategory: Joi.array().items(Joi.string().length(24).alphanum().required()).optional(),
-        productSubcategory: Joi.string().length(24).alphanum().optional(),
-        productSub_category: Joi.string().length(24).alphanum().optional(),
-        productPromotion: Joi.number().optional(),
         productImage: Joi.array().optional(),
-        sku: Joi.string().optional(),
+        productCategory: Joi.array().items(Joi.string().length(24).alphanum().required()).optional(),
+        productSubcategory: Joi.array().items(Joi.string().length(24).alphanum().required()).optional(),
+        productSub_category: Joi.array().items(Joi.string().length(24).alphanum().required()).optional(),
+        productPromotion: Joi.number().optional(),
         productVendor: Joi.string().optional(),
         productModel: Joi.string().optional(),
-        productSize: Joi.string().optional(),
         productBrand: Joi.string().optional(),
+        productWeight: Joi.number().optional(),
+        productLength: Joi.number().optional(),
+        productWidth: Joi.number().optional(),
+        productHeight: Joi.number().optional(),
+        sku: Joi.string().optional(),
     });
 
-    const { error: bodyError } = bodySchema.validate(req.body);
+    const { error } = bodySchema.validate(req.body);
 
-    if (bodyError) {
-        next(error);
+    if (error) {
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -69,7 +75,7 @@ const Image = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        next(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -80,7 +86,7 @@ const Delete = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        next(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -91,12 +97,13 @@ const getBtId = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        next(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
 
 const All = (req, res, next) => {
+    console.log(req.query);
     const { error } = Joi.object({
         limit: Joi.number().optional(),
         offset: Joi.number().optional(),
@@ -107,7 +114,7 @@ const All = (req, res, next) => {
     }).validate(req.query);
 
     if (error) {
-        next(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };

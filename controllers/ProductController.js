@@ -1,3 +1,5 @@
+const { set } = require("mongoose");
+
 const { Category, SubCategory, Sub_category } = require("../models/Categories"),
     Variations = require("../models/Variations"),
     Customers = require("../models/Customers"),
@@ -27,22 +29,7 @@ class ProductController {
     // Save product
 
     async createProduct(req, res, next) {
-        const {
-            productName,
-            productDescription,
-            productAvailability,
-            productStock,
-            productPrice,
-            productCategory,
-            productSub_category,
-            productSubcategory,
-            productPromotion,
-            sku,
-            productVendor,
-            productModel,
-            productSize,
-            productBrand,
-        } = req.body;
+        const { sku, productCategory, productSubcategory, productSub_category } = req.body;
 
         try {
             const existingSku = await Products.findOne({ sku });
@@ -50,40 +37,58 @@ class ProductController {
             if (existingSku) return res.status(400).json({ message: "SKU já em uso", success: false });
 
             const product = new Products({
-                productName,
-                productDescription,
-                productAvailability,
-                productPrice,
-                productCategory,
-                productSubcategory,
-                productSub_category,
-                productStock,
-                productPromotion,
-                sku,
-                productVendor,
-                productModel,
-                productSize,
-                productBrand,
+                ...req.body,
             });
 
-            const category = await Category.findById(productCategory);
-            if (!category) return res.status(400).json({ message: "Cateroria não existente", success: false });
-            category.products.push(product._id);
+            // Verificar se todas as categorias existem
+            const categoryPromises = productCategory.map((id) => Category.findById(id));
+            const categories = await Promise.all(categoryPromises);
 
-            await category.save();
+            if (categories.some((category) => !category)) {
+                return res.status(400).json({ message: "Uma ou mais categorias não existem", success: false });
+            }
 
-            const subCategory = await SubCategory.findById(productSubcategory);
-            if (!subCategory) return res.status(400).json({ message: "SubCategoria não existente", success: false });
-            subCategory.products.push(product._id);
-            await subCategory.save();
+            // Adicionar produto a cada categoria
+            categories.forEach((category) => {
+                category.products.push(product._id);
+            });
 
-            const sub_category = await Sub_category.findById(productSub_category);
-            if (!sub_category) return res.status(400).json({ message: "sub_categoria não existente", success: false });
-            sub_category.products.push(product._id);
-            await sub_category.save();
+            // SubCategories
+            const subCategoryPromises = productSubcategory.map((id) => SubCategory.findById(id));
+            const subCategories = await Promise.all(subCategoryPromises);
+
+            if (subCategories.some((subCategory) => !subCategory)) {
+                return res.status(400).json({ message: "Uma ou mais subCategorias não existem", success: false });
+            }
+            subCategories.forEach((subCategory) => {
+                subCategory.products.push(product._id);
+            });
+            console.group("sbu", subCategories);
+
+            // Sub_categories
+
+            const sub_categoryPromises = productSub_category.map((id) => Sub_category.findById(id));
+            const sub_categories = await Promise.all(sub_categoryPromises);
+
+            if (sub_categories.some((sub_category) => !sub_category)) {
+                return res.status(400).json({ message: "Uma ou mais sub_categorias não existem", success: false });
+            }
+
+            sub_categories.forEach((sub_category) => {
+                sub_category.products.push(product._id);
+            });
+            console.log(sub_categories);
+
+            // saves
 
             await product.save();
 
+            // Salvar categorias, subcategorias e sub_categorias
+            await Promise.all([
+                ...categories.map((category) => category.save()),
+                ...subCategories.map((subCategory) => subCategory.save()),
+                ...sub_categories.map((sub_category) => sub_category.save()),
+            ]);
             return res.status(200).json({ product, success: true, message: "Produto Criado!" });
         } catch (error) {
             next(error);
@@ -159,15 +164,19 @@ class ProductController {
             productAvailability,
             productPrice,
             productStock,
-            productPromotion,
-            sku,
-            productVendor,
-            productModel,
-            productSize,
-            productBrand,
+            productImage,
             productCategory,
             productSubcategory,
             productSub_category,
+            productPromotion,
+            productVendor,
+            productModel,
+            productBrand,
+            productWeight,
+            productLength,
+            productWidth,
+            productHeight,
+            sku,
         } = req.body;
 
         try {
@@ -184,12 +193,16 @@ class ProductController {
                 productAvailability,
                 productPrice,
                 productStock,
+                productImage,
                 productPromotion,
-                sku,
                 productVendor,
                 productModel,
-                productSize,
                 productBrand,
+                productWeight,
+                productLength,
+                productWidth,
+                productHeight,
+                sku,
             });
 
             // Atualizar as categorias do produto
@@ -292,14 +305,30 @@ class ProductController {
     // Show all
     async getAllProductsAdmin(req, res, next) {
         // Opções de paginação e classificação
+        const query = { productAvailability: true };
+
+        const category = req.query.category;
+        const subcategory = req.query.subcategory;
+        const sub_category = req.query.sub_category;
+
         const options = {
             page: Number(req.query.offset) || 1,
-            limit: Number(req.query.limit) || 10,
-            sort: getSort(req.query.sortType),
+            limit: Number(req.query.limit) || 30,
+            select: "-productVendor -order_items -timesPurchased -totalRevenue -sales",
         };
 
+        if (req.query.category) {
+            query.productCategory = req.query.category;
+        }
+        if (req.query.subcategory) {
+            query.productSubcategory = req.query.subcategory;
+        }
+        if (req.query.sub_category) {
+            query.productSub_category = req.query.sub_category;
+        }
+
         try {
-            const products = await Products.paginate({}, options);
+            const products = await Products.paginate(query, options);
 
             const imagesWithUrl = products.docs.map((product) => {
                 const imageUrls = product.productImage.map((image) => `${api}/public/images/${image}`);
@@ -324,76 +353,35 @@ class ProductController {
     ///
 
     async availiableProducts(req, res, next) {
-        let query = {};
+        // Opções de paginação e classificação
+        const query = { productAvailability: true };
+
         const category = req.query.category;
         const subcategory = req.query.subcategory;
         const sub_category = req.query.sub_category;
 
-        // Opções de paginação e classificação
         const options = {
             page: Number(req.query.offset) || 1,
-            limit: Number(req.query.limit) || 10,
-            sort: getSort(req.query.sortType),
+            limit: Number(req.query.limit) || 30,
+            select: "-productVendor -order_items -timesPurchased -totalRevenue -sales",
         };
 
-        if (category) {
-            query.productCategory = category;
+        if (req.query.category) {
+            query.productCategory = req.query.category;
         }
-
-        if (subcategory) {
-            query.productSubcategory = subcategory;
+        if (req.query.subcategory) {
+            query.productSubcategory = req.query.subcategory;
         }
-
-        if (sub_category) {
-            query.productSub_category = sub_category;
-        }
-
-        try {
-            const products = await Products.paginate({ productAvailability: true }, { ...query, ...options, select: "-productVendor -order_items -timesPurchased -totalRevenue -sales" });
-
-            const imagesWithUrl = products.docs.map((product) => {
-                const imageUrls = product.productImage.map((image) => `${api}/public/images/${image}`);
-                return { ...product._doc, productImage: imageUrls };
-            });
-
-            const response = {
-                quantity: products.totalDocs,
-                products: imagesWithUrl,
-            };
-            return res.status(200).json(response);
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    async getAllProducts(req, res, next) {
-        let query = {};
-        const category = req.query.category;
-        const subcategory = req.query.subcategory;
-        const sub_category = req.query.sub_category;
-
-        // Opções de paginação e classificação
-        const options = {
-            page: Number(req.query.offset) || 1,
-            limit: Number(req.query.limit) || 10,
-            sort: getSort(req.query.sortType),
-        };
-
-        if (category) {
-            query.productCategory = category;
-        }
-
-        if (subcategory) {
-            query.productSubcategory = subcategory;
-        }
-
-        if (sub_category) {
-            query.productSub_category = sub_category;
+        if (req.query.sub_category) {
+            query.productSub_category = req.query.sub_category;
         }
 
         try {
             const products = await Products.paginate(query, options);
 
+            console.log("query", query);
+            console.log("products", products);
+
             const imagesWithUrl = products.docs.map((product) => {
                 const imageUrls = product.productImage.map((image) => `${api}/public/images/${image}`);
                 return { ...product._doc, productImage: imageUrls };
@@ -410,7 +398,52 @@ class ProductController {
         }
     }
 
+    // async getAllProducts(req, res, next) {
+    //     let query = {};
+    //     const category = req.query.category;
+    //     const subcategory = req.query.subcategory;
+    //     const sub_category = req.query.sub_category;
+
+    //     // Opções de paginação e classificação
+    //     const options = {
+    //         page: Number(req.query.offset) || 1,
+    //         limit: Number(req.query.limit) || 10,
+    //         sort: getSort(req.query.sortType),
+    //     };
+
+    //     if (category) {
+    //         query.productCategory = category;
+    //     }
+
+    //     if (subcategory) {
+    //         query.productSubcategory = subcategory;
+    //     }
+
+    //     if (sub_category) {
+    //         query.productSub_category = sub_category;
+    //     }
+
+    //     try {
+    //         const products = await Products.paginate(query, options);
+
+    //         const imagesWithUrl = products.docs.map((product) => {
+    //             const imageUrls = product.productImage.map((image) => `${api}/public/images/${image}`);
+    //             return { ...product._doc, productImage: imageUrls };
+    //         });
+
+    //         const response = {
+    //             quantity: products.totalDocs,
+    //             products: imagesWithUrl,
+    //         };
+
+    //         return res.status(200).json(response);
+    //     } catch (error) {
+    //         next(error);
+    //     }
+    // }
+
     // Search
+
     async searchProducts(req, res, next) {
         // Opções de paginação e classificação
         const options = {

@@ -19,11 +19,14 @@ router.get("/products/admin", auth.require, AdminValidator, productValidation.Al
 
 router.get("/product/admin/:id", auth.require, AdminValidator, productValidation.getBtId, ProductController.showDetailsProductAdmin);
 
+//////////////////////////
 //Cliente
+/////////////
 
 router.get("/product/:id", auth.optional, productValidation.getBtId, ProductController.showDetailsProduct); //testado
 
 // router.get("/products", productValidation.All, ProductController.getAllProducts);
+
 router.get("/products", productValidation.All, ProductController.availiableProducts);
 
 router.get("/products/search/:search", ProductController.searchProducts); // nao aprovado

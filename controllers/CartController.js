@@ -188,10 +188,8 @@ class CartController {
         try {
             if (userId !== "false") {
                 cart = await Carts.findOne({ cartUser: userId });
-                console.log(cart);
 
                 if (!cart || cart === null || !cart.cartItens || cart.cartItens.length === 0) {
-                    console.log("Carrinho vazio ou não encontrado");
                     return res.status(200).json({ totalProducts: totalProductsPrice });
                 }
                 Products = cart.cartItens;
@@ -200,16 +198,13 @@ class CartController {
             }
 
             if (!Array.isArray(Products) || Products.length === 0) {
-                console.log("Nenhum produto encontrado");
                 return res.status(200).json({ totalProducts: totalProductsPrice });
             }
 
             for (const product of Products) {
-                console.log(`Processando produto: ${product.productId}`);
                 const productDetails = await Product.findById(product.productId);
 
                 if (!productDetails) {
-                    console.log(`Produto não encontrado: ${product.productId}`);
                     continue; // Pula este produto e continua com os outros
                 }
 
@@ -239,7 +234,6 @@ class CartController {
                 totalProductsPrice += subtotal;
             }
 
-            console.log(totalProductsPrice);
 
             return res.status(200).json({ totalProducts: totalProductsPrice });
         } catch (error) {

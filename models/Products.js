@@ -80,12 +80,24 @@ const ProductSchema = new mongoose.Schema(
             type: String,
             default: undefined,
         },
-        productSize: {
+        productBrand: {
             type: String,
             default: undefined,
         },
-        productBrand: {
-            type: String,
+        productWeight: {
+            type: Number,
+            default: undefined,
+        },
+        productLength: {
+            type: Number,
+            default: undefined,
+        },
+        productWidth: {
+            type: Number,
+            default: undefined,
+        },
+        productHeight: {
+            type: Number,
             default: undefined,
         },
         order_items: [

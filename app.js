@@ -43,8 +43,8 @@ app.disable("x-powered-by");
 app.use(compression());
 
 // BODY PARSER
-app.use(bodyParser.urlencoded({ extended: true, limit: "5mb" }));
-app.use(bodyParser.json({ limit: "5mb" }));
+app.use(bodyParser.urlencoded({ extended: true, limit: "1mb" }));
+app.use(bodyParser.json({ limit: "1mb" }));
 app.use(cookieParser());
 
 // Routes

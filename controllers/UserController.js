@@ -141,10 +141,11 @@ class UserController {
 
             const user = await Users.findOne({ email: emailLowerCase });
 
+            if (!user) return res.status(404).json({ success: false, message: "Usuário não encontrado! Verifique o  email" });
+            
             if (user.deleted === true) {
                 return res.status(404).json({ message: "Conta apagada!" });
             }
-            if (!user) return res.status(404).json({ success: false, message: "Usuário não encontrado! Verifique o  email" });
 
             if (!user.validatePassword(password)) {
                 return res.status(401).json({ success: false, message: "Senha inválida" });
