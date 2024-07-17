@@ -9,7 +9,7 @@ const authenticateUser = (req, res, next) => {
     }).validate(req.body);
 
     if (error) {
-        next(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -20,7 +20,7 @@ const show = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        next(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -34,7 +34,7 @@ const create = (req, res, next) => {
     }).validate(req.body);
 
     if (error) {
-        next(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -47,7 +47,7 @@ const update = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        next(error);
+        return res.status(400).json({ message: paramsError.details[0].message });
     }
     const bodySchema = Joi.object({
         email: Joi.string().email().optional(),
@@ -59,7 +59,7 @@ const update = (req, res, next) => {
     const { error: bodyError } = bodySchema.validate(req.body);
 
     if (bodyError) {
-        next(error);
+        return res.status(400).json({ message: bodyError.details[0].message });
     }
 
     next();

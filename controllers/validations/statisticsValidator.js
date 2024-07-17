@@ -9,8 +9,7 @@ const ordersByCustumer = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        console.log(error);
-        return res.status(400).json({ messase: error });
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
