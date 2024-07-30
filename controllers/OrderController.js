@@ -278,7 +278,6 @@ class OrderController {
 
                 let productPrice = (productDetails.productPrice += price);
                 let subtotal = productPrice * product.quantity;
-                console.log("productDetails.productName", typeof productDetails.productName);
                 cartProducts.push({
                     item: product.item,
                     productId: productDetails._id,
@@ -289,7 +288,7 @@ class OrderController {
                         size: size ? size : null,
                         material: material ? material : null,
                     },
-                    picture: `${api}/public/images/${productDetails.productImage[0]}`,
+                    picture: productDetails.productImage[0],
                     productPrice: productPrice,
                     quantity: Number(product.quantity),
                     subtotal: subtotal,
@@ -363,7 +362,6 @@ class OrderController {
                 { $set: { deleted: false } } // Define um valor padrão para o novo campo
             );
 
-            console.log(`${result.modifiedCount} documentos atualizados`);
             return res.status(200).json({ result, count: result.matchedCount });
         } catch (error) {
             next(error);

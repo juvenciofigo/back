@@ -103,7 +103,6 @@ const getBtId = (req, res, next) => {
 };
 
 const All = (req, res, next) => {
-    console.log(req.query);
     const { error } = Joi.object({
         limit: Joi.number().optional(),
         offset: Joi.number().optional(),

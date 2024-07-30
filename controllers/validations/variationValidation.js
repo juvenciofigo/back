@@ -46,32 +46,22 @@ const createVariation = (req, res, next) => {
 
     const bodySchema = Joi.object({
         sku: Joi.string().required(),
-        variationProduct: Joi.string().alphanum().length(24).required(),
         variationType: Joi.string().required(),
         variationValue: Joi.string().required(),
         variationPrice: Joi.number().optional().allow(null),
         variationImage: Joi.array().optional(),
         variationPromotion: Joi.number().optional().allow(null),
         variationStock: Joi.boolean().optional().allow(null),
-        delivery: Joi.object({
-            dimensions: Joi.object({
-                heightCm: Joi.number().optional().allow(null),
-                widthCm: Joi.number().optional().allow(null),
-                depthCm: Joi.number().optional().allow(null),
-            })
-                .optional()
-                .allow(null),
-            weight: Joi.number().optional().allow(null),
-            shippingFree: Joi.boolean().optional().allow(null),
-        })
-            .optional()
-            .allow(null),
+        heightCm: Joi.number().optional().allow(null),
+        widthCm: Joi.number().optional().allow(null),
+        depthCm: Joi.number().optional().allow(null),
+        weight: Joi.number().optional().allow(null),
+        shippingFree: Joi.boolean().optional().allow(null),
     });
 
     const { error: bodyError } = bodySchema.validate(req.body);
 
     if (bodyError) {
-        console.log(bodyError);
         return res.status(400).json({ message: bodyError.details[0].message });
     }
 
@@ -80,27 +70,18 @@ const createVariation = (req, res, next) => {
 
 const updateVariation = (req, res, next) => {
     const bodySchema = Joi.object({
-        sku: Joi.string().optional(),
-        variationProduct: Joi.string().alphanum().length(24).required(),
-        variationType: Joi.string().optional(),
-        variationValue: Joi.string().optional(),
+        sku: Joi.string().required(),
+        variationType: Joi.string().required(),
+        variationValue: Joi.string().required(),
         variationPrice: Joi.number().optional().allow(null),
         variationImage: Joi.array().optional(),
         variationPromotion: Joi.number().optional().allow(null),
         variationStock: Joi.boolean().optional().allow(null),
-        delivery: Joi.object({
-            dimensions: Joi.object({
-                heightCm: Joi.number().optional().allow(null),
-                widthCm: Joi.number().optional().allow(null),
-                depthCm: Joi.number().optional().allow(null),
-            })
-                .optional()
-                .allow(null),
-            weight: Joi.number().optional().allow(null),
-            shippingFree: Joi.boolean().optional().allow(null),
-        })
-            .optional()
-            .allow(null),
+        heightCm: Joi.number().optional().allow(null),
+        widthCm: Joi.number().optional().allow(null),
+        depthCm: Joi.number().optional().allow(null),
+        weight: Joi.number().optional().allow(null),
+        shippingFree: Joi.boolean().optional().allow(null),
     });
 
     const { error: bodyError } = bodySchema.validate(req.body);

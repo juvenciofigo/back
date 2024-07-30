@@ -129,7 +129,6 @@ class RatingController {
 
     async deleteRating(req, res, next) {
         const user = req.auth._id;
-        console.log(req.params);
         try {
             // Busca o comentário pelo ID nos parâmetros da requisição
             const rating = await Ratings.findByIdAndUpdate(req.params.RatingId, { deleted: true, deletedAt: new Date(), deletedby: user }, { new: true });

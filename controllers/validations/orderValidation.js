@@ -62,11 +62,9 @@ const getAllOrders = (req, res, next) => {
     }).validate(req.params);
 
     if (queryError) {
-        console.log(queryError);
         next(queryError);
     }
     if (paramsError) {
-        console.log(paramsError);
         next(paramsError);
     }
     next();

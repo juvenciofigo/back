@@ -9,12 +9,13 @@ module.exports = async (req, res, next) => {
         }
 
         const user = await Users.findOne({ _id: id });
+        
         if (!user || !user.role.includes("admin")) {
             return res.status(403).json({ success: false, message: "Não tem permissão" });
-        } else {
-            return next();
         }
+
+        next();
     } catch (error) {
-        next(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
 };

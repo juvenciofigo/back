@@ -38,6 +38,7 @@ app.set("view engine", "ejs");
 
 // config
 if (!isProduction) app.use(morgan("dev"));
+else app.use(morgan("common"));
 app.use(cors());
 app.disable("x-powered-by");
 app.use(compression());
@@ -92,6 +93,9 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-    if (isProduction) console.log(`Server is running at //localhost:${PORT}`);
-    else console.log(`Server is running in DEV mode at //localhost:${PORT}`);
+    if (isProduction) console.log(`Server port:${PORT} in prod`);
+    else {
+        console.log(process.env.NODE_ENV);
+        console.log(`Server is running in DEV mode at //localhost:${PORT} in dev`);
+    }
 });

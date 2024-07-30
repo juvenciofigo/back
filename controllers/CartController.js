@@ -42,7 +42,6 @@ class CartController {
             let cart = await Carts.findOne({ cartUser: userId });
 
             if (!cart || cart === null) {
-                console.log(false);
                 async function newCart(userId) {
                     const cart = new Carts({
                         cartUser: userId,
@@ -55,12 +54,6 @@ class CartController {
 
             if (Array.isArray(req.body) && req.body.length > 0) {
                 for (const item of req.body) {
-                    console.log(item.productId == item.productId);
-                    console.log(item.variation.color == item.variation.color);
-                    console.log(item.variation.model == item.variation.model);
-                    console.log(item.variation.material == item.variation.material);
-                    console.log(item.variation.size == item.variation.size);
-
                     const existingProductIndex = cart.cartItens.findIndex((item) => {
                         if (item.productId == item.productId) {
                             if (item.variation.color == item.variation.color) {
@@ -145,7 +138,6 @@ class CartController {
             if (!cart || cart === null) {
                 return res.status(404).json({ message: "Carrinho não encontrado" });
             }
-            console.log(cart);
             // Filtrar os itens do carrinho para remover o produto
             const initialCartItemCount = cart.cartItens.length;
 
@@ -234,7 +226,6 @@ class CartController {
                 totalProductsPrice += subtotal;
             }
 
-
             return res.status(200).json({ totalProducts: totalProductsPrice });
         } catch (error) {
             console.error("Erro ao processar o carrinho:", error);
@@ -298,7 +289,7 @@ class CartController {
                     item: product.item,
                     productId: productDetails._id,
                     productName: productDetails.productName,
-                    picture: `${api}/public/images/${productDetails.productImage[0]}`,
+                    picture: productDetails.productImage[0],
                     variation: {
                         color: color,
                         model: model,
@@ -350,7 +341,6 @@ class CartController {
     // Update cart
     async updateQuantity(req, res, next) {
         const { userId, item, quantity } = req.params;
-        console.log(item);
 
         try {
             // Encontrar o carrinho do usuário

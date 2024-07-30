@@ -202,6 +202,7 @@ class CustomerController {
             const user = await Users.findById(userId).select("-recovery -salt -password -role");
 
             if (!user.customer) {
+                
                 const customer = new Customers({
                     email: user.email,
                     firstName: user.firstName,

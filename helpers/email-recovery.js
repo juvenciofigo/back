@@ -38,7 +38,6 @@ module.exports = ({ user, recovery }, cb) => {
             }
         });
     } else {
-        console.log(emailOptions);
         return cb(null, "Link para redefinição de senha foi enviado com sucesso para seu email.");
     }
 };

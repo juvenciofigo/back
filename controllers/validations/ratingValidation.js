@@ -77,7 +77,6 @@ const Delete = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        console.log(false);
         return res.status(400).json({ message: paramsError.details[0].message });
     }
     next();

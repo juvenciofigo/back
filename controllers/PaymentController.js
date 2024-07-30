@@ -99,7 +99,7 @@ class PaymentController {
                     let model = null;
                     let size = null;
                     let material = null;
-                    
+
                     if (item.variation.color) {
                         color = await Variations.findById(item.variation.color._id);
                     }
@@ -134,7 +134,7 @@ class PaymentController {
                     order.cartPayd.push({
                         productId: product._id,
                         product: product.productName,
-                        picture: `${api}/public/images/${product.productImage[0]}`,
+                        picture: product.productImage[0],
                         variation: {
                             color: color ? color.variationValue : null,
                             model: model ? model.variationValue : null,

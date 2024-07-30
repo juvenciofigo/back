@@ -34,7 +34,9 @@ class ProductController {
         try {
             const existingSku = await Products.findOne({ sku });
 
-            if (existingSku) return res.status(400).json({ message: "SKU já em uso", success: false });
+            if (existingSku) {
+                return res.status(400).json({ message: "SKU já em uso", success: false });
+            }
 
             const product = new Products({
                 ...req.body,
@@ -63,7 +65,6 @@ class ProductController {
             subCategories.forEach((subCategory) => {
                 subCategory.products.push(product._id);
             });
-            console.group("sbu", subCategories);
 
             // Sub_categories
 
@@ -77,10 +78,8 @@ class ProductController {
             sub_categories.forEach((sub_category) => {
                 sub_category.products.push(product._id);
             });
-            console.log(sub_categories);
 
             // saves
-
             await product.save();
 
             // Salvar categorias, subcategorias e sub_categorias
@@ -89,6 +88,7 @@ class ProductController {
                 ...subCategories.map((subCategory) => subCategory.save()),
                 ...sub_categories.map((sub_category) => sub_category.save()),
             ]);
+
             return res.status(200).json({ product, success: true, message: "Produto Criado!" });
         } catch (error) {
             next(error);
@@ -111,9 +111,6 @@ class ProductController {
             if (!product) {
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
-
-            // Correção: utilize product.productImage em vez de apenas productImage
-            const productImagesWithUrl = product.productImage.map((image) => `${api}/public/images/${image}`);
 
             // Calculate the average rating
             function calculateAverageRating(scores) {
@@ -149,7 +146,7 @@ class ProductController {
             });
 
             return res.status(200).json({
-                product: { ...product._doc, productStatistc: { ratingAverage: average, ratingStats: ratingStats }, productImage: productImagesWithUrl },
+                product: { ...product._doc, productStatistc: { ratingAverage: average, ratingStats: ratingStats } },
             });
         } catch (error) {
             next(error);
@@ -254,11 +251,8 @@ class ProductController {
                 return res.status(400).json({ message: "Nenhuma imagem enviada!" });
             }
 
-            // Obter os nomes dos novos arquivos de imagem a partir dos arquivos enviados na requisição
-            const newImages = req.files.map((item) => item.filename);
-
             // Adicionar as novas imagens ao array existente
-            product.productImage = [...product.productImage, ...newImages];
+            product.productImage = [...product.productImage, ...req.files];
 
             await product.save();
 
@@ -330,17 +324,7 @@ class ProductController {
         try {
             const products = await Products.paginate(query, options);
 
-            const imagesWithUrl = products.docs.map((product) => {
-                const imageUrls = product.productImage.map((image) => `${api}/public/images/${image}`);
-                return { ...product._doc, productImage: imageUrls };
-            });
-
-            const response = {
-                quantity: products.totalDocs,
-                products: imagesWithUrl,
-            };
-
-            return res.status(200).json(response);
+            return res.status(200).json(products);
         } catch (error) {
             next(error);
         }
@@ -379,20 +363,7 @@ class ProductController {
         try {
             const products = await Products.paginate(query, options);
 
-            console.log("query", query);
-            console.log("products", products);
-
-            const imagesWithUrl = products.docs.map((product) => {
-                const imageUrls = product.productImage.map((image) => `${api}/public/images/${image}`);
-                return { ...product._doc, productImage: imageUrls };
-            });
-
-            const response = {
-                quantity: products.totalDocs,
-                products: imagesWithUrl,
-            };
-
-            return res.status(200).json(response);
+            return res.status(200).json(products);
         } catch (error) {
             next(error);
         }
@@ -502,8 +473,6 @@ class ProductController {
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
-            const productImagesWithUrl = product.productImage.map((image) => `${api}/public/images/${image}`);
-
             if (userId) {
                 const customer = await Customers.findOne({ user: userId });
 
@@ -550,7 +519,7 @@ class ProductController {
             });
 
             return res.status(200).json({
-                product: { ...product._doc, productStatistc: { ratingAverage: average, ratingStats: ratingStats }, productImage: productImagesWithUrl, canRate },
+                product: { ...product._doc, productStatistc: { ratingAverage: average, ratingStats: ratingStats }, canRate },
             });
         } catch (error) {
             next(error);

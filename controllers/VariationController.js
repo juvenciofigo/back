@@ -22,7 +22,7 @@ class VariationController {
             // Verifica se foram encontradas variações para o produto
             if (!variations || variations.length === 0) {
                 // Responde com um erro 404 se não houver variações encontradas
-                return res.status(404).json({ success: false, message: "Sem variações encontradas para o produto especificado." });
+                return res.status(200).json({ success: true, message: "Sem variações encontradas para o produto especificado." });
             }
 
             // Responde com as variações encontradas
@@ -60,8 +60,7 @@ class VariationController {
     // Save Variations
 
     async createVariation(req, res, next) {
-        const { variationProduct, variationType, variationValue, sku, variationPrice, variationPromotion, variationStock, variationImage, delivery } = req.body;
-
+        const { variationType, variationValue, sku, variationPrice, variationPromotion, variationStock, heightCm, widthCm, depthCm, weight, shippingFree } = req.body;
         const { product } = req.params;
 
         try {
@@ -75,16 +74,26 @@ class VariationController {
 
             // Cria uma nova instância da variação
             const variation = new Variations({
-                variationProduct,
+                variationProduct: product,
                 variationType,
                 variationValue,
                 sku,
                 variationPrice,
                 variationPromotion,
                 variationStock,
-                delivery,
+                variationImage: req.files,
+                delivery: {
+                    dimensions: {
+                        heightCm,
+                        widthCm,
+                        depthCm,
+                    },
+                    weight,
+                    shippingFree,
+                },
             });
-
+            console.log(variation);
+            // return;
             // Adiciona a nova variação ao array de variações do produto
             await _product.productVariations.push(variation._id);
 
@@ -104,11 +113,10 @@ class VariationController {
 
     // Update Variation
     async updateVariation(req, res, next) {
-        const { sku, variationType, variationValue, variationPrice, variationPromotion, variationStock, delivery } = req.body;
+        const { variationType, variationValue, sku, variationPrice, variationPromotion, variationStock, variationImage, heightCm, widthCm, depthCm, weight, shippingFree } = req.body;
 
         try {
             const variation = await Variations.findById(req.params.id);
-
             if (!variation) {
                 return res.status(400).json({ message: "Variação não existente", success: false });
             }
@@ -120,7 +128,24 @@ class VariationController {
             if (variationPrice) variation.variationPrice = variationPrice;
             if (variationPromotion) variation.variationPromotion = variationPromotion;
             if (variationStock) variation.variationStock = variationStock;
-            if (delivery) variation.delivery = delivery;
+            if (heightCm) variation.delivery.dimensions.heightCm = heightCm;
+            if (widthCm) variation.delivery.dimensions.widthCm = widthCm;
+            if (depthCm) variation.delivery.dimensions.depthCm = depthCm;
+            if (weight) variation.delivery.weight = weight;
+            if (shippingFree !== undefined) variation.delivery.shippingFree = shippingFree;
+
+            // Atualização das imagens da variação
+            if (Array.isArray(variationImage) && variationImage.length !== variation.variationImage.length) {
+                variation.variationImage = variationImage;
+            }
+            if (!Array.isArray(variationImage)) {
+                variation.variationImage = [];
+            }
+
+            // Adiciona novas imagens enviadas
+            if (Array.isArray(req.files) && req.files && req.files.length > 0) {
+                variation.variationImage.push(...req.files);
+            }
 
             // Salva a variação atualizada no banco de dados
             await variation.save();
