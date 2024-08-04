@@ -6,9 +6,9 @@ const productValidation = require("../controllers/validations/productValidation"
 const upload = require("../config/multer");
 const uploadMultiple = require("../config/clodinary");
 
-router.put("/product/:id", auth.require, AdminValidator, productValidation.Update, ProductController.updateProduct);
+router.put("/product/:id", auth.require, AdminValidator, upload.array("files"), productValidation.Update, uploadMultiple, ProductController.updateProduct);
 
-router.post("/product", auth.require, AdminValidator, productValidation.Create, ProductController.createProduct);
+router.post("/product", auth.require, AdminValidator, upload.array("files"), productValidation.Create, uploadMultiple, ProductController.createProduct);
 
 router.put("/product/image/:id", auth.require, AdminValidator, productValidation.Image, upload.array("files"), uploadMultiple, ProductController.updateImage);
 

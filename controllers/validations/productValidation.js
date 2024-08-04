@@ -38,7 +38,7 @@ const Update = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        next(error);
+        return res.status(400).json({ message: paramsError.details[0].message });
     }
     const bodySchema = Joi.object({
         productName: Joi.string().optional(),

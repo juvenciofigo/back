@@ -39,6 +39,7 @@ class ProductController {
             }
 
             const product = new Products({
+                productImage: req.files,
                 ...req.body,
             });
 
@@ -156,7 +157,6 @@ class ProductController {
     // Update product
     async updateProduct(req, res, next) {
         const {
-            productName,
             productDescription,
             productAvailability,
             productPrice,
@@ -166,6 +166,7 @@ class ProductController {
             productSubcategory,
             productSub_category,
             productPromotion,
+            sku,
             productVendor,
             productModel,
             productBrand,
@@ -173,7 +174,7 @@ class ProductController {
             productLength,
             productWidth,
             productHeight,
-            sku,
+            productName,
         } = req.body;
 
         try {
@@ -183,6 +184,20 @@ class ProductController {
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
+            // Atualização das imagens
+            if (Array.isArray(productImage)) {
+                if (productImage.length !== product.productImage.length) {
+                    product.productImage = productImage;
+                }
+            } else {
+                product.productImage = [];
+            }
+
+            // Adiciona novas imagens enviadas
+            if (Array.isArray(req.files) && req.files.length > 0) {
+                product.productImage.push(...req.files);
+            }
+
             // Atualizar as propriedades do produto com os valores fornecidos
             product.set({
                 productName,
@@ -190,7 +205,6 @@ class ProductController {
                 productAvailability,
                 productPrice,
                 productStock,
-                productImage,
                 productPromotion,
                 productVendor,
                 productModel,
@@ -204,23 +218,22 @@ class ProductController {
 
             // Atualizar as categorias do produto
             const updateCategories = async (categoryModel, productCategory, productField) => {
-                if (productCategory && (!product[productField] || !product[productField].every((cat) => productCategory.includes(cat)))) {
+                if (productCategory && (!product[productField] || !arraysEqual(product[productField], productCategory))) {
+                    // Remover produto das categorias antigas
                     if (product[productField] && product[productField].length > 0) {
-                        const oldCategories = await categoryModel.find({ _id: { $in: product[productField] } });
-                        oldCategories.forEach(async (oldCategory) => {
-                            oldCategory.products = oldCategory.products.filter((item) => !item.equals(product._id));
-                            await oldCategory.save();
-                        });
+                        await categoryModel.updateMany({ _id: { $in: product[productField] } }, { $pull: { products: product._id } });
                     }
 
-                    const newCategories = await categoryModel.find({ _id: { $in: productCategory } });
-                    newCategories.forEach(async (newCategory) => {
-                        newCategory.products.push(product);
-                        await newCategory.save();
-                    });
+                    // Adicionar produto às novas categorias
+                    await categoryModel.updateMany({ _id: { $in: productCategory } }, { $push: { products: product._id } });
 
                     product[productField] = productCategory;
                 }
+            };
+
+            const arraysEqual = (arr1, arr2) => {
+                if (arr1.length !== arr2.length) return false;
+                return arr1.every((item, index) => item.equals(arr2[index]));
             };
 
             await updateCategories(Category, productCategory, "productCategory");
