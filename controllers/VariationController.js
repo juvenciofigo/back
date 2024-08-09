@@ -92,7 +92,6 @@ class VariationController {
                     shippingFree,
                 },
             });
-            console.log(variation);
 
             // Adiciona a nova variação ao array de variações do produto
             await _product.productVariations.push(variation._id);
