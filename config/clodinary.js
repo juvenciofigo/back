@@ -1,9 +1,9 @@
-// const cloudinary = require("cloudinary").v2;
 const asyncHandler = require("express-async-handler");
 const axios = require("axios");
-
 const fs = require("fs");
 const { google } = require("googleapis");
+
+// Configuração das credenciais do Google API
 const credentials = {
     type: process.env.TYPE,
     project_id: process.env.PROJECT_ID,
@@ -17,14 +17,17 @@ const credentials = {
     client_x509_cert_url: process.env.CLIENT_X509_CERT_URL,
     universe_domain: process.env.UNIVERSE_DOMAIN,
 };
-const { body } = require("express-validator");
 
+// Função principal de upload múltiplo
 const uploadMultiple = asyncHandler(async (req, res, next) => {
+    console.log("Iniciando upload de múltiplos arquivos.");
+
     const files = req.files;
     const folderId = process.env.ID_FOLDER;
-    const imageUrls = [];
+    let imageUrls = [];
 
     try {
+        // Autenticação com o Google API
         const auth = new google.auth.GoogleAuth({
             credentials: credentials,
             scopes: ["https://www.googleapis.com/auth/drive.file"],
@@ -35,6 +38,7 @@ const uploadMultiple = asyncHandler(async (req, res, next) => {
             auth,
         });
 
+        // Promises de upload para cada arquivo
         const uploadPromises = files.map((file) => {
             const fileMetadata = {
                 name: file.originalname,
@@ -53,108 +57,56 @@ const uploadMultiple = asyncHandler(async (req, res, next) => {
             });
         });
 
+        console.log("Iniciando upload dos arquivos para o Google Drive.");
+
+        // Espera a conclusão de todos os uploads
         const responses = await Promise.all(uploadPromises);
 
+        console.log("Uploads concluídos, obtendo URLs de visualização.");
+
+        // Função auxiliar para extrair o viewer ID do código-fonte HTML
         const getViewerIdFromHTMLSourceCode = (sourceCode) => {
             if (!sourceCode) return null;
-            const splited = sourceCode.split("drive-viewer/");
-            if (splited.length < 2) return null;
-            const viewerId = splited[1].split("\\")[0];
-            return viewerId;
+            const split = sourceCode.split("drive-viewer/");
+            if (split.length < 2) return null;
+            return split[1].split("\\")[0];
         };
 
         // Função para obter o ID do visualizador do Google Drive
         const getViewIdFromImageIdGoogleDrive = async (photo_id) => {
             try {
                 const response = await axios.get(`https://drive.google.com/file/d/${photo_id}/view`);
-                const viewid = getViewerIdFromHTMLSourceCode(response.data);
-                return viewid;
+                return getViewerIdFromHTMLSourceCode(response.data);
             } catch (err) {
+                console.error(`Erro ao obter viewer ID para o arquivo ${photo_id}:`, err.message);
                 return null;
             }
         };
 
         // Aguarda a conclusão de todas as Promises de visualização
-        const imageUrls = await Promise.all(
+        imageUrls = await Promise.all(
             responses.map(async (response) => {
                 const viewId = await getViewIdFromImageIdGoogleDrive(response.data.id);
                 return viewId ? `https://lh3.googleusercontent.com/drive-viewer/${viewId}` : null;
             })
         );
 
+        console.log("URLs de visualização obtidas.");
+
         // Remove os arquivos temporários após o upload
         files.forEach((file) => {
             fs.unlinkSync(file.path);
         });
-        req.files = imageUrls;
+
+        req.files = imageUrls.filter(Boolean); // Filtra URLs nulas ou indefinidas
+
+        console.log("Arquivos temporários removidos. Passando para o próximo middleware.");
 
         next();
     } catch (error) {
-        console.error("Erro ao fazer upload dos arquivos:", error);
-        res.status(500).send("Erro ao fazer upload dos arquivos.");
+        console.error("Erro ao fazer upload dos arquivos:", error.message);
+        res.status(500).json({ message: "Erro ao fazer upload dos arquivos." });
     }
 });
 
 module.exports = uploadMultiple;
-
-// cloudinary.config({
-//     cloud_name: "dlm5nmxsv",
-//     api_key: process.env.CLODINARY_API_KEY,
-//     api_secret: process.env.CLODINARY_SECRET,
-// });
-
-// const uploadMultiple = asyncHandler(async (req, res, next) => {
-//     try {
-//         const images = req.files;
-
-//         console.log(images);
-//         const imageUrls = [];
-//         for (const image of images) {
-//             const result = await cloudinary.uploader.upload(image.path, {
-//                 resource_type: "auto",
-//             });
-//             imageUrls.push(result.secure_url);
-//         }
-//         req.images = imageUrls;
-//         console.log(req.images);
-
-//         return
-//         next();
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).send("erro interno");
-//         return;
-//     }
-// });
-
-// module.exports = uploadMultiple;
-
-//     // Upload an image
-//     const uploadResult = await cloudinary.uploader
-//         .upload("https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg", {
-//             public_id: "shoes",
-//         })
-//         .catch((error) => {
-//             console.log(error);
-//         });
-
-//     console.log(uploadResult);
-
-//     // Optimize delivery by resizing and applying auto-format and auto-quality
-//     const optimizeUrl = cloudinary.url("shoes", {
-//         fetch_format: "auto",
-//         quality: "auto",
-//     });
-
-//     console.log(optimizeUrl);
-
-//     // Transform the image: auto-crop to square aspect_ratio
-//     const autoCropUrl = cloudinary.url("shoes", {
-//         crop: "auto",
-//         gravity: "auto",
-//         width: 500,
-//         height: 500,
-//     });
-
-//     console.log(autoCropUrl);
-// })();
