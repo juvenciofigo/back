@@ -1,5 +1,6 @@
 const Users = require("../models/Users");
 const Carts = require("../models/Carts");
+const Visita = require("../models/visita");
 
 const sendEmailRecovery = require("../helpers/email-recovery");
 
@@ -24,7 +25,24 @@ class UserController {
     /*
     Client
     */
+    async visitaReg(req, res, next) {
+        try {
+            try {
+                const visita = await Visita.findOneAndUpdate(
+                    {}, // Se o campo estiver vazio, ele buscará o primeiro documento
+                    { $inc: { VisitaCout: 1 } }, // Incrementa o campo VisitaCout em 1
+                    { new: true, upsert: true } // Retorna o documento atualizado e cria um novo se não existir
+                );
 
+                console.log("Número de visitas atualizado: ", visita.VisitaCout);
+                res.json({ success: true });
+            } catch (err) {
+                console.error("Erro ao registrar a visita: ", err);
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
     // Show Details
     async getUserDetails(req, res, next) {
         const authId = req.auth._id;
@@ -142,7 +160,7 @@ class UserController {
             const user = await Users.findOne({ email: emailLowerCase });
 
             if (!user) return res.status(404).json({ success: false, message: "Usuário não encontrado! Verifique o  email" });
-            
+
             if (user.deleted === true) {
                 return res.status(404).json({ message: "Conta apagada!" });
             }

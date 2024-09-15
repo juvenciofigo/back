@@ -25,7 +25,8 @@ router.delete("/user/:id/ admin", auth.require, AdminValidator, AdminValidator, 
 //
 
 //////////// Client //////////
-
+// visitante
+router.get("/visitaReg", UserController.visitaReg);
 
 // obter detalhes de um usuário específico
 router.get("/user/:id", auth.require, UserValidation.show, UserController.getUserDetails); // testado
