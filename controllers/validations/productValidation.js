@@ -22,6 +22,8 @@ const Create = (req, res, next) => {
         productWidth: Joi.number().optional(),
         productHeight: Joi.number().optional(),
         sku: Joi.string().required(),
+        acquisitionCost: Joi.number.required(),
+        additionalCosts: Joi.number.required(),
     }).validate(req.body);
 
     if (error) {
@@ -59,6 +61,8 @@ const Update = (req, res, next) => {
         productWidth: Joi.number().optional(),
         productHeight: Joi.number().optional(),
         sku: Joi.string().optional(),
+        acquisitionCost: Joi.number.required(),
+        additionalCosts: Joi.number.required(),
     });
 
     const { error } = bodySchema.validate(req.body);

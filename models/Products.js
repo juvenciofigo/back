@@ -15,6 +15,27 @@ const SaleSchema = new mongoose.Schema(
     },
     { _id: false }
 );
+const ProfitSchema = new mongoose.Schema(
+    {
+        acquisitionCost: {
+            type: Number,
+            required: true,
+        },
+        additionalCosts: {
+            type: Number,
+            default: 0, // custos adicionais, como impostos, transporte, etc.
+        },
+        profitMargin: {
+            type: Number,
+            default: function () {
+                return this.productPrice - this.acquisitionCost - this.additionalCosts;
+            },
+        },
+    },
+    {
+        _id: false,
+    }
+);
 
 const ProductSchema = new mongoose.Schema(
     {
@@ -115,6 +136,7 @@ const ProductSchema = new mongoose.Schema(
             default: 0,
         },
         sales: [SaleSchema],
+        profit: [ProfitSchema],
     },
     { timestamps: true }
 );

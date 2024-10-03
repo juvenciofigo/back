@@ -22,6 +22,7 @@ const getSort = (sortType) => {
             return { createdAt: -1 };
     }
 };
+const dontSelect = "-productVendor -order_items -timesPurchased -totalRevenue -sales -acquisitionCost -additionalCosts";
 
 class ProductController {
     // ADMIN
@@ -175,6 +176,8 @@ class ProductController {
             productWidth,
             productHeight,
             productName,
+            acquisitionCost,
+            additionalCosts,
         } = req.body;
 
         try {
@@ -214,6 +217,8 @@ class ProductController {
                 productWidth,
                 productHeight,
                 sku,
+                acquisitionCost,
+                additionalCosts,
             });
 
             // Atualizar as categorias do produto
@@ -321,7 +326,7 @@ class ProductController {
         const options = {
             page: Number(req.query.offset) || 1,
             limit: Number(req.query.limit) || 30,
-            select: "-productVendor -order_items -timesPurchased -totalRevenue -sales",
+            // select: "-productVendor -order_items -timesPurchased -totalRevenue -sales",
         };
 
         if (req.query.category) {
@@ -360,7 +365,7 @@ class ProductController {
         const options = {
             page: Number(req.query.offset) || 1,
             limit: Number(req.query.limit) || 30,
-            select: "-productVendor -order_items -timesPurchased -totalRevenue -sales",
+            select: dontSelect,
         };
 
         if (req.query.category) {
@@ -426,40 +431,39 @@ class ProductController {
     //     }
     // }
 
-    // Search
+    /* Search */
 
     async searchProducts(req, res, next) {
-        // Opções de paginação e classificação
         const options = {
             page: Number(req.query.offset) || 0,
             limit: Number(req.query.limit) || 30,
             sort: getSort(req.query.sortType),
+            select: dontSelect,
             populate: ["productCategory"],
         };
-
+    
         try {
-            // Cria uma expressão regular para a pesquisa, ignorando maiúsculas e minúsculas
             const search = new RegExp(req.params.search, "i");
-
+    
             const products = await Products.paginate(
                 {
-                    // Utiliza o operador $or para buscar em vários campos
                     $or: [
-                        {
-                            productName: { $regex: search },
-                            productDescription: { $regex: search },
-                            sku: { $regex: search },
-                        },
+                        { productName: { $regex: search } },
+                        { productDescription: { $regex: search } },
+                        { sku: { $regex: search } },
+                        { tags: { $regex: search } },
+                        { productBrand: { $regex: search } },
                     ],
                 },
                 options
             );
-
+    
             return res.status(200).json(products);
         } catch (error) {
             next(error);
         }
     }
+    
 
     // Show One
     async showDetailsProduct(req, res, next) {
@@ -469,7 +473,7 @@ class ProductController {
 
         try {
             const product = await Products.findById(productId)
-                .select("-productVendor -order_items -timesPurchased -totalRevenue -sales ")
+                .select("-productVendor -order_items -timesPurchased -totalRevenue -sales -acquisitionCost -additionalCosts")
                 .populate([
                     { path: "productVariations" },
                     {
