@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 
 // Definindo o schema da visita
-const VisitaSchema = new mongoose.Schema(
+const VisitsSchema = new mongoose.Schema(
   {
-    VisitaCout: {
+    VisitsCout: {
       type: Number,
       default: 0, // Define o valor inicial como 0
     },
@@ -12,11 +12,11 @@ const VisitaSchema = new mongoose.Schema(
 );
 
 // Middleware que será executado antes de salvar uma nova visita
-VisitaSchema.pre('save', function(next) {
+VisitsSchema.pre('save', function(next) {
   // Incrementa o valor do contador sempre que um novo documento for salvo
-  this.VisitaCout += 1;
+  this.VisitsCout += 1;
   next();
 });
 
 // Exporta o modelo Visita
-module.exports = mongoose.model("Visita", VisitaSchema, "visitas");
+module.exports = mongoose.model("Visit", VisitsSchema, "visits");
