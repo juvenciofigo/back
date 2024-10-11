@@ -28,9 +28,9 @@ class EstatisticController {
             let customers = await Customers.countDocuments();
 
             let visitDoc = await Visits.findOne();
-            let visits = visitDoc ? visitDoc.VisitaCout : 0;
+            let visits = visitDoc ? visitDoc.VisitaCount : 0;
 
-            console.log(visits.VisitaCout);
+            console.log("visita", visitDoc.VisitaCount);
 
             return res.status(200).json({ visitsCount: visits, usersCount: users, ordersCount: orders, customersCount: customers });
         } catch (error) {

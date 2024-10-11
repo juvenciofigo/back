@@ -30,11 +30,11 @@ class UserController {
             try {
                 const visita = await Visita.findOneAndUpdate(
                     {}, // Se o campo estiver vazio, ele buscará o primeiro documento
-                    { $inc: { VisitaCout: 1 } }, // Incrementa o campo VisitaCout em 1
+                    { $inc: { VisitaCount: 1 } }, // Incrementa o campo VisitaCount em 1
                     { new: true, upsert: true } // Retorna o documento atualizado e cria um novo se não existir
                 );
 
-                console.log("Número de visitas atualizado: ", visita.VisitaCout);
+                console.log("Número de visitas atualizado: ", visita.VisitaCount);
                 res.json({ success: true });
             } catch (err) {
                 console.error("Erro ao registrar a visita: ", err);
