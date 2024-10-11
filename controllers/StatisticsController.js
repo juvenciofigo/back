@@ -2,7 +2,6 @@ const Addresses = require("../models/Addresses"),
     Carts = require("../models/Carts"),
     Categories = require("../models/Categories"),
     Customers = require("../models/Customers"),
-    Visits = require("../models/Visits"),
     Deliveries = require("../models/Deliveries"),
     Notifications = require("../models/Notifications"),
     OrderRegistrations = require("../models/OrderRegistrations"),
@@ -30,13 +29,7 @@ class EstatisticController {
                 customers = 0;
             }
 
-            let visitDoc = await Visits.findOne()
-            console.log(visitDoc);
-            if (!visitDoc) {
-                visitDoc = 0;
-            }
-
-            return res.status(200).json({ visitsCount: visitDoc, usersCount: users, ordersCount: orders, customersCount: customers });
+            return res.status(200).json({ usersCount: users, ordersCount: orders, customersCount: customers });
         } catch (error) {
             next(error);
         }

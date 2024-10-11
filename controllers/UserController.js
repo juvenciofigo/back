@@ -1,6 +1,6 @@
 const Users = require("../models/Users");
 const Carts = require("../models/Carts");
-const Visits = require("../models/Visits");
+const Visita = require("../models/visita");
 
 const sendEmailRecovery = require("../helpers/email-recovery");
 
@@ -25,19 +25,19 @@ class UserController {
     /*
     Client
     */
-    async visitReg(req, res, next) {
+    async visitaReg(req, res, next) {
         try {
             try {
-                const visit = await Visits.findOneAndUpdate(
+                const visita = await Visita.findOneAndUpdate(
                     {}, // Se o campo estiver vazio, ele buscará o primeiro documento
-                    { $inc: { VisitsCout: 1 } }, // Incrementa o campo VisitaCout em 1
+                    { $inc: { VisitaCout: 1 } }, // Incrementa o campo VisitaCout em 1
                     { new: true, upsert: true } // Retorna o documento atualizado e cria um novo se não existir
                 );
 
-                console.log("Número de visitas atualizado: ", visit.VisitsCout);
+                console.log("Número de visitas atualizado: ", visita.VisitaCout);
                 res.json({ success: true });
             } catch (err) {
-                console.error("Erro ao registrar a visit: ", err);
+                console.error("Erro ao registrar a visita: ", err);
             }
         } catch (error) {
             next(error);
