@@ -2,6 +2,7 @@ const Addresses = require("../models/Addresses"),
     Carts = require("../models/Carts"),
     Categories = require("../models/Categories"),
     Customers = require("../models/Customers"),
+    Visits = require("../models/visita"),
     Deliveries = require("../models/Deliveries"),
     Notifications = require("../models/Notifications"),
     OrderRegistrations = require("../models/OrderRegistrations"),
@@ -25,11 +26,13 @@ class EstatisticController {
                 orders = 0;
             }
             let customers = await Customers.countDocuments();
-            if (!customers) {
-                customers = 0;
-            }
 
-            return res.status(200).json({ usersCount: users, ordersCount: orders, customersCount: customers });
+            let visitDoc = await Visits.findOne();
+            let visits = visitDoc ? visitDoc.VisitaCout : 0;
+
+            console.log(visits.VisitaCout);
+
+            return res.status(200).json({ visitsCount: visits, usersCount: users, ordersCount: orders, customersCount: customers });
         } catch (error) {
             next(error);
         }
