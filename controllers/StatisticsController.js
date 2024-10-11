@@ -29,12 +29,14 @@ class EstatisticController {
             if (!customers) {
                 customers = 0;
             }
-            let visits = await Visits.countDocuments();
-            if (!visits) {
-                visits = 0;
+
+            let visitDoc = await Visits.findOne()
+            console.log(visitDoc);
+            if (!visitDoc) {
+                visitDoc = 0;
             }
 
-            return res.status(200).json({ visitsCount: visits, usersCount: users, ordersCount: orders, customersCount: customers });
+            return res.status(200).json({ visitsCount: visitDoc, usersCount: users, ordersCount: orders, customersCount: customers });
         } catch (error) {
             next(error);
         }
