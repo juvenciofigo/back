@@ -1,5 +1,5 @@
 const Request = require("./request");
-const agent_id = process.env.AGENT_ID;
+const agent_id = process.env.AGENT_ID_MPESA;
 // Classe para operações de transação
 class Transaction {
     constructor(api_key, public_key, ssl = true) {

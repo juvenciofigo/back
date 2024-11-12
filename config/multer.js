@@ -1,12 +1,6 @@
 const multer = require("multer");
-const path = require("path");
 
-const storage = multer.diskStorage({
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-        cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
-    },
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
     // Verifica se o tipo de arquivo é aceitável (exemplo: imagens)

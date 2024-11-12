@@ -136,7 +136,7 @@ const ProductSchema = new mongoose.Schema(
             default: 0,
         },
         sales: [SaleSchema],
-        profit: [ProfitSchema],
+        // profit: [ProfitSchema],
     },
     { timestamps: true }
 );

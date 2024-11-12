@@ -4,13 +4,13 @@ const auth = require("./auth");
 const AdminValidator = require("../controllers/validations/adminValidator");
 const productValidation = require("../controllers/validations/productValidation");
 const upload = require("../config/multer");
-const uploadMultiple = require("../config/clodinary");
+const uploadFirebase = require("../config/firebase");
 
-router.put("/product/:id", auth.require, AdminValidator, upload.array("files"), productValidation.Update, uploadMultiple, ProductController.updateProduct);
+router.put("/product/:id", auth.require, AdminValidator, upload.array("files"), productValidation.Update, uploadFirebase, ProductController.updateProduct);
 
-router.post("/product", auth.require, AdminValidator, upload.array("files"), productValidation.Create, uploadMultiple, ProductController.createProduct);
+router.post("/product", auth.require, AdminValidator, upload.array("files"), productValidation.Create, uploadFirebase, ProductController.createProduct);
 
-router.put("/product/image/:id", auth.require, AdminValidator, productValidation.Image, upload.array("files"), uploadMultiple, ProductController.updateImage);
+router.put("/product/image/:id", auth.require, AdminValidator, productValidation.Image, upload.array("files"), uploadFirebase, ProductController.updateImage);
 
 router.delete("/product/:id", auth.require, AdminValidator, productValidation.Delete, ProductController.deleteProduct);
 

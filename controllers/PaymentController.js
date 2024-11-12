@@ -1,7 +1,7 @@
 // Chaves de API e configurações SSL
-const api_key = process.env.API_KEY;
-const public_key = process.env.PUBLIC_KEY;
-const ssl = process.env.SSL;
+const api_key = process.env.API_KEY_MPESA;
+const public_key = process.env.PUBLIC_KEY_MPESA;
+const ssl = process.env.SSL_MPESA;
 
 // Inicialização e criação do objeto Mpesa
 const Mpesa = require("./integracoes/Mpesa/mpesa");
