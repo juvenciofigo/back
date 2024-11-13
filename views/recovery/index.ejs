@@ -6,19 +6,17 @@
             <hr />
             <br />
             <% if (success) { %>
-                <div class="alert alert-success"><%= success %></div>
+                <div class="alert alert-success"> <%= success %></div>
+            <% } else if (message && !success) { %>
+                <div class="alert alert-danger"><%= message %></div>
             <% } %> 
-            
-            <% if (error) { %>
-                <div class="alert alert-danger"><%= error %></div>
-            <% } %>
 
             <p>Digite seu email para receber instruções de como reiniciar a sua senha</p>
 
             <form action="/createRecovery" method="post">
                 <div class="form-group">
                     <label for="email" class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" placeholder="Digite seu email" aria-describedby="helpId" />
+                    <input type="email" name="email" class="form-control" placeholder="Digite seu email" aria-describedby="helpId" required />
                     <small id="helpId" class="text-muted">Ajuda</small>
                 </div>
 

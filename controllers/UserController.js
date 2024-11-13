@@ -192,20 +192,24 @@ class UserController {
     }
 
     //
-    async initiateRecovery(req, res) {
+    async initiateRecovery(req, res, next) {
         const { email } = req.body;
 
         try {
+            if (!email) {
+                return res.render("recovery", { message: "Preencha com o seu email", success: false });
+            }
             const emailLowerCase = email.toLowerCase();
-
-            if (!email) return res.render("recovery", { message: "Preencha com o seu email", success: false });
 
             const user = await Users.findOne({ email: emailLowerCase });
 
-            if (!user) return res.render("recovery", { message: "Não existe usuário com este email", success: false });
+            if (!user) {
+                return res.render("recovery", { message: "Não existe usuário com este email", success: false });
+            }
 
             const recoveryData = await user.gerTokenRecoveryPass();
-            user.save();
+
+            await user.save();
 
             sendEmailRecovery({ user, recovery: recoveryData }, (error, success) => {
                 if (error) {
@@ -225,6 +229,7 @@ class UserController {
             if (!token) return res.render("recovery", { message: "Token não identificado", success: null });
 
             const user = await Users.findOne({ "recovery.token": token });
+
             if (!user) return res.render("recovery", { message: "Não existe usuário com este token", success: null });
 
             if (new Date(user.recovery.date) < new Date()) return res.render("recovery", { message: "Token expirado", success: null });
@@ -237,6 +242,7 @@ class UserController {
 
     async completeRecovery(req, res, next) {
         const { token, password } = req.body;
+        console.log(false);
         try {
             if (!token || !password) {
                 return res.render("recovery/store", { message: "Preencha novamente com a sua senha", success: false, token: token });

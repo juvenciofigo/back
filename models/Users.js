@@ -120,4 +120,4 @@ UserSchema.methods.finalTokenRecoveryPass = function () {
 };
 
 module.exports = mongoose.model("User", UserSchema, "users");
-/////////////////////// nome do mode, nome do SChema, nome da coleção
+/////////////////////// nome do model, nome do SChema, nome da coleção

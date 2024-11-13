@@ -1,7 +1,15 @@
 const nodemailer = require("nodemailer");
 const emailConfig = require("../config/email");
 const { api: link } = require("../config/index");
-const transporter = nodemailer.createTransport(emailConfig);
+// const transporter = nodemailer.createTransport(emailConfig);
+var transporter = nodemailer.createTransport({
+    host: "sandbox.smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+        user: "58058046b45a2b",
+        pass: "a9c23cc907357c",
+    },
+});
 
 module.exports = ({ user, recovery }, cb) => {
     const recoveryLink = `${link}/recoverPass?token=${recovery.token}`;
@@ -18,7 +26,7 @@ module.exports = ({ user, recovery }, cb) => {
             Obs.: Se você não solicitou a redefinição, apenas ignore este e-mail.
         </p>
         <br />
-        <p>Atenciosamente, Nome da loja</p>
+        <p>Atenciosamente, ${process.env.STORE_NAME}</p>
     `;
 
     const emailOptions = {
