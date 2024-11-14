@@ -188,7 +188,7 @@ class UserController {
 
     //
     async showRecovery(req, res, next) {
-        return res.render("recovery", { error: null, success: null });
+        return res.render("recovery", { success: true });
     }
 
     //
