@@ -3,11 +3,12 @@ const emailConfig = require("../config/email");
 const { api: link } = require("../config/index");
 // const transporter = nodemailer.createTransport(emailConfig);
 var transporter = nodemailer.createTransport({
-    host: "sandbox.smtp.mailtrap.io",
-    port: 2525,
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
     auth: {
-        user: "58058046b45a2b",
-        pass: "a9c23cc907357c",
+        user: "juvenciofigo@gmail.com",
+        pass: "bgio itkk dluu opjg",
     },
 });
 
@@ -30,8 +31,8 @@ module.exports = ({ user, recovery }, cb) => {
     `;
 
     const emailOptions = {
-        from: "naoresponder@Nomedaloja.com",
-        to: user.email,
+        from: process.env.GMAIL_USER,
+        to: "herminiaolimpiocumbane@gmail.com",
         subject: "Redefinição de Senha - Nome da loja",
         html: message,
     };
