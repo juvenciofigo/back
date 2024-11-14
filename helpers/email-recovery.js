@@ -2,14 +2,6 @@ const nodemailer = require("nodemailer");
 const emailConfig = require("../config/email");
 const { api: link } = require("../config/index");
 const transporter = nodemailer.createTransport(emailConfig);
-// var transporter = nodemailer.createTransport({
-//     host: "sandbox.smtp.mailtrap.io",
-//     port: 2525,
-//     auth: {
-//         user: "58058046b45a2b",
-//         pass: "bgio itkk dluu opjg",
-//     },
-// });
 
 module.exports = ({ user, recovery }, cb) => {
     const recoveryLink = `${link}/recoverPass?token=${recovery.token}`;
@@ -31,7 +23,7 @@ module.exports = ({ user, recovery }, cb) => {
 
     const emailOptions = {
         from:process.env.GMAIL_USER,
-        to: "herminiaolimpiocumbane@gmail.com",
+        to: user.email,
         subject: "Redefinição de Senha - Nome da loja",
         html: message,
     };
