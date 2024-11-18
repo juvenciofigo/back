@@ -20,13 +20,13 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     storageBucket: BUCKET,
 });
+const bucket = admin.storage().bucket();
 
 // Função para fazer o upload de arquivos
 const uploadFirebase = async (req, res, next) => {
     if (!req.files) return next();
 
     const files = req.files;
-    const bucket = admin.storage().bucket();
 
     try {
         const imageUrls = await Promise.all(
@@ -63,4 +63,32 @@ const uploadFirebase = async (req, res, next) => {
     }
 };
 
-module.exports = uploadFirebase;
+const deleteFilesFirebase = async (fileUrls) => {
+    try {
+        // Função para extrair o nome do arquivo do link
+
+        const extractFileName = (url) => {
+            const regex = /https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/[^\/]+\/o\/([^?]+)\?alt=media/;
+            const match = url.match(regex);
+            if (match && match[1]) {
+                return decodeURIComponent(match[1]); // Decodifica e retorna o nome do arquivo
+            }
+            throw new Error("URL inválida ou formato inesperado.");
+        };
+
+        // Excluindo os arquivos
+        const deletePromises = fileUrls.map((url) => {
+            const fileName = extractFileName(url); // Extrai o nome do arquivo
+            const file = bucket.file(fileName); // Cria referência para o arquivo
+            return file.delete(); // Retorna a promessa de exclusão
+        });
+
+        // Aguarda a exclusão de todos os arquivos
+        await Promise.all(deletePromises);
+        return;
+    } catch (error) {
+        console.error("Erro ao excluir os arquivos:", error.message);
+    }
+};
+
+module.exports = { uploadFirebase, deleteFilesFirebase };

@@ -1,11 +1,10 @@
-const { set } = require("mongoose");
-
 const { Category, SubCategory, Sub_category } = require("../models/Categories"),
     Variations = require("../models/Variations"),
     Customers = require("../models/Customers"),
     Products = require("../models/Products"),
     Ratings = require("../models/Ratings"),
     Orders = require("../models/Orders"),
+    { deleteFilesFirebase } = require("../config/firebase"),
     api = require("../config/index").api;
 
 const getSort = (sortType) => {
@@ -157,7 +156,7 @@ class ProductController {
 
     // Update product
     async updateProduct(req, res, next) {
-        const {
+        var {
             productDescription,
             productAvailability,
             productPrice,
@@ -187,13 +186,18 @@ class ProductController {
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
+            // Se productImage for undefined, inicializa como array vazio
+            if (productImage === undefined) {
+                productImage = [];
+            }
+
+            // Filtra as imagens removidas
+            const removedImages = product.productImage.filter((image) => !productImage.includes(image));
+
             // Atualização das imagens
-            if (Array.isArray(productImage)) {
-                if (productImage.length !== product.productImage.length) {
-                    product.productImage = productImage;
-                }
-            } else {
-                product.productImage = [];
+            if (removedImages.length > 0) {
+                await deleteFilesFirebase(removedImages);
+                product.productImage = productImage;
             }
 
             // Adiciona novas imagens enviadas
@@ -441,10 +445,10 @@ class ProductController {
             select: dontSelect,
             populate: ["productCategory"],
         };
-    
+
         try {
             const search = new RegExp(req.params.search, "i");
-    
+
             const products = await Products.paginate(
                 {
                     $or: [
@@ -457,13 +461,12 @@ class ProductController {
                 },
                 options
             );
-    
+
             return res.status(200).json(products);
         } catch (error) {
             next(error);
         }
     }
-    
 
     // Show One
     async showDetailsProduct(req, res, next) {

@@ -4,7 +4,7 @@ const auth = require("./auth");
 const AdminValidator = require("../controllers/validations/adminValidator");
 const variationValidation = require("../controllers/validations/variationValidation");
 const upload = require("../config/multer");
-const uploadFirebase = require("../config/firebase");
+const {uploadFirebase} = require("../config/firebase");
 
 
 router.get("/variations", auth.require, variationValidation.getAllVariations, VariationController.getAllVariations);

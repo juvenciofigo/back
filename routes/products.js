@@ -4,7 +4,7 @@ const auth = require("./auth");
 const AdminValidator = require("../controllers/validations/adminValidator");
 const productValidation = require("../controllers/validations/productValidation");
 const upload = require("../config/multer");
-const uploadFirebase = require("../config/firebase");
+const { uploadFirebase } = require("../config/firebase");
 
 router.put("/product/:id", auth.require, AdminValidator, upload.array("files"), productValidation.Update, uploadFirebase, ProductController.updateProduct);
 
