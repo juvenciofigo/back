@@ -1,5 +1,6 @@
-const Products = require("../models/Products");
-const Variations = require("../models/Variations");
+const Products = require("../models/Products"),
+    Variations = require("../models/Variations"),
+    { deleteFilesFirebase } = require("../config/firebase");
 
 class VariationController {
     // Show all
@@ -58,7 +59,6 @@ class VariationController {
     }
 
     // Save Variations
-
     async createVariation(req, res, next) {
         const { variationType, variationValue, sku, variationPrice, variationPromotion, variationStock, heightCm, widthCm, depthCm, weight, shippingFree } = req.body;
         const { product } = req.params;
@@ -112,12 +112,31 @@ class VariationController {
 
     // Update Variation
     async updateVariation(req, res, next) {
-        const { variationType, variationValue, sku, variationPrice, variationPromotion, variationStock, variationImage, heightCm, widthCm, depthCm, weight, shippingFree } = req.body;
+        var { variationType, variationValue, sku, variationPrice, variationPromotion, variationStock, variationImage, heightCm, widthCm, depthCm, weight, shippingFree } = req.body;
 
         try {
             const variation = await Variations.findById(req.params.id);
             if (!variation) {
                 return res.status(400).json({ message: "Variação não existente", success: false });
+            }
+
+            // Se variationImage for undefined, inicializa como array vazio
+            if (variationImage === undefined) {
+                variationImage = [];
+            }
+
+            // Filtra as imagens removidas
+            const removedImages = variation.variationImage.filter((image) => !variationImage.includes(image));
+
+            // Atualização das imagens
+            if (removedImages.length > 0) {
+                await deleteFilesFirebase(removedImages);
+                variation.variationImage = variationImage;
+            }
+
+            // Adiciona novas imagens enviadas
+            if (Array.isArray(req.files) && req.files && req.files.length > 0) {
+                variation.variationImage.push(...req.files);
             }
 
             // Atualiza as propriedades da variação com os valores fornecidos
@@ -132,19 +151,6 @@ class VariationController {
             if (depthCm) variation.delivery.dimensions.depthCm = depthCm;
             if (weight) variation.delivery.weight = weight;
             if (shippingFree !== undefined) variation.delivery.shippingFree = shippingFree;
-
-            // Atualização das imagens da variação
-            if (Array.isArray(variationImage) && variationImage.length !== variation.variationImage.length) {
-                variation.variationImage = variationImage;
-            }
-            if (!Array.isArray(variationImage)) {
-                variation.variationImage = [];
-            }
-
-            // Adiciona novas imagens enviadas
-            if (Array.isArray(req.files) && req.files && req.files.length > 0) {
-                variation.variationImage.push(...req.files);
-            }
 
             // Salva a variação atualizada no banco de dados
             await variation.save();

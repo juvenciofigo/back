@@ -65,8 +65,6 @@ const createVariation = (req, res, next) => {
         return res.status(400).json({ message: bodyError.details[0].message });
     }
 
-    console.log(true);
-    
     next();
 };
 
