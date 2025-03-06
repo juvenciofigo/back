@@ -27,6 +27,29 @@ const getSort = (sortType) => {
             return { updatedAt: -1 };
     }
 };
+
+// gerear referencia
+async function gerReferenceNumeber() {
+    const caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const caracteresLength = caracteres.length;
+    const minSize = 6;
+    const maxSize = 20;
+
+    // Gerar um timestamp único
+    const timestamp = new Date().getTime().toString();
+
+    // Gerar um número aleatório de caracteres
+    const numeroAleatorio = Array.from({ length: maxSize }, () => caracteres.charAt(Math.floor(Math.random() * caracteresLength))).join("");
+
+    // Calcula o tamanho do número de referência
+    const tamanho = Math.floor(Math.random() * (maxSize - minSize + 1)) + minSize;
+
+    // Combinar o timestamp e o número aleatório para formar o número de referência
+    const numeroReferencia = `${timestamp}${numeroAleatorio}`.slice(0, tamanho);
+
+    return numeroReferencia;
+}
+
 class OrderController {
     async getAllOrdersAdmin(req, res, next) {
         const options = {
@@ -159,18 +182,6 @@ class OrderController {
                 return res.status(400).json({ success: false, message: "Nenhum pedido encontrado" });
             }
 
-            // orders.docs = await Promise.all(
-            //     orders.docs.map(async (order) => {
-            //         order.ordercart = await Promise.all(
-            //             order.ordercart.map(async (item) => {
-            //                 item.productOrder = await Products.findById(item.productOrder);
-            //                 item.variationOrder = await Variations.findById(item.variationOrder);
-            //                 return item;
-            //             })
-            //         );
-            //         return order;
-            //     })
-            // );
             return res.status(200).json({ success: true, orders });
         } catch (error) {
             next(error);
@@ -241,10 +252,21 @@ class OrderController {
             }
 
             // verificar se a referencia do pedido ja existe
-            const existOrder = await Orders.findOne({ referenceOrder: delivery.reference });
-            if (existOrder) {
-                return res.status(400).json({ message: "Referência existente, vá para pedidos" });
+
+            const reference = await gerReferenceNumeber();
+
+            async function generateUniqueReference() {
+                let reference;
+                let existOrder;
+
+                do {
+                    reference = gerReferenceNumeber();
+                    existOrder = await Orders.findOne({ referenceOrder: reference });
+                } while (existOrder); // Continua gerando até encontrar uma referência única
+
+                return reference;
             }
+
             //  prcessar cada item do carrinho
             for (const product of existCart.cartItens) {
                 const productDetails = await Products.findById(product.productId);
@@ -302,7 +324,7 @@ class OrderController {
             const newPayment = new Payments({
                 amount: shippingPrice + totalProductsPrice,
                 totalProductsPrice: totalProductsPrice,
-                reference: delivery.reference,
+                reference: reference,
             });
 
             // criar nova entrega
@@ -318,7 +340,7 @@ class OrderController {
                 address: delivery.address,
                 payment: newPayment._id,
                 delivery: newDelivery._id,
-                referenceOrder: delivery.reference,
+                referenceOrder: reference,
                 totalPrice: shippingPrice + totalProductsPrice,
                 totalProductsPrice: totalProductsPrice,
             });

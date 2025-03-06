@@ -75,7 +75,6 @@ const createOrder = (req, res, next) => {
         cart: Joi.string().alphanum().length(24).required(),
         delivery: Joi.object({
             address: Joi.string().alphanum().length(24).required(),
-            reference: Joi.string().required(),
         }).required(),
     });
 
