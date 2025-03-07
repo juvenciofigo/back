@@ -10,6 +10,25 @@ const ejs = require("ejs");
 const compression = require("compression");
 const bodyParser = require("body-parser");
 
+const rateLimit = require("express-rate-limit");
+
+const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minuto
+    max: 50, // Máximo de 50 requisições por IP
+    message: "Muitas requisições. Tente novamente mais tarde.",
+    keyGenerator: (req, res) => {
+        console.log("Ip do user", req.ip);
+    },
+    handler: (req, res) => {
+        const retryAfter = 40 * 60; // Definir o tempo de bloqueio (em segundos), neste caso 15 minutos
+        res.setHeader("Retry-After", retryAfter); // Header indicando ao cliente o tempo para tentar novamente
+        res.status(429).json({
+            success: false,
+            message: `Muitas requisições feitas a partir deste IP. Tente novamente em ${retryAfter / 60} minutos.`,
+        });
+    },
+});
+
 // requires routes
 const usersRouter = require("./routes/users");
 const customersRouter = require("./routes/customers");
@@ -23,8 +42,10 @@ const ordersRouter = require("./routes/orders");
 const deliveriesRouter = require("./routes/deliveries");
 const payments = require("./routes/payments");
 const statistics = require("./routes/statistics");
+const { log } = require("console");
 
 const app = express();
+app.use(limiter);
 
 // Ambient
 const isProduction = process.env.NODE_ENV === "production";
@@ -54,6 +75,12 @@ app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 
+app.use((req, res, next) => {
+    const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    console.log("IP do Cliente:", clientIp);
+    next();
+});
+
 app.use("/", usersRouter);
 app.use("/", customersRouter);
 app.use("/", cartRouter);
@@ -78,18 +105,34 @@ app.use((err, req, res, next) => {
     }
 });
 
-app.use((req, res, next) => {
-    const err = new Error("Not found");
-    err.status = 404;
-    return res.status(404).json({ success: false, message: { message: err.message, status: 404 } });
-});
+// app.use((req, res, next) => {
+//     const err = new Error("Not found");
+//     err.status = 404;
+//     return res.status(404).json({ success: false, message: { message: err.message, status: 404 } });
+// });
 
 app.use((err, req, res, next) => {
-    if (err.status !== 404) {
-        console.warn("Error", err.message, new Date());
-        return res.json({ success: false, message: { message: err.message, status: res.statusCode } });
+    if (err.status === 404) {
+        console.warn("⚠️ Erro 404:", err.message, new Date());
+
+        return res.status(404).json({
+            success: false,
+            message: {
+                message: err.message || "Rota não encontrada",
+                status: 404,
+            },
+        });
     }
-    return res.status(err.status || 500);
+
+    console.error("🔥 Erro interno:", err.message, new Date());
+
+    return res.status(err.status || 500).json({
+        success: false,
+        message: {
+            message: err.message || "Erro interno no servidor",
+            status: err.status || 500,
+        },
+    });
 });
 
 app.listen(PORT, () => {

@@ -6,7 +6,6 @@ const productValidation = require("../controllers/validations/productValidation"
 const upload = require("../config/multer");
 const { uploadFirebase } = require("../config/firebase");
 
-
 //////////////////////////
 //ADMIN
 /////////////
