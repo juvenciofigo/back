@@ -17,6 +17,11 @@ const limiter = rateLimit({
     max: 50, // Máximo de 50 requisições por IP
     message: "Muitas requisições. Tente novamente mais tarde.",
     keyGenerator: (req, res) => {
+        // Obtém o IP real do cliente a partir do X-Forwarded-For
+        const ip = req.headers["x-forwarded-for"] ? req.headers["x-forwarded-for"].split(",")[0] : req.connection.remoteAddress;
+
+        console.log("IP do real Cliente:", ip);
+
         console.log("Ip do user", req.ip);
     },
     handler: (req, res) => {
