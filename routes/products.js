@@ -6,6 +6,10 @@ const productValidation = require("../controllers/validations/productValidation"
 const upload = require("../config/multer");
 const { uploadFirebase } = require("../config/firebase");
 
+
+//////////////////////////
+//ADMIN
+/////////////
 router.put("/product/:id", auth.require, AdminValidator, upload.array("files"), productValidation.Update, uploadFirebase, ProductController.updateProduct);
 
 router.post("/product", auth.require, AdminValidator, upload.array("files"), productValidation.Create, uploadFirebase, ProductController.createProduct);

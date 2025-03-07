@@ -251,7 +251,7 @@ class ProductController {
 
             await product.save();
 
-            return res.status(200).json({ success: true, product });
+            return res.status(200).json({ success: true, message: "Produto actualizado", product });
         } catch (error) {
             next(error);
         }
@@ -278,7 +278,7 @@ class ProductController {
 
             await product.save();
 
-            return res.status(200).json({ success: true, product });
+            return res.status(200).json({ success: true, message: "Imagens adicionadas", product });
         } catch (error) {
             next(error);
         }
@@ -312,7 +312,7 @@ class ProductController {
             // Deletar o produto
             await product.deleteOne();
 
-            return res.status(200).json({ success: true });
+            return res.status(200).json({ success: true, message: "Produto apagado!" });
         } catch (error) {
             next(error);
         }

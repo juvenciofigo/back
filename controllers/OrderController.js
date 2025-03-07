@@ -364,6 +364,7 @@ class OrderController {
 
             return res.status(200).json({
                 success: true,
+                message: "Pedido enviado",
                 order: {
                     ...order._doc,
                     delivery: newDelivery,

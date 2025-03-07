@@ -266,7 +266,7 @@ class CustomerController {
             }
             address.deleted = true;
             await address.save();
-            return res.status(200).json({ message: "Endereço deletado com sucesso" });
+            return res.status(200).json({ message: "Endereço apagado com sucesso" });
         } catch (error) {
             next(error);
         }
