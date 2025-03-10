@@ -19,13 +19,10 @@ const limiter = rateLimit({
     keyGenerator: (req, res) => {
         // Obtém o IP real do cliente a partir do X-Forwarded-For
         const ip = req.headers["x-forwarded-for"] ? req.headers["x-forwarded-for"].split(",")[0] : req.connection.remoteAddress;
-
         console.log("IP do real Cliente:", ip);
-
-        console.log("Ip do user", req.ip);
     },
     handler: (req, res) => {
-        const retryAfter = 40 * 60; // Definir o tempo de bloqueio (em segundos), neste caso 15 minutos
+        const retryAfter = 15 * 60; // Definir o tempo de bloqueio (em segundos), neste caso 15 minutos
         res.setHeader("Retry-After", retryAfter); // Header indicando ao cliente o tempo para tentar novamente
         res.status(429).json({
             success: false,
