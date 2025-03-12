@@ -223,20 +223,24 @@ class OrderController {
         let cartProducts = [];
         let shippingPrice = 10;
 
+        const session = await Orders.startSession();
+        session.startTransaction(); // Iniciar transação
+
         try {
-            // vereficar existencia do carrinho
-            const existCart = await Cart.findOne({ cartUser: userID, _id: cart });
+            // Verificar existência do carrinho
+            const existCart = await Cart.findOne({ cartUser: userID, _id: cart }).session(session);
             if (!existCart) {
+                await session.abortTransaction();
+                session.endSession();
                 return res.status(400).json({ success: false, message: "Carrinho inválido!" });
             }
 
-            // verificar se cliente existe e criar, caso nao
-            const customer = await Customers.findOne({ user: userID });
+            // Verificar se cliente existe e criar se necessário
+            let customer = await Customers.findOne({ user: userID }).session(session);
 
             if (!customer) {
-                const user = await Users.findById(userID);
-
-                const customer = new Customers({
+                const user = await Users.findById(userID).session(session);
+                customer = new Customers({
                     email: user.email,
                     firstName: user.firstName,
                     lastName: user.lastName,
@@ -246,57 +250,37 @@ class OrderController {
                 });
 
                 user.customer = customer._id;
-
-                await customer.save();
-                await user.save();
+                await customer.save({ session });
+                await user.save({ session });
             }
 
-            // verificar se a referencia do pedido ja existe
-
-            const reference = await gerReferenceNumeber();
-
+            // Gerar referência única para o pedido
             async function generateUniqueReference() {
                 let reference;
                 let existOrder;
-
                 do {
-                    reference = gerReferenceNumeber();
-                    existOrder = await Orders.findOne({ referenceOrder: reference });
-                } while (existOrder); // Continua gerando até encontrar uma referência única
-
+                    reference = await gerReferenceNumeber();
+                    existOrder = await Orders.findOne({ referenceOrder: reference }).session(session);
+                } while (existOrder);
                 return reference;
             }
+            const reference = await generateUniqueReference();
 
-            //  prcessar cada item do carrinho
+            // Processar cada item do carrinho
             for (const product of existCart.cartItens) {
-                const productDetails = await Products.findById(product.productId);
+                const productDetails = await Products.findById(product.productId).session(session);
+                if (!productDetails) continue;
 
-                if (!productDetails) {
-                    console.log(`Product com ID ${product.productId} not found`);
-                    continue;
-                }
+                const color = await Variations.findById(product.variation.color).session(session);
+                const model = await Variations.findById(product.variation.model).session(session);
+                const size = await Variations.findById(product.variation.size).session(session);
+                const material = await Variations.findById(product.variation.material).session(session);
 
-                // buscar por variacoes
-                const color = await Variations.findById(product.variation.color);
-                const model = await Variations.findById(product.variation.model);
-                const size = await Variations.findById(product.variation.size);
-                const material = await Variations.findById(product.variation.material);
-
-                // calculcar o preco total do produto com base nas variacoes
                 let price = 0;
-
-                if (color) {
-                    price += color.variationPrice;
-                }
-                if (model) {
-                    price += model.variationPrice;
-                }
-                if (material) {
-                    price += material.variationPrice;
-                }
-                if (size) {
-                    price += size.variationPrice;
-                }
+                if (color) price += color.variationPrice;
+                if (model) price += model.variationPrice;
+                if (material) price += material.variationPrice;
+                if (size) price += size.variationPrice;
 
                 let productPrice = (productDetails.productPrice += price);
                 let subtotal = productPrice * product.quantity;
@@ -304,36 +288,30 @@ class OrderController {
                     item: product.item,
                     productId: productDetails._id,
                     product: productDetails.productName,
-                    variation: {
-                        color: color ? color : null,
-                        model: model ? model : null,
-                        size: size ? size : null,
-                        material: material ? material : null,
-                    },
+                    variation: { color, model, size, material },
                     picture: productDetails.productImage[0],
-                    productPrice: productPrice,
+                    productPrice,
                     quantity: Number(product.quantity),
-                    subtotal: subtotal,
+                    subtotal,
                 });
             }
 
-            // calcular o preco total dos produtos
             const totalProductsPrice = cartProducts.reduce((total, product) => total + product.subtotal, 0);
 
-            // criar novo pagamento
+            // Criar novo pagamento
             const newPayment = new Payments({
                 amount: shippingPrice + totalProductsPrice,
-                totalProductsPrice: totalProductsPrice,
-                reference: reference,
+                totalProductsPrice,
+                reference,
             });
 
-            // criar nova entrega
+            // Criar nova entrega
             const newDelivery = new Deliveries({
                 cost: shippingPrice,
                 address: delivery.address,
             });
 
-            // criar e salvar novo pedido
+            // Criar novo pedido
             const order = new Orders({
                 customer: customer._id,
                 cart: cartProducts,
@@ -342,8 +320,9 @@ class OrderController {
                 delivery: newDelivery._id,
                 referenceOrder: reference,
                 totalPrice: shippingPrice + totalProductsPrice,
-                totalProductsPrice: totalProductsPrice,
+                totalProductsPrice,
             });
+
             const newOrderReg = new OrderRegistrations({
                 order: order._id,
                 orderStatus: order.status,
@@ -353,14 +332,19 @@ class OrderController {
             newDelivery.order = order._id;
             order.orderRegistration = newOrderReg._id;
 
-            await order.save();
-            await newPayment.save();
-            await newDelivery.save();
-            await newOrderReg.save();
+            // Salvar tudo dentro da transação
+            await order.save({ session });
+            await newPayment.save({ session });
+            await newDelivery.save({ session });
+            await newOrderReg.save({ session });
 
-            // resetar o carrinho
+            // Resetar o carrinho
             existCart.cartItens = [];
-            existCart.save();
+            await existCart.save({ session });
+
+            // Confirmar a transação
+            await session.commitTransaction();
+            session.endSession();
 
             return res.status(200).json({
                 success: true,
@@ -374,6 +358,9 @@ class OrderController {
                 },
             });
         } catch (error) {
+            // Se ocorrer erro, desfaz todas as operações
+            await session.abortTransaction();
+            session.endSession();
             next(error);
         }
     }

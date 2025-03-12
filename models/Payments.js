@@ -35,6 +35,7 @@ const PaymentRouterSchema = new mongoose.Schema(
         transactionId: {
             type: String,
             unique: true,
+            sparse: true,
         },
         rescriptionResponse: {
             type: String,

@@ -7,6 +7,7 @@ const CustomerSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: [true, "Preencha o campo user"],
+            unique: true,
         },
         firstName: {
             type: String,

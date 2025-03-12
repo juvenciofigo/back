@@ -37,6 +37,8 @@ const CartSchema = new mongoose.Schema(
                 item: {
                     type: mongoose.Schema.Types.ObjectId,
                     default: () => new mongoose.Types.ObjectId(),
+                    unique: true,
+                    sparse: true,
                 },
             },
         ],
