@@ -51,7 +51,7 @@ class UserController {
         if (authId !== user) return res.status(400).json({ message: "Sem autorização!" });
 
         try {
-            const userDetails = await Users.findById(user).select("-recovery -salt -password").populate("cart customer");
+            const userDetails = await Users.findById(user).select("-recovery -salt -password -role -deleted -cart").populate("customer");
             if (userDetails.deleted === true) {
                 return res.status(404).json({ message: "Conta apagada!" });
             }

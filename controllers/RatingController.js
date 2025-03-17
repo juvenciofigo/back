@@ -135,10 +135,10 @@ class RatingController {
 
             // Se o comentário não existe, retorna um erro
             if (!rating) {
-                return res.status(400).json({ success: false, message: "Comentário não encontrado" });
+                return res.status(400).json({ success: false, message: "Avalição não encontrada!" });
             }
 
-            return res.status(200).json({ success: true, message: "Avalição apagada" });
+            return res.status(200).json({ success: true, message: "Avalição apagada!" });
         } catch (error) {
             next(error);
         }

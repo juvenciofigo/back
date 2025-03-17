@@ -102,7 +102,7 @@ class CategoryController {
             await category.save();
 
             // Responder com a categoria criada
-            return res.status(200).json({ success: true, category });
+            return res.status(200).json({ success: true, message: "Categoria criada", category });
         } catch (error) {
             next(error);
         }
@@ -195,7 +195,7 @@ class CategoryController {
             await sub_category.save();
             await subCategory.save();
 
-            return res.status(200).json({ success: true });
+            return res.status(200).json({ success: true, message: "Sub_categoria criada" });
         } catch (error) {
             next(error);
         }
