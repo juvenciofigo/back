@@ -115,6 +115,7 @@ class UserController {
             if (typeof firstName !== "undefined") {
                 user.firstName = firstName;
             }
+            
             if (typeof lastName !== "undefined") {
                 user.lastName = lastName;
             }
