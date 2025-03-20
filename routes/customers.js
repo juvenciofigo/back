@@ -29,7 +29,7 @@ router.post("/customer/:userId", auth.require, CustomerValidation.createCustomer
 
 router.get("/customer/:userId/addresses", auth.require, CustomerController.allAddress);
 router.post("/customer/:userId/address/", auth.require, CustomerController.addAddress);
-router.put("/customer/:addressId/address/", auth.require, CustomerController.deleteAddress);
+router.delete("/customer/:addressId/address/", auth.require, CustomerController.deleteAddress);
 
 router.put("/customer/:id", auth.require, CustomerValidator, CustomerValidation.updateCustomer, CustomerController.updateMySelf);
 

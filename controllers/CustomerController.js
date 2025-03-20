@@ -202,7 +202,6 @@ class CustomerController {
             const user = await Users.findById(userId).select("-recovery -salt -password -role");
 
             if (!user.customer) {
-                
                 const customer = new Customers({
                     email: user.email,
                     firstName: user.firstName,
@@ -259,16 +258,37 @@ class CustomerController {
     async deleteAddress(req, res, next) {
         const { addressId } = req.params;
         const userId = req.auth._id;
+
+        // Validação básica dos parâmetros
+        if (!addressId || !userId) {
+            return res.status(400).json({ message: "Parâmetros inválidos" });
+        }
+
         try {
-            const address = await Address.findOne({ _id: addressId, user: userId });
-            if (!address) {
-                return res.status(404).json({ message: "Falha ao apagar" });
+            // Atualiza o endereço diretamente no banco de dados
+            const updatedAddress = await Address.findOneAndUpdate(
+                { _id: addressId, user: userId }, // Filtro
+                { deleted: true }, // Atualização
+                { new: true } // Retorna o documento atualizado
+            );
+
+            // Verifica se o endereço foi encontrado e atualizado
+            if (!updatedAddress) {
+                return res.status(404).json({ message: "Endereço não encontrado ou não pertence ao usuário" });
             }
-            address.deleted = true;
-            await address.save();
-            return res.status(200).json({ message: "Endereço apagado com sucesso" });
+
+            // Busca os endereços ativos do usuário
+            const addresses = await Address.find({ user: userId, deleted: false });
+
+            // Retorna a resposta com os endereços atualizados
+            return res.status(200).json({
+                message: "Endereço apagado com sucesso",
+                addresses: addresses,
+            });
         } catch (error) {
-            next(error);
+            // Tratamento de erros
+            console.error("Erro ao apagar endereço:", error);
+            next(error); // Passa o erro para o middleware de tratamento de erros
         }
     }
 
@@ -285,12 +305,13 @@ class CustomerController {
             next(error);
         }
     }
+
     async allAddress(req, res, next) {
         const { userId } = req.params;
         try {
-            const address = await Address.find({ user: userId, deleted: false }).populate({ path: "user" });
+            const addresses = await Address.find({ user: userId, deleted: false });
 
-            return res.status(200).json(address);
+            return res.status(200).json(addresses);
         } catch (error) {
             next(error);
         }

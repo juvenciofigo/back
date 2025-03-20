@@ -152,12 +152,13 @@ class OrderController {
         const user = req.params.user;
 
         if (authId !== user) return res.status(400).json({ message: "Sem autorização!" });
+
         if (!user) {
             return res.status(400).json({ success: false, message: "Payload ou ID do payload não definidos" });
         }
 
         const options = {
-            page: Number(req.query.offset) || 0,
+            page: Number(req.query.offset) || 1,
             limit: Number(req.query.limit) || 10,
             sort: { updatedAt: -1 },
             populate: "customer payment delivery orderRegistration address",
@@ -176,10 +177,10 @@ class OrderController {
                 return res.status(400).json({ success: false, message: "Não tem pedidos ainda!" });
             }
 
-            const orders = await Orders.paginate({ customer: customer._id }, options);
+            const orders = await Orders.paginate({ customer: customer._id, deleted: false }, options);
 
-            if (!orders) {
-                return res.status(400).json({ success: false, message: "Nenhum pedido encontrado" });
+            if (orders.total === 0) {
+                return res.status(404).json({ success: false, message: "Nenhum pedido encontrado" });
             }
 
             return res.status(200).json({ success: true, orders });
@@ -380,37 +381,34 @@ class OrderController {
 
     async deleteOrder(req, res, next) {
         const orderId = req.params.id;
+        const userId = req.auth._id;
+
         try {
-            const customer = await Customers.findOne({ user: req.auth._id });
+            const customer = await Customers.findOne({ user: userId });
 
             if (!customer) {
                 return res.status(400).json({ success: false, message: "Cliente não encontrado" });
             }
 
-            const order = await Orders.findOne({ customer: customer._id, _id: orderId }).populate("payment delivery orderRegistration");
+            const order = await Orders.findOne({ customer: customer._id, _id: orderId }).populate("payment");
 
             if (!order) {
                 return res.status(400).json({ success: false, message: "Pedido não encontrado" });
             }
-            const payment = await Payments.findOne({ order: orderId });
-            const delivery = await Deliveries.findOne({ order: orderId });
-            const reg = await OrderRegistrations.findOne({ order: orderId });
 
-            if (order.payment.status === "Esperando") {
-                await payment.deleteOne();
-                await delivery.deleteOne();
-                await reg.deleteOne();
-                await order.deleteOne();
+            if (order.payment.status === "Pago") {
+                order.deleted = true;
+                await order.save();
             } else {
-                payment.status = "Pedido Cancelado";
-                order.status = "Pedido Cancelado";
-                reg.orderStatus = "Pedido Cancelado";
-                payment.save();
-                order.save();
-                reg.save();
+                await Promise.all([
+                    Payments.deleteOne({ order: orderId }),
+                    Deliveries.deleteOne({ order: orderId }),
+                    OrderRegistrations.deleteOne({ order: orderId }),
+                    Orders.deleteOne({ _id: orderId }),
+                ]);
             }
 
-            return res.status(200).json({ message: "Pedido apagado" });
+            return res.status(200).json({ success: true, message: "Pedido apagado com sucesso" });
         } catch (error) {
             next(error);
         }

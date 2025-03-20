@@ -52,6 +52,7 @@ const UserSchema = new mongoose.Schema(
         },
         hash: String,
         salt: String,
+        OTP: Number,
         recovery: {
             type: {
                 token: String,

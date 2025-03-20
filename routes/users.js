@@ -37,9 +37,9 @@ router.put("/user/:id", auth.require, UserValidation.update, UserController.upda
 //Delete a user.
 router.delete("/user/:id", auth.require, AdminValidator, UserController.deleteUser); // testado
 
-router.post("/login", UserValidation.authenticateUser, UserController.authenticateUser); //testado
+router.post("/signIn", UserValidation.authenticateUser, UserController.authenticateUser); //testado
 
-router.post("/user", UserValidation.create, UserController.createUser); // testado
+router.post("/signUp", UserValidation.create, UserController.createUser); // testado
 
 // solicitar recuperação de senha
 router.get("/showRecovery", UserController.showRecovery); // testado

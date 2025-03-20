@@ -1,21 +1,26 @@
-var Users = require("../../models/Users");
+const Users = require("../../models/Users");
 
 module.exports = async (req, res, next) => {
     const id = req.auth._id;
 
+    // Verifica se o ID é válido (24 caracteres hexadecimais)
+    if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+        return res.status(400).json({ success: false, message: "ID inválido." });
+    }
+
     try {
-        if (id.length !== 24) {
-            return res.status(400).json({ message: "ID inválido." });
-        }
+        // Busca apenas o campo 'role' do usuário
+        const user = await Users.findOne({ _id: id }).select("role");
 
-        const user = await Users.findOne({ _id: id });
-        
+        // Verifica se o usuário existe e se é um administrador
         if (!user || !user.role.includes("admin")) {
-            return res.status(403).json({ success: false, message: "Não tem permissão" });
+            return res.status(403).json({ success: false, message: "Não tem permissão." });
         }
 
+        // Se o usuário for um administrador, prossegue para o próximo middleware
         next();
     } catch (error) {
-        return res.status(400).json({ message: error.details[0].message });
+        console.error("Erro no middleware de verificação de admin:", error); // Log detalhado do erro
+        next(error);
     }
 };
