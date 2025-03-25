@@ -196,27 +196,28 @@ class CustomerController {
 
     async createCustomer(req, res, next) {
         const { userId } = req.params;
-        const { cellNumber } = req.body;
+        const { cellNumber, province, city } = req.body;
 
         try {
             const user = await Users.findById(userId).select("-recovery -salt -password -role");
 
-            if (!user.customer) {
-                const customer = new Customers({
-                    email: user.email,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    cellNumber: cellNumber,
-                    user: user._id,
-                    cart: user.cart,
-                });
-
-                user.customer = customer._id;
-
-                await customer.save();
-                await user.save();
+            if (!user) {
+                return res.status(400).json({ message: "Usuário não encontrado!" });
             }
-            return res.status(200).json({ success: true });
+            if (user.customer) {
+                return res.status(400).json({ message: "Cliente existente" });
+            }
+
+            const customer = new Customers({
+                cellNumber,
+                province,
+                city,
+                user: user._id,
+            });
+            user.customer = customer._id;
+            await customer.save();
+            await user.save();
+            return res.status(200).json({ success: true, message: "Cliente Criado!"  });
         } catch (error) {
             next(error);
         }
@@ -224,33 +225,36 @@ class CustomerController {
 
     async addAddress(req, res, next) {
         const { userId } = req.params;
-        const { firstName, lastName, email, cellNumber, complete, country, province, postalCode, neighborhood, city, reference } = req.body;
+        const { firstName, lastName, email, cellNumber, complete, province, postalCode, city, reference } = req.body;
 
         try {
-            const user = await Users.findById(userId).select("-recovery -salt -password -role");
+            const user = await Users.findById(userId).select("-recovery -salt -password -role -cart -createdAt -deleted -updatedAt");
+
             if (!user) {
                 return res.status(404).json({ message: "Usuario não encontrado." });
             }
 
-            const newAddress = new Address({ firstName, lastName, email, cellNumber, complete, country, province, postalCode, neighborhood, city, reference, user: user._id });
-
-            let customer = await Customers.findOne({ user: userId }).select("-recovery -salt -password -role");
+            let customer = await Customers.findOne({ user: userId });
 
             if (!customer) {
-                const newCustomer = new Customers({ user, firstName, lastName, email, cellNumber, user: user._id, cart: user.cart });
-                user.customer = newCustomer._id;
-                customer = newCustomer;
-                user.save();
+                return res.status(202).json({ user: user, message: "Complete seu perfil!" });
             }
 
-            newAddress.customer = customer._id;
-            customer.addresses.push(newAddress._id);
+            console.log(customer);
 
-            newAddress.save();
-            customer.save();
+            const address = new Address({ firstName, lastName, email, cellNumber, complete, province, postalCode, city, reference, user: user._id });
 
-            return res.status(200).json({ addressId: newAddress._id });
+            address.customer = customer._id;
+            customer.addresses.push(address._id);
+
+            await address.save();
+            await customer.save();
+
+            const addresses = await Address.find({ user: userId, deleted: false });
+
+            return res.status(200).json({ message: "Endereço adicionado", addresses, address });
         } catch (error) {
+            console.log(error);
             next(error);
         }
     }

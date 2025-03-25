@@ -97,44 +97,29 @@ app.use("/", payments);
 app.use("/", statistics);
 
 // Error Handling
-app.use((err, req, res, next) => {
-    if (err instanceof multer.MulterError) {
-        console.log(err);
-        return res.status(400).json({ message: err.message });
+app.use((error, req, res, next) => {
+    console.log(error);
+    
+    if (error.errors) {
+        const errors = Object.values(error.errors).map((error) => error.properties.message);
+        console.log(errors);
+        return res.status(400).json({ message: errors.toLocaleString() });
+    } else if (error instanceof multer.MulterError) {
+        console.log(error);
+        return res.status(400).json({ message: error.message });
+    } else if (error.code === "credentials_required") {
+        console.log(error);
+        return res.status(400).json({ message: "Sem autorizacao" });
     } else {
-        console.error(err);
+        console.error(error);
         return res.status(500).json({ message: "Erro interno do servidor" });
     }
 });
 
-// app.use((req, res, next) => {
-//     const err = new Error("Not found");
-//     err.status = 404;
-//     return res.status(404).json({ success: false, message: { message: err.message, status: 404 } });
-// });
-
-app.use((err, req, res, next) => {
-    if (err.status === 404) {
-        console.warn("⚠️ Erro 404:", err.message, new Date());
-
-        return res.status(404).json({
-            success: false,
-            message: {
-                message: err.message || "Rota não encontrada",
-                status: 404,
-            },
-        });
-    }
-
-    console.error("🔥 Erro interno:", err.message, new Date());
-
-    return res.status(err.status || 500).json({
-        success: false,
-        message: {
-            message: err.message || "Erro interno no servidor",
-            status: err.status || 500,
-        },
-    });
+app.use((req, res, next) => {
+    const err = new Error("Not found");
+    err.status = 404;
+    return res.status(404).json({ success: false, message: { message: err.message, status: 404 } });
 });
 
 app.listen(PORT, () => {

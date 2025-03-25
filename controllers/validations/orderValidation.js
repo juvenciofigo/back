@@ -71,17 +71,19 @@ const getAllOrders = (req, res, next) => {
 };
 
 const createOrder = (req, res, next) => {
-    const bodySchema = Joi.object({
+    console.log(req.body);
+
+    const schema = Joi.object({
         cart: Joi.string().alphanum().length(24).required(),
-        delivery: Joi.object({
-            address: Joi.string().alphanum().length(24).required(),
-        }).required(),
+        address: Joi.string().alphanum().length(24).required(),
     });
 
-    const { error: bodyError } = bodySchema.validate(req.body);
+    const data = { ...req.body };
+    const { error } = schema.validate(data);
 
-    if (bodyError) {
-        next(bodyError);
+    if (error) {
+        console.log(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };

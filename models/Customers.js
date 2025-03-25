@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate-v2");
+const options = require("../helpers/options");
 
 const CustomerSchema = new mongoose.Schema(
     {
@@ -9,24 +10,19 @@ const CustomerSchema = new mongoose.Schema(
             required: [true, "Preencha o campo user"],
             unique: true,
         },
-        firstName: {
+        city: {
+            enum: options.cities,
             type: String,
             required: true,
         },
-        lastName: {
+        province: {
+            enum: options.provinces,
             type: String,
             required: true,
-        },
-        email: {
-            type: String,
-            required: [true, "Preencha o campo email"],
-            unique: [true, "Email em uso, digite um email diferente"],
-            lowercase: true,
-            index: true,
-            match: [/\S+@\S+\.\S+/, "Formato inválido"],
         },
         cellNumber: {
             type: String,
+            required: [true, "Adicione o seu número"],
         },
         addresses: [
             {
@@ -34,12 +30,6 @@ const CustomerSchema = new mongoose.Schema(
                 ref: "Address",
             },
         ],
-        deleted: { type: Boolean, default: false },
-        cart: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Cart",
-            required: [true, "Preencha o campo"],
-        },
     },
     { timestamps: true }
 );

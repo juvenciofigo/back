@@ -219,7 +219,7 @@ class OrderController {
     }
 
     async createOrder(req, res, next) {
-        const { cart, delivery } = req.body;
+        const { cart, address } = req.body;
         const userID = req.auth._id;
         let cartProducts = [];
         let shippingPrice = 10;
@@ -309,14 +309,14 @@ class OrderController {
             // Criar nova entrega
             const newDelivery = new Deliveries({
                 cost: shippingPrice,
-                address: delivery.address,
+                address: address,
             });
 
             // Criar novo pedido
             const order = new Orders({
                 customer: customer._id,
                 cart: cartProducts,
-                address: delivery.address,
+                address: address,
                 payment: newPayment._id,
                 delivery: newDelivery._id,
                 referenceOrder: reference,

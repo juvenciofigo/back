@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const options = require("../helpers/options");
 
 const AddressSchema = new mongoose.Schema(
     {
@@ -21,23 +22,17 @@ const AddressSchema = new mongoose.Schema(
         email: {
             type: String,
         },
-        neighborhood: {
-            type: String,
-            required: true,
-        },
         complete: {
             type: String,
             required: true,
         },
         city: {
-            type: String,
-            required: true,
-        },
-        country: {
+            enum: options.cities,
             type: String,
             required: true,
         },
         province: {
+            enum: options.provinces,
             type: String,
             required: true,
         },
@@ -46,7 +41,7 @@ const AddressSchema = new mongoose.Schema(
             required: true,
         },
         postalCode: {
-            type: String,
+            type: Number,
             required: true,
         },
         cellNumber: {

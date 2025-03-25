@@ -41,11 +41,12 @@ router.post("/signIn", UserValidation.authenticateUser, UserController.authentic
 
 router.post("/signUp", UserValidation.create, UserController.createUser); // testado
 
+     // recuperacao de senha
 // solicitar recuperação de senha
 router.get("/showRecovery", UserController.showRecovery); // testado
 
 // iniciar o processo de recuperação de senha
-router.post("/createRecovery", UserController.initiateRecovery); // testado
+router.post("/createRecovery", UserValidation.createRecovery, UserController.initiateRecovery); // testado
 
 // completar a recuperação de senha
 router.get("/recoverPass", UserController.GetCompleteRecovery); // testado

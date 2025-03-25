@@ -39,6 +39,22 @@ const create = (req, res, next) => {
     next();
 };
 
+const createRecovery = (req, res, next) => {
+    const { error } = Joi.object({
+        email: Joi.string().email().required()	,
+    }).validate(req.body);
+
+    if (error) {
+        console.log(false);
+        return res.status(400).json({ message: error.details[0].message });
+    }
+    console.log(req.body);
+    console.log(true);
+    return res.status(400);
+
+    next();
+};
+
 const update = (req, res, next) => {
     const paramsSchema = Joi.object({
         id: Joi.string().alphanum().length(24).required(),
@@ -65,4 +81,4 @@ const update = (req, res, next) => {
     next();
 };
 
-module.exports = { authenticateUser, show, create, update };
+module.exports = { authenticateUser, show, create, update, createRecovery };

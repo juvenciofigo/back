@@ -37,6 +37,7 @@ class CartController {
 
     async addProductsCart(req, res, next) {
         const { userId } = req.params;
+        const tempCart = req.body;
 
         try {
             let cart = await Carts.findOne({ cartUser: userId });
@@ -52,8 +53,8 @@ class CartController {
                 cart = await newCart(userId);
             }
 
-            if (Array.isArray(req.body) && req.body.length > 0) {
-                for (const item of req.body) {
+            if (Array.isArray(tempCart) && tempCart.length > 0) {
+                for (const item of tempCart) {
                     const existingProductIndex = cart.cartItens.findIndex((item) => {
                         if (item.productId == item.productId) {
                             if (item.variation.color == item.variation.color) {

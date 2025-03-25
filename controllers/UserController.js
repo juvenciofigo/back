@@ -115,7 +115,7 @@ class UserController {
             if (typeof firstName !== "undefined") {
                 user.firstName = firstName;
             }
-            
+
             if (typeof lastName !== "undefined") {
                 user.lastName = lastName;
             }
@@ -189,7 +189,7 @@ class UserController {
 
     //
     async showRecovery(req, res, next) {
-        return res.render("recovery", { success: true });
+        return res.render("recovery");
     }
 
     //
