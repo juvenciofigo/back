@@ -252,7 +252,10 @@ class CustomerController {
             customer.addresses.push(address._id);
 
             await address.save();
-            await customer.save();
+            await Customers.updateOne(
+                { _id: customer._id },
+                { $push: { addresses: address._id } }
+            );
             
             const addresses = await Address.find({ user: userId, deleted: false });
             
