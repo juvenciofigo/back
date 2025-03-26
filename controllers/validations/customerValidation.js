@@ -399,7 +399,6 @@ const addAddress = (req, res, next) => {
     const { error } = schema.validate(data);
 
     if (error) {
-        console.log("falha validacao");
         console.log(error);
         return res.status(400).json({ message: error.details[0].message });
     }
