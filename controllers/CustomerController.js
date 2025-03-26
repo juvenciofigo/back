@@ -224,6 +224,7 @@ class CustomerController {
     }
 
     async addAddress(req, res, next) {
+
         const { userId } = req.params;
         const { firstName, lastName, email, cellNumber, complete, province, postalCode, city, reference } = req.body;
 
@@ -231,29 +232,33 @@ class CustomerController {
             const user = await Users.findById(userId).select("-recovery -salt -password -role -cart -createdAt -deleted -updatedAt");
 
             if (!user) {
+                console.log("falha user");
+                
                 return res.status(404).json({ message: "Usuario não encontrado." });
             }
-
+            
             let customer = await Customers.findOne({ user: userId });
-
+            
             if (!customer) {
+                console.log("falha custumer");
                 return res.status(202).json({ user: user, message: "Complete seu perfil!" });
             }
-
+            
             console.log(customer);
-
+            
             const address = new Address({ firstName, lastName, email, cellNumber, complete, province, postalCode, city, reference, user: user._id });
-
+            
             address.customer = customer._id;
             customer.addresses.push(address._id);
 
             await address.save();
             await customer.save();
-
+            
             const addresses = await Address.find({ user: userId, deleted: false });
-
+            
             return res.status(200).json({ message: "Endereço adicionado", addresses, address });
         } catch (error) {
+            console.log("falha catch");
             console.log(error);
             next(error);
         }
