@@ -244,7 +244,7 @@ class CustomerController {
                 return res.status(202).json({ user: user, message: "Complete seu perfil!" });
             }
             
-            console.log(customer);
+            console.log('Cliente antes do save:', customer);
             
             const address = new Address({ firstName, lastName, email, cellNumber, complete, province, postalCode, city, reference, user: user._id });
             
