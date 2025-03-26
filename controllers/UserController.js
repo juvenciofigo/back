@@ -52,11 +52,14 @@ class UserController {
 
         try {
             const userDetails = await Users.findById(user).select("-recovery -salt -password -role -deleted -cart -customer");
+            console.log(false, userDetails);
+            
+            if (!userDetails) return res.status(404).json({ message: "Usuário não encontrado!" });
+
             if (userDetails.deleted === true) {
                 return res.status(404).json({ message: "Conta apagada!" });
             }
 
-            if (!userDetails) return res.status(404).json({ message: "Usuário não encontrado!" });
 
             return res.status(200).json(userDetails);
         } catch (error) {
