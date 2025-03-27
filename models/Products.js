@@ -99,7 +99,6 @@ const ProductSchema = new mongoose.Schema(
         },
         productModel: {
             type: String,
-            default: undefined,
         },
         productBrand: {
             type: String,

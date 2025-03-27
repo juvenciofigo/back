@@ -31,7 +31,7 @@ router.get("/product/:id", auth.optional, productValidation.getBtId, ProductCont
 
 router.get("/products", productValidation.All, ProductController.availiableProducts);
 
-router.get("/products/search/:search", ProductController.searchProducts); // nao aprovado
+router.get("/products/search/", ProductController.searchProducts); // nao aprovado
 
 //Ratings
 router.get("/product/:id/ratings", productValidation.getBtId, ProductController.getRatingsProduct);

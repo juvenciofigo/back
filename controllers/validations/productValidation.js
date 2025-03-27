@@ -24,9 +24,11 @@ const Create = (req, res, next) => {
         sku: Joi.string().required(),
         // acquisitionCost: Joi.number.required(),
         // additionalCosts: Joi.number.required(),
-    }).validate(req.body);
+    }).validate(req.body, { abortEarly: false });
 
     if (error) {
+        console.log(error);
+
         return res.status(400).json({ message: error.details[0].message });
     }
     next();

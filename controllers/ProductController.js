@@ -361,14 +361,15 @@ class ProductController {
     async availiableProducts(req, res, next) {
         // Opções de paginação e classificação
         const query = { productAvailability: true };
-
         const category = req.query.category;
         const subcategory = req.query.subcategory;
         const sub_category = req.query.sub_category;
 
+        console.log(req.query);
+
         const options = {
             page: Number(req.query.offset) || 1,
-            limit: Number(req.query.limit) || 30,
+            limit: Number(req.query.limit) || 1,
             select: dontSelect,
         };
 
@@ -382,6 +383,8 @@ class ProductController {
             query.productSub_category = req.query.sub_category;
         }
 
+        console.log(query);
+
         try {
             const products = await Products.paginate(query, options);
 
@@ -391,76 +394,28 @@ class ProductController {
         }
     }
 
-    // async getAllProducts(req, res, next) {
-    //     let query = {};
-    //     const category = req.query.category;
-    //     const subcategory = req.query.subcategory;
-    //     const sub_category = req.query.sub_category;
-
-    //     // Opções de paginação e classificação
-    //     const options = {
-    //         page: Number(req.query.offset) || 1,
-    //         limit: Number(req.query.limit) || 10,
-    //         sort: getSort(req.query.sortType),
-    //     };
-
-    //     if (category) {
-    //         query.productCategory = category;
-    //     }
-
-    //     if (subcategory) {
-    //         query.productSubcategory = subcategory;
-    //     }
-
-    //     if (sub_category) {
-    //         query.productSub_category = sub_category;
-    //     }
-
-    //     try {
-    //         const products = await Products.paginate(query, options);
-
-    //         const imagesWithUrl = products.docs.map((product) => {
-    //             const imageUrls = product.productImage.map((image) => `${api}/public/images/${image}`);
-    //             return { ...product._doc, productImage: imageUrls };
-    //         });
-
-    //         const response = {
-    //             quantity: products.totalDocs,
-    //             products: imagesWithUrl,
-    //         };
-
-    //         return res.status(200).json(response);
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
-
-    /* Search */
-
     async searchProducts(req, res, next) {
+        console.log(req.query.category);
+        const search = new RegExp(req.query.search, "i");
+        const category = req.query.category;
+
         const options = {
             page: Number(req.query.offset) || 0,
-            limit: Number(req.query.limit) || 30,
+            limit: Number(req.query.limit) || 1,
             sort: getSort(req.query.sortType),
             select: dontSelect,
             populate: ["productCategory"],
+            productAvailability: true,
         };
 
-        try {
-            const search = new RegExp(req.params.search, "i");
+        const query = {
+            $or: [{ productName: { $regex: search } }, { productDescription: { $regex: search } }, { sku: { $regex: search } }, { tags: { $regex: search } }, { productBrand: { $regex: search } }],
+        };
 
-            const products = await Products.paginate(
-                {
-                    $or: [
-                        { productName: { $regex: search } },
-                        { productDescription: { $regex: search } },
-                        { sku: { $regex: search } },
-                        { tags: { $regex: search } },
-                        { productBrand: { $regex: search } },
-                    ],
-                },
-                options
-            );
+        if (category) query.productCategory = category;
+
+        try {
+            const products = await Products.paginate(query, options);
 
             return res.status(200).json(products);
         } catch (error) {
