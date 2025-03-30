@@ -1,8 +1,10 @@
+const { number } = require("joi");
+
 const OrderRegistrations = require("../models/OrderRegistrations"),
     Deliveries = require("../models/Deliveries"),
     Variations = require("../models/Variations"),
     Customers = require("../models/Customers"),
-    Products = require("../models/Products"),
+    { Products } = require("../models/Products"),
     Payments = require("../models/Payments"),
     Orders = require("../models/Orders"),
     Users = require("../models/Users"),
@@ -268,14 +270,14 @@ class OrderController {
             const reference = await generateUniqueReference();
 
             // Processar cada item do carrinho
-            for (const product of existCart.cartItens) {
-                const productDetails = await Products.findById(product.productId).session(session);
-                if (!productDetails) continue;
+            for (const item of existCart.cartItens) {
+                const product = await Products.findById(item.productId).session(session);
+                if (!product) continue;
 
-                const color = await Variations.findById(product.variation.color).session(session);
-                const model = await Variations.findById(product.variation.model).session(session);
-                const size = await Variations.findById(product.variation.size).session(session);
-                const material = await Variations.findById(product.variation.material).session(session);
+                const color = await Variations.findById(item.variation.color).session(session);
+                const model = await Variations.findById(item.variation.model).session(session);
+                const size = await Variations.findById(item.variation.size).session(session);
+                const material = await Variations.findById(item.variation.material).session(session);
 
                 let price = 0;
                 if (color) price += color.variationPrice;
@@ -283,17 +285,16 @@ class OrderController {
                 if (material) price += material.variationPrice;
                 if (size) price += size.variationPrice;
 
-                let productPrice = (productDetails.productPrice += price);
-                let subtotal = productPrice * product.quantity;
+                let itemPrice = Number(product.productPrice += price);
                 cartProducts.push({
-                    item: product.item,
-                    productId: productDetails._id,
-                    product: productDetails.productName,
+                    item: item.item,
+                    productId: product._id,
+                    product: product.productName,
                     variation: { color, model, size, material },
-                    picture: productDetails.productImage[0],
-                    productPrice,
-                    quantity: Number(product.quantity),
-                    subtotal,
+                    picture: product.productImage[0],
+                    itemPrice,
+                    quantity: Number(item.quantity),
+                    subtotal: Number(itemPrice * item.quantity),
                 });
             }
 
@@ -320,8 +321,8 @@ class OrderController {
                 payment: newPayment._id,
                 delivery: newDelivery._id,
                 referenceOrder: reference,
-                totalPrice: shippingPrice + totalProductsPrice,
-                totalProductsPrice,
+                // totalPrice: shippingPrice + totalProductsPrice,
+                // totalProductsPrice,
             });
 
             const newOrderReg = new OrderRegistrations({

@@ -49,55 +49,18 @@ const OrderSchema = new mongoose.Schema(
                     default: () => new mongoose.Types.ObjectId(),
                     unique: true,
                 },
-                productPrice: {
+                // preco do produto com preco de suas variacoes
+                itemPrice: {
                     type: Number,
                 },
+                // preco do item multiplicado com a quantidade
                 subtotal: {
                     type: Number,
                 },
-            },
-        ],
-        cartPayd: [
-            {
-                productId: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "Product",
-                    required: true,
-                },
-                product: {
-                    type: String,
-                    required: true,
-                },
-                picture: {
-                    type: String,
-                },
-                variation: {
-                    type: {
-                        color: {
-                            type: Object,
-                        },
-                        model: {
-                            type: Object,
-                        },
-                        size: {
-                            type: Object,
-                        },
-                        material: {
-                            type: Object,
-                        },
-                    },
-                },
-                item: {
-                    type: mongoose.Schema.Types.ObjectId,
-                },
-                productPrice: {
-                    type: Number,
-                },
-                quantity: {
-                    type: Number,
-                },
-                subtotal: {
-                    type: Number,
+                // disponibilidade do produto
+                itemAvailability: {
+                    type: Boolean,
+                    default: true,
                 },
             },
         ],
@@ -127,14 +90,6 @@ const OrderSchema = new mongoose.Schema(
             unique: true,
             required: true,
         },
-        totalPrice: {
-            type: Number,
-            required: true,
-        },
-        totalProductsPrice: {
-            type: Number,
-            required: true,
-        },
         status: {
             type: String,
             required: true,
@@ -161,5 +116,4 @@ const OrderSchema = new mongoose.Schema(
 );
 
 OrderSchema.plugin(mongoosePaginate);
-
 module.exports = mongoose.model("Order", OrderSchema, "orders");

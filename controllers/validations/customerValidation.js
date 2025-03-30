@@ -390,7 +390,7 @@ const addAddress = (req, res, next) => {
             "string.base": "Referência deve ser um texto",
             "any.required": "Referência é obrigatória",
         }),
-        note: Joi.string().optional().messages({
+        note: Joi.string().allow("").optional().messages({
             "string.base": "Nota deve ser um texto",
         }),
     });

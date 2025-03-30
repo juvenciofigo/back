@@ -1,14 +1,16 @@
 const Request = require("./request");
 const agent_id = process.env.AGENT_ID_MPESA;
-// Classe para operações de transação
-class Transaction {
-    constructor(api_key, public_key, ssl = true) {
-        this.api_key = api_key;
-        this.public_key = public_key;
-        this.ssl = ssl;
-    }
+const api_key = process.env.API_KEY_MPESA;
+const public_key = process.env.PUBLIC_KEY_MPESA;
+const ssl = process.env.SSL_MPESA;
 
-    async c2b(data) {
+// Classe para operações de transação
+class Mpesa {
+    api_key = process.env.API_KEY_MPESA;
+    public_key = process.env.PUBLIC_KEY_MPESA;
+    ssl = process.env.SSL_MPESA;
+
+    c2b = async (data) => {
         const url = "https://api.sandbox.vm.co.mz:18352/ipg/v1x/c2bPayment/singleStage/";
         const params = {
             input_Amount: data.value,
@@ -18,10 +20,11 @@ class Transaction {
             input_ThirdPartyReference: data.third_party_reference,
         };
         const request = await new Request(this.api_key, this.public_key, this.ssl);
-        return await request.post(url, params);
-    }
+        const respose = await request.post(url, params);
+        return respose;
+    };
 
-    async b2c(data) {
+    b2c = async (data) => {
         const url = "https://api.sandbox.vm.co.mz:18345/ipg/v1x/b2cPayment/";
         const params = {
             input_Amount: data.value,
@@ -32,9 +35,9 @@ class Transaction {
         };
         const request = new Request(this.api_key, this.public_key, this.ssl);
         return await request.post(url, params);
-    }
+    };
 
-    async b2b(data) {
+    b2b = async (data) => {
         const url = "https://api.sandbox.vm.co.mz:18349/ipg/v1x/b2bPayment/";
         const params = {
             input_PrimaryPartyCode: agent_id,
@@ -45,9 +48,9 @@ class Transaction {
         };
         const request = new Request(this.api_key, this.public_key, this.ssl);
         return await request.post(url, params);
-    }
+    };
 
-    async reversal(data) {
+    reversal = async (data) => {
         const url = "https://api.sandbox.vm.co.mz:18354/ipg/v1x/reversal/";
         const params = {
             input_TransactionID: data.transaction_id,
@@ -59,9 +62,9 @@ class Transaction {
         };
         const request = new Request(this.api_key, this.public_key, this.ssl);
         return await request.put(url, params);
-    }
+    };
 
-    async status(data) {
+    status = async (data) => {
         const url = "https://api.sandbox.vm.co.mz:18353/ipg/v1x/queryTransactionStatus/";
         const params = {
             input_QueryReference: data.transaction_id,
@@ -70,9 +73,9 @@ class Transaction {
         };
         const request = new Request(this.api_key, this.public_key, this.ssl);
         return await request.get(url, params);
-    }
+    };
 
-    async customer_name(data) {
+    customer_name = async (data) => {
         const url = "https://api.sandbox.vm.co.mz:19323/ipg/v1x/queryCustomerName/";
         const params = {
             input_CustomerMSISDN: data.client_number,
@@ -81,7 +84,7 @@ class Transaction {
         };
         const request = new Request(this.api_key, this.public_key, this.ssl);
         return await request.get(url, params);
-    }
+    };
 }
 
-module.exports = Transaction;
+module.exports = new Mpesa();

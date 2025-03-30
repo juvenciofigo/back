@@ -71,8 +71,6 @@ const getAllOrders = (req, res, next) => {
 };
 
 const createOrder = (req, res, next) => {
-    console.log(req.body);
-
     const schema = Joi.object({
         cart: Joi.string().alphanum().length(24).required(),
         address: Joi.string().alphanum().length(24).required(),

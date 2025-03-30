@@ -34,7 +34,7 @@ class UserController {
                     { new: true, upsert: true } // Retorna o documento atualizado e cria um novo se não existir
                 );
 
-                console.log("Número de visitas atualizado: ", visita.VisitaCount);
+               
                 res.json({ success: true });
             } catch (err) {
                 console.error("Erro ao registrar a visita: ", err);
@@ -52,7 +52,6 @@ class UserController {
 
         try {
             const userDetails = await Users.findById(user).select("-recovery -salt -password -role -deleted -cart -customer");
-            console.log(false, userDetails);
             
             if (!userDetails) return res.status(404).json({ message: "Usuário não encontrado!" });
 
@@ -246,7 +245,7 @@ class UserController {
 
     async completeRecovery(req, res, next) {
         const { token, password } = req.body;
-        console.log(false);
+        
         try {
             if (!token || !password) {
                 return res.render("recovery/store", { message: "Preencha novamente com a sua senha", success: false, token: token });

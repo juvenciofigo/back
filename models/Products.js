@@ -12,9 +12,23 @@ const SaleSchema = new mongoose.Schema(
             required: true,
             default: Date.now,
         },
+        customer: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Customer",
+            require:true
+        },
     },
     { _id: false }
 );
+
+const TagsSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        unique: true,
+        required: true,
+    },
+});
+
 const ProfitSchema = new mongoose.Schema(
     {
         acquisitionCost: {
@@ -141,4 +155,7 @@ const ProductSchema = new mongoose.Schema(
 );
 
 ProductSchema.plugin(mongoosePaginate);
-module.exports = mongoose.model("Product", ProductSchema, "products");
+const Tags = mongoose.model("Tags", TagsSchema, "tags");
+const Products = mongoose.model("Product", ProductSchema, "products");
+
+module.exports = { Tags, Products };

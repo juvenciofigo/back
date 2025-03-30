@@ -1,4 +1,4 @@
-const Products = require("../models/Products");
+const {Products} = require("../models/Products");
 const Deliveries = require("../models/Deliveries");
 
 class DeliveryController {

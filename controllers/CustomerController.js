@@ -2,7 +2,7 @@ const Users = require("../models/Users");
 const Customers = require("../models/Customers");
 const Address = require("../models/Addresses");
 const Orders = require("../models/Orders");
-const Products = require("../models/Products");
+const {Products} = require("../models/Products");
 const Variations = require("../models/Variations");
 
 class CustomerController {
@@ -256,7 +256,6 @@ class CustomerController {
             
             return res.status(200).json({ message: "Endereço adicionado", addresses, address });
         } catch (error) {
-            console.log(error);
             next(error);
         }
     }

@@ -1,4 +1,3 @@
-const { response } = require("express");
 const Cryptor = require("./cryptor");
 const axios = require("axios");
 
@@ -10,119 +9,100 @@ class Request {
         this.api_key = api_key;
     }
 
-    async get(url, params) {
-        const headers = {
+    generateHeaders(origin = "*") {
+        return {
             "Content-Type": "application/json",
-            Origin: "*",
+            Origin: origin,
             Authorization: "Bearer " + Cryptor.token(this.public_key, this.api_key),
         };
+    }
+
+    responseClient(data) {
+        const messages = {
+            "INS-0": "Pagamento efectuado.",
+            "INS-4": "Número fora de área.",
+            "INS-5": "Transação cancelada pelo cliente.",
+            "INS-6": "Falha na transação.",
+            "INS-9": "Tempo limite da solicitação.",
+            "INS-13": "Código inválido.",
+            "INS-15": "Valor inválido usado.",
+            "INS-19": "Referência de terceiros inválida.",
+            "INS-23": "Status desconhecido. Entre em contato com o Suporte da M-Pesa.",
+            "INS-995": "Perfil do cliente tem problemas.",
+            "INS-2006": "Saldo insuficiente.",
+            "INS-2051": "Número inválido.",
+            "INS-10": "Transação duplicada.",
+        };
+        return messages[data] || "Erro no pagamento.";
+    }
+
+    convertMessage(data = {}) {
+        return {
+            status: data.status,
+            output_ResponseCode: data.output_ResponseCode ?? "N/A",
+            output_ResponseDesc: this.responseClient(data.output_ResponseCode),
+            output_TransactionID: data.output_TransactionID ?? "N/A",
+            output_ConversationID: data.output_ConversationID ?? "N/A",
+            output_ThirdPartyReference: data.output_ThirdPartyReference ?? "N/A",
+        };
+    }
+
+    async get(url, params) {
         try {
             const response = await axios.get(url, {
                 params,
-                headers,
+                headers: this.generateHeaders(),
             });
 
             return {
-                status: response.status,
-                statusText: response.data,
-                data: response.data,
+                ...this.convertMessage({ ...response.data, status: response.status }),
             };
         } catch (error) {
-            if (typeof error.response.data !== "undefined") {
-                return {
-                    status: error.response.status,
-                    statusText: error.response.data,
-                    data: error.response.data,
-                };
-            }
-            throw new Error(error);
+            return this.handleError(error);
         }
-        throw new Error("Failed to process request");
     }
 
     async post(url, params) {
-        const length = JSON.stringify(params).length || 0;
-        const headers = {
-            "Content-Length": length,
-            "Content-Type": "application/json",
-            Origin: "developer.mpesa.vm.co.mz",
-            Authorization: "Bearer " + Cryptor.token(this.public_key, this.api_key),
-        };
-
+        
         try {
             const response = await axios.post(url, params, {
-                headers,
+                headers: this.generateHeaders("developer.mpesa.vm.co.mz"),
             });
-
+            
+            
             return {
-                status: response.status,
-                statusText: response.data,
-                data: response.data,
+                ...this.convertMessage({ ...response.data, status: response.status }),
             };
         } catch (error) {
-            if (error.code.toLowerCase() === "enotfound") {
-                return { error: "Erro ao efectuar pagamento." };
-            } else if (error.response.data && typeof error.response.data !== "undefined") {
-                return {
-                    status: error.response.status,
-                    statusText: error.response.data,
-                    data: error.response.data,
-                };
-            }
-            throw new Error(error);
+            return this.handleError(error);
         }
-        throw new Error("Failed to process request");
     }
 
     async put(url, params) {
-        const length = JSON.stringify(params).length || 0;
-        const headers = {
-            "Content-Length": length,
-            "Content-Type": "application/json",
-            Origin: "*",
-            Authorization: "Bearer " + Cryptor.token(this.public_key, this.api_key),
-        };
         try {
             const response = await axios.put(url, params, {
-                headers,
+                headers: this.generateHeaders(),
             });
 
             return {
-                status: response.status,
-                statusText: response.data,
-                data: response.data,
+                ...this.convertMessage({ ...response.data, status: response.status }),
             };
         } catch (error) {
-            if (typeof error.response.data !== "undefined") {
-                return {
-                    status: error.response.status,
-                    statusText: error.response.data,
-                    data: error.response.data,
-                };
-            }
-            throw new Error(error);
+            return this.handleError(error);
         }
-        throw new Error("Failed to process request");
+    }
+
+    handleError(error) {
+        if (["ENOTFOUND", "ECONNREFUSED", "ETIMEDOUT"].includes(error.code?.toUpperCase())) {
+            return { error: "Erro ao efectuar pagamento. Verifique sua conexão." };
+        }
+        if (error.response?.data) {
+            return {
+                ...this.convertMessage({ ...error.response.data, status: error.response.status }),
+            };
+        }
+        return { error: "Erro desconhecido ao processar a requisição." };
     }
 }
-const respose = {
-    status: 408,
-    statusText: "Request Timeout",
 
-    data: {
-        output_ResponseCode: "INS-9",
-        output_ResponseDesc: "Request timeout",
-        output_TransactionID: "N/A",
-        output_ConversationID: "3990dfa203b54c38b312f5f00df394e7",
-        output_ThirdPartyReference: "171815059",
-    },
-};
-
-const data = {
-    output_ResponseCode: "INS-9",
-    output_ResponseDesc: "Request timeout",
-    output_TransactionID: "N/A",
-    output_ConversationID: "3990dfa203b54c38b312f5f00df394e7",
-    output_ThirdPartyReference: "171815059",
-};
 module.exports = Request;

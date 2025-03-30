@@ -1,7 +1,7 @@
 const mongoose = require("mongoose"),
     Variations = require("../models/Variations"),
     Carts = require("../models/Carts"),
-    Product = require("../models/Products"),
+    { Products } = require("../models/Products"),
     api = require("../config/index").api;
 
 async function newCart(userId, bodyData) {
@@ -17,7 +17,6 @@ class CartController {
     async createCart(req, res, next) {
         const { user_id } = req.params;
         const bodyData = req.body;
-
         try {
             async function newCart(userId, bodyData) {
                 const cart = new Carts({
@@ -174,7 +173,7 @@ class CartController {
     // Show One prices
     async showDetailsCartPrices(req, res, next) {
         const { userId } = req.params;
-        let Products = [];
+        let products = [];
         let cart = {};
         let totalProductsPrice = 0;
 
@@ -185,17 +184,18 @@ class CartController {
                 if (!cart || cart === null || !cart.cartItens || cart.cartItens.length === 0) {
                     return res.status(200).json({ totalProducts: totalProductsPrice });
                 }
-                Products = cart.cartItens;
+                products = cart.cartItens;
             } else {
-                Products = req.body;
+                products = req.body;
             }
 
-            if (!Array.isArray(Products) || Products.length === 0) {
+            if (!Array.isArray(products) || products.length === 0) {
                 return res.status(200).json({ totalProducts: totalProductsPrice });
             }
 
-            for (const product of Products) {
-                const productDetails = await Product.findById(product.productId);
+            for (const product of products) {
+            
+                const productDetails = await Products.findById(product.productId);
 
                 if (!productDetails) {
                     continue; // Pula este produto e continua com os outros
@@ -229,7 +229,6 @@ class CartController {
 
             return res.status(200).json({ totalProducts: totalProductsPrice });
         } catch (error) {
-            console.error("Erro ao processar o carrinho:", error);
             next(error);
         }
     }
@@ -237,7 +236,7 @@ class CartController {
     // // Detalhes
     async showDetailsCart(req, res, next) {
         const { userId } = req.params;
-        let Products = [];
+        let products = [];
         let cartProducts = [];
         let cartId = "";
 
@@ -248,17 +247,17 @@ class CartController {
                 if (!cart || cart === null || !cart.cartItens || cart.cartItens.length === 0) {
                     return res.status(200).json(cartProducts);
                 }
-                Products = cart.cartItens;
+                products = cart.cartItens;
                 cartId = cart._id;
             } else {
-                Products = req.body;
+                products = req.body;
             }
-            if (!Array.isArray(Products) || Products.length === 0) {
+            if (!Array.isArray(products) || products.length === 0) {
                 return res.status(200).json(cartProducts);
             }
 
-            for (const product of Products) {
-                const productDetails = await Product.findById(product.productId);
+            for (const product of products) {
+                const productDetails = await Products.findById(product.productId);
                 if (!productDetails) {
                     console.log(`Produto não encontrado: ${product.productId}`);
                     continue;

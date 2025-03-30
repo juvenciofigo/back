@@ -48,10 +48,6 @@ const createRecovery = (req, res, next) => {
         console.log(false);
         return res.status(400).json({ message: error.details[0].message });
     }
-    console.log(req.body);
-    console.log(true);
-    return res.status(400);
-
     next();
 };
 

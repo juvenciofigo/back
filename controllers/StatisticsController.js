@@ -8,7 +8,7 @@ const Addresses = require("../models/Addresses"),
     OrderRegistrations = require("../models/OrderRegistrations"),
     Orders = require("../models/Orders"),
     Payments = require("../models/Payments"),
-    Products = require("../models/Products"),
+    {Products} = require("../models/Products"),
     Ratings = require("../models/Ratings"),
     Stores = require("../models/Stores"),
     Users = require("../models/Users"),
@@ -35,8 +35,6 @@ class EstatisticController {
             if (!visitDoc) {
                 visits = 0;
             }
-
-            console.log("visita", visits);
 
             return res.status(200).json({ visitsCount: visits, usersCount: users, ordersCount: orders, customersCount: customers });
         } catch (error) {

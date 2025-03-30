@@ -1,7 +1,7 @@
 const { Category, SubCategory, Sub_category } = require("../models/Categories"),
     Variations = require("../models/Variations"),
     Customers = require("../models/Customers"),
-    Products = require("../models/Products"),
+    {Products} = require("../models/Products"),
     Ratings = require("../models/Ratings"),
     Orders = require("../models/Orders"),
     { deleteFilesFirebase } = require("../config/firebase"),
@@ -365,11 +365,9 @@ class ProductController {
         const subcategory = req.query.subcategory;
         const sub_category = req.query.sub_category;
 
-        console.log(req.query);
-
         const options = {
             page: Number(req.query.offset) || 1,
-            limit: Number(req.query.limit) || 1,
+            limit: 10,
             select: dontSelect,
         };
 
@@ -383,11 +381,8 @@ class ProductController {
             query.productSub_category = req.query.sub_category;
         }
 
-        console.log(query);
-
         try {
             const products = await Products.paginate(query, options);
-
             return res.status(200).json(products);
         } catch (error) {
             next(error);
@@ -395,13 +390,12 @@ class ProductController {
     }
 
     async searchProducts(req, res, next) {
-        console.log(req.query.category);
         const search = new RegExp(req.query.search, "i");
         const category = req.query.category;
 
         const options = {
             page: Number(req.query.offset) || 0,
-            limit: Number(req.query.limit) || 1,
+            limit: Number(req.query.limit) || 3,
             sort: getSort(req.query.sortType),
             select: dontSelect,
             populate: ["productCategory"],

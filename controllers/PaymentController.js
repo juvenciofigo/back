@@ -1,166 +1,155 @@
-// Chaves de API e configurações SSL
-const api_key = process.env.API_KEY_MPESA;
-const public_key = process.env.PUBLIC_KEY_MPESA;
-const ssl = process.env.SSL_MPESA;
-
-// Inicialização e criação do objeto Mpesa
-const Mpesa = require("./integracoes/Mpesa/mpesa");
-const mpesa = Mpesa.init(api_key, public_key, ssl);
 const Orders = require("../models/Orders");
 const Payments = require("../models/Payments");
-const Product = require("../models/Products");
+const { Products } = require("../models/Products");
 const Variations = require("../models/Variations");
-const api = require("../config/index").api;
+const Mpesa = require("./integracoes/Mpesa/MpesaTrasation");
 
-// Função para resposta do cliente com base no código de resposta
-function responseClient(data) {
-    switch (data.output_ResponseCode) {
-        case "INS-0":
-            return "Pagamento efectuado.";
-        case "INS-4":
-            return "Número fora de área.";
-        case "INS-5":
-            return "Transação cancelada pelo cliente.";
-        case "INS-6":
-            return "Falha na transação.";
-        case "INS-9":
-            return "Tempo limite da solicitação.";
-        case "INS-13":
-            return "Código inválido.";
-        case "INS-15":
-            return "Valor inválido usado.";
-        case "INS-19":
-            return "Referência de terceiros inválida.";
-        case "INS-23":
-            return "Status desconhecido. Entre em contato com o Suporte da M-Pesa.";
-        case "INS-995":
-            return "Perfil do cliente tem problemas.";
-        case "INS-2006":
-            return "Saldo insuficiente.";
-        case "INS-2051":
-            return "Número inválido.";
-        case "INS-10":
-            return "Transação duplicada.";
-        default:
-            return "Erro no pagamento.";
-    }
-}
+// Funcao verificar cada item do carinho
 
 // Controlador para pagamentos
 class PaymentController {
-    async mpesaPay(req, res, next) {
+    async verifyCart(order) {
+        let totalAmount = 0;
+
+        for (const item of order.cart) {
+            const product = await Products.findById(item.productId);
+
+            // Se o produto não existir, marca como indisponível e pula para o próximo
+            if (!product) {
+                console.warn(`Produto com ID ${item.productId} não encontrado`);
+                item.itemAvailability = false;
+                item.subtotal = 0;
+                item.productPrice = 0;
+                continue;
+            }
+
+            // Se o produto não estiver disponível, marca como indisponível e pula para o próximo
+            if (!product.productAvailability || !product.productStock) {
+                console.warn(`Produto com ID ${item.productId} não está disponível`);
+                item.itemAvailability = false;
+                item.subtotal = 0;
+                item.productPrice = 0;
+                continue;
+            }
+
+            // Buscar variações do produto, se existirem
+            const variations = await Promise.all([
+                item.variation?.color ? Variations.findById(item.variation.color._id) : null,
+                item.variation?.model ? Variations.findById(item.variation.model._id) : null,
+                item.variation?.size ? Variations.findById(item.variation.size._id) : null,
+                item.variation?.material ? Variations.findById(item.variation.material._id) : null,
+            ]);
+
+            // Verificar se as variações alteram o preço
+            const [color, model, size, material] = variations;
+            let price = product.productPrice;
+            if (color) price += color.variationPrice;
+            if (model) price += model.variationPrice;
+            if (size) price += size.variationPrice;
+            if (material) price += material.variationPrice;
+
+            // Calcular subtotal do item
+            const subtotal = price * item.quantity;
+
+            // Atualizar os valores do item
+            item.subtotal = subtotal;
+            item.productPrice = price;
+
+            // Atualizar o total do pedido
+            totalAmount += subtotal;
+        }
+
+        // Se o valor total mudou, salvar no pedido
+
+        order.payment.amount = totalAmount + order.delivery.cost;
+        await order.save();
+
+        return order;
+    }
+
+    PayOrder = async (req, res, next) => {
         const { client_number, orderId } = req.body;
+        const { paymentMode } = req.query;
 
         try {
+            if (!paymentMode) {
+                return res.status(400).json({ message: "Modo de pagamento inválido" });
+            }
             if (!orderId) {
                 return res.status(400).json({ message: "Falha no pagamento." });
             }
 
-            const order = await Orders.findById(orderId).populate("payment");
+            const order = await Orders.findById(orderId).populate(["payment", "delivery"]);
 
             if (!order) {
                 return res.status(404).json({ message: "Pedido não encontrado!" });
             }
-            if (order.payment.status !== "Esperando") {
-                return res.status(400).json({ message: `O estado do pedido é ${order.payment.status}` });
+
+            if (!order.payment || order.payment.status !== "Esperando") {
+                return res.status(400).json({ message: `O estado do pedido é ${order.payment?.status || "Indefinido"}` });
             }
 
-            const data = {
-                client_number,
-                value: order.payment.amount,
-                third_party_reference: order.referenceOrder,
-                transaction_reference: order.referenceOrder,
-            };
+            // verificar o itens do carrinho
+            const newOrder = await this.verifyCart(order);
 
-            const response = await mpesa.c2b(data);
-            const client_response = responseClient(response.data);
-            const payment = await Payments.findById(order.payment._id);
+            // fazer pagamento pelo mpesa
+            let paymentResponse = {};
 
-            if (response.status === 200 || response.status === 201) {
-                payment.rescriptionResponse = response.data.output_ResponseCode;
+            if (paymentMode.toLowerCase() === "mpesa") {
+                try {
+                    const data = {
+                        client_number,
+                        value: newOrder.payment.amount,
+                        third_party_reference: newOrder.referenceOrder,
+                        transaction_reference: newOrder.referenceOrder,
+                    };
+
+                    paymentResponse = await Mpesa.c2b(data);
+                } catch (error) {
+                    console.error("Erro ao processar pagamento M-Pesa:", error);
+                    return res.status(500).json({ message: "Erro ao processar pagamento. Tente novamente mais tarde." });
+                }
+            }
+
+            // se o Pagamento for realizando com sucesso
+            if (paymentResponse.status === 200 || paymentResponse.status === 201) {
+                // actualizar o pagamento do pedido
+                const payment = await Payments.findById(order.payment._id);
+                payment.rescriptionResponse = paymentResponse.output_ResponseCode;
                 payment.paymentDate = Date.now();
                 payment.paymentMethod = "Mpesa";
                 payment.status = "Pago";
-                payment.transactionId = response.data.output_TransactionID;
-                payment.reference = response.data.output_ThirdPartyReference;
+                payment.transactionId = paymentResponse.output_TransactionID;
+                payment.reference = paymentResponse.output_ThirdPartyReference;
                 payment.number = client_number;
                 await payment.save();
 
-                res.status(response.status).json({ message: client_response });
+                // resposta para o cliente
+                res.status(paymentResponse.status).json({ message: paymentResponse.output_ResponseDesc });
 
-                for (const item of order.cart) {
-                    const product = await Product.findById(item.productId);
-
+                //  estatistica do produto quanto as compras depois de pago
+                const productPromises = newOrder.cart.map(async (item) => {
+                    const product = await Products.findById(item.productId);
                     if (!product) {
-                        throw new Error(`Produto com ID ${item.productId} não encontrado`);
+                        console.warn(`Produto com ID ${item.productId} não encontrado`);
+                        return;
                     }
-
-                    let color = null;
-                    let model = null;
-                    let size = null;
-                    let material = null;
-
-                    if (item.variation.color) {
-                        color = await Variations.findById(item.variation.color._id);
-                    }
-                    if (item.variation.model) {
-                        model = await Variations.findById(item.variation.model._id);
-                    }
-                    if (item.variation.size) {
-                        size = await Variations.findById(item.variation.size._id);
-                    }
-
-                    if (item.variation.material) {
-                        material = await Variations.findById(item.variation.material._id);
-                    }
-
-                    let price = product.productPrice;
-
-                    if (color) {
-                        price += color.variationPrice;
-                    }
-                    if (model) {
-                        price += model.variationPrice;
-                    }
-                    if (material) {
-                        price += material.variationPrice;
-                    }
-                    if (size) {
-                        price += size.variationPrice;
-                    }
-
-                    let subtotal = price * item.quantity;
-
-                    order.cartPayd.push({
-                        productId: product._id,
-                        product: product.productName,
-                        picture: product.productImage[0],
-                        variation: {
-                            color: color ? color.variationValue : null,
-                            model: model ? model.variationValue : null,
-                            size: size ? size.variationValue : null,
-                            material: material ? material.variationValue : null,
-                        },
-                        productPrice: price,
-                        quantity: item.quantity,
-                        subtotal: subtotal,
-                    });
-
-                    product.order_items.push(orderId);
+                    product.order_items.push(order._id);
                     product.timesPurchased += item.quantity;
-                    product.totalRevenue += subtotal;
-                    product.sales.push({ quantity: item.quantity, date: new Date() });
-                    await product.save();
-                }
-                await order.save();
+                    product.totalRevenue += item.subtotal;
+                    product.sales.push({ quantity: item.quantity, date: new Date(), customer: order.customer });
+                    return product.save();
+                });
+                await Promise.all(productPromises);
             } else {
-                return res.status(response.status).json({ message: client_response });
+                // se o pagamento não for realizado com sucesso
+                console.log("error", paymentResponse);
+                return res.status(paymentResponse.status || 400).json({ message: paymentResponse.output_ResponseDesc });
             }
         } catch (error) {
-            console.log("mpesaPay", error);
             next(error);
         }
-    }
+    };
 }
 
 module.exports = new PaymentController();

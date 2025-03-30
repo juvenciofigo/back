@@ -1,5 +1,5 @@
 const { Category, SubCategory, Sub_category } = require("../models/Categories");
-const Products = require("../models/Products");
+const {Products} = require("../models/Products");
 
 class CategoryController {
     async getAllCategories(req, res, next) {
