@@ -321,8 +321,6 @@ class ProductController {
     // Show all
     async getAllProductsAdmin(req, res, next) {
         // Opções de paginação e classificação
-        const query = { productAvailability: true };
-
         const category = req.query.category;
         const subcategory = req.query.subcategory;
         const sub_category = req.query.sub_category;
@@ -330,7 +328,6 @@ class ProductController {
         const options = {
             page: Number(req.query.offset) || 1,
             limit: Number(req.query.limit) || 30,
-            // select: "-productVendor -order_items -timesPurchased -totalRevenue -sales",
         };
 
         if (req.query.category) {
