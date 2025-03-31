@@ -1,7 +1,7 @@
 const { Category, SubCategory, Sub_category } = require("../models/Categories"),
     Variations = require("../models/Variations"),
     Customers = require("../models/Customers"),
-    {Products} = require("../models/Products"),
+    { Products } = require("../models/Products"),
     Ratings = require("../models/Ratings"),
     Orders = require("../models/Orders"),
     { deleteFilesFirebase } = require("../config/firebase"),
@@ -321,6 +321,8 @@ class ProductController {
     // Show all
     async getAllProductsAdmin(req, res, next) {
         // Opções de paginação e classificação
+        const query = {};
+
         const category = req.query.category;
         const subcategory = req.query.subcategory;
         const sub_category = req.query.sub_category;
@@ -342,7 +344,6 @@ class ProductController {
 
         try {
             const products = await Products.paginate(query, options);
-
             return res.status(200).json(products);
         } catch (error) {
             next(error);
