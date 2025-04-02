@@ -1,6 +1,6 @@
 var admin = require("firebase-admin");
 const BUCKET = process.env.STORAGE_BUCKET_fb;
-const sharp = require("sharp");
+const { applyWatermark, convertFiles } = require("./sharp");
 
 // Configuração das credenciais do Firebase API
 const serviceAccount = {
@@ -23,54 +23,35 @@ admin.initializeApp({
 });
 const bucket = admin.storage().bucket();
 
-// Marca de agua para foto
-const svgText1 = `
-        <svg width="800" height="80" class="tesc" >
-            <text x="50" y="80" font-size="100" fill="white" text-anchor="start" dominant-baseline="middle"
-                style="font-family: Arial, sans-serif; font-weight: bold; opacity: 0.5;">
-                ${process.env.STORE_NAME}
-            </text>
-        </svg>
-    `;
-const svgText2 = `
-        <svg width="800" height="80" class="tesc" >
-            <text x="50" y="80" font-size="100" fill="black" text-anchor="start" dominant-baseline="middle"
-                style="font-family: Arial, sans-serif; font-weight: bold; opacity: 0.5;">
-                ${process.env.STORE_NAME}
-            </text>
-        </svg>
-    `;
+// Função para aplicar a marca d'água
 
-const textBuffer1 = Buffer.from(svgText1);
-const textBuffer2 = Buffer.from(svgText2);
-// Marca de agua para foto
-
-// Função para fazer o upload de arquivos
 const uploadFirebase = async (req, res, next) => {
-    if (!req.files || req.files.length === 0) {
-        return next(); // Nenhum arquivo foi enviado
-    }
     const files = req.files;
+
+    if (!files || files.length === 0) {
+        return next();
+    }
 
     const filesWebp = files.filter((file) => file.mimetype.toLowerCase() === "image/webp");
     const filesToConvert = files.filter((file) => file.mimetype.toLowerCase() !== "image/webp");
 
     let convertedFiles = [];
     if (filesToConvert.length > 0) {
-        convertedFiles = await Promise.all(
-            filesToConvert.map(async (file) => {
-                const webpBuffer = await sharp(file.buffer)
-                    .composite([
-                        { input: textBuffer1, gravity: "northwest" },
-                        { input: textBuffer2, gravity: "southeast" },
-                    ])
-                    .webp({ quality: 100 })
-                    .toBuffer();
+        convertedFiles = await convertFiles(filesToConvert);
+    }
+
+    // Combina arquivos WebP com os convertidos
+    const filesWithWatermark = [...filesWebp, ...convertedFiles];
+
+    let finalFiles = [];
+    if (filesWithWatermark.length > 0) {
+        finalFiles = await Promise.all(
+            filesWithWatermark.map(async (file) => {
+                const webpBuffer = await applyWatermark(file.buffer); // Aplica a marca d'água em todos os arquivos
                 return { ...file, buffer: webpBuffer, mimetype: "image/webp" };
             })
         );
     }
-    const finalFiles = [...filesWebp, ...convertedFiles];
 
     try {
         const imageUrls = await Promise.all(
@@ -99,7 +80,7 @@ const uploadFirebase = async (req, res, next) => {
             })
         );
 
-        req.files = imageUrls;
+        req.files = imageUrls; // Atribui as URLs dos arquivos processados à requisição
         next();
     } catch (error) {
         console.error("Erro ao fazer upload dos arquivos:", error.message);
@@ -107,10 +88,10 @@ const uploadFirebase = async (req, res, next) => {
     }
 };
 
+// Função para excluir arquivos do Firebase Storage
 const deleteFilesFirebase = async (fileUrls) => {
     try {
         // Função para extrair o nome do arquivo do link
-
         const extractFileName = (url) => {
             const regex = /https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/[^\/]+\/o\/([^?]+)\?alt=media/;
             const match = url.match(regex);

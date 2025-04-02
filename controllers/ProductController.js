@@ -144,8 +144,18 @@ class ProductController {
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
+            const pro = {
+                ...product._doc,
+                // productStatistc: {
+                ratingAverage: this.calculateAverageRating(product.productRatings),
+                ratingStats: this.ratingStats(product),
+                // },
+            };
+
+            console.log(pro);
+
             return res.status(200).json({
-                product: { ...product._doc, productStatistc: { ratingAverage: this.calculateAverageRating(product.productRatings), ratingStats: this.ratingStats(product) } },
+                product: pro,
             });
         } catch (error) {
             next(error);
