@@ -4,7 +4,7 @@ const OrderRegistrations = require("../models/OrderRegistrations"),
     Deliveries = require("../models/Deliveries"),
     Variations = require("../models/Variations"),
     Customers = require("../models/Customers"),
-    { Products } = require("../models/Products"),
+    { Products } = require("../models/Products/Products"),
     Payments = require("../models/Payments"),
     Orders = require("../models/Orders"),
     Users = require("../models/Users"),
@@ -285,7 +285,7 @@ class OrderController {
                 if (material) price += material.variationPrice;
                 if (size) price += size.variationPrice;
 
-                let itemPrice = Number(product.productPrice += price);
+                let itemPrice = Number((product.productPrice += price));
                 cartProducts.push({
                     item: item.item,
                     productId: product._id,

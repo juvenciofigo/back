@@ -2,7 +2,7 @@ const Users = require("../models/Users");
 const Customers = require("../models/Customers");
 const Address = require("../models/Addresses");
 const Orders = require("../models/Orders");
-const {Products} = require("../models/Products");
+const { Products } = require("../models/Products/Products");
 const Variations = require("../models/Variations");
 
 class CustomerController {
@@ -217,14 +217,13 @@ class CustomerController {
             user.customer = customer._id;
             await customer.save();
             await user.save();
-            return res.status(200).json({ success: true, message: "Cliente Criado!"  });
+            return res.status(200).json({ success: true, message: "Cliente Criado!" });
         } catch (error) {
             next(error);
         }
     }
 
     async addAddress(req, res, next) {
-
         const { userId } = req.params;
         const { firstName, lastName, email, cellNumber, complete, province, postalCode, city, reference } = req.body;
 
@@ -234,26 +233,23 @@ class CustomerController {
             if (!user) {
                 return res.status(404).json({ message: "Usuario não encontrado." });
             }
-            
+
             let customer = await Customers.findOne({ user: userId });
-            
+
             if (!customer) {
                 return res.status(202).json({ user: user, message: "Complete seu perfil!" });
             }
-            
+
             const address = new Address({ firstName, lastName, email, cellNumber, complete, province, postalCode, city, reference, user: user._id });
-            
+
             address.customer = customer._id;
             customer.addresses.push(address._id);
 
             await address.save();
-            await Customers.updateOne(
-                { _id: customer._id },
-                { $push: { addresses: address._id } }
-            );
-            
+            await Customers.updateOne({ _id: customer._id }, { $push: { addresses: address._id } });
+
             const addresses = await Address.find({ user: userId, deleted: false });
-            
+
             return res.status(200).json({ message: "Endereço adicionado", addresses, address });
         } catch (error) {
             next(error);

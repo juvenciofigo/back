@@ -1,7 +1,7 @@
 const { Category, SubCategory, Sub_category } = require("../models/Categories"),
     Variations = require("../models/Variations"),
     Customers = require("../models/Customers"),
-    { Products } = require("../models/Products"),
+    { Products } = require("../models/Products/Products"),
     Ratings = require("../models/Ratings"),
     Orders = require("../models/Orders"),
     { deleteFilesFirebase } = require("../config/firebase"),
@@ -24,6 +24,37 @@ const getSort = (sortType) => {
 const dontSelect = "-productVendor -order_items -timesPurchased -totalRevenue -sales -acquisitionCost -additionalCosts";
 
 class ProductController {
+    ratingStats(product) {
+        return [1, 2, 3, 4, 5].map((score) => {
+            // Ordenar as avaliações pelo valor da avaliação (ratingScore)
+            const sortedRatings = product.productRatings.sort((a, b) => b.ratingScore - a.ratingScore);
+
+            const ratings = sortedRatings.filter((rating) => rating.ratingScore === score);
+
+            const count = ratings.length;
+
+            const average = count > 0 ? ratings.reduce((sum, rating) => sum + rating.ratingScore, 0) / count : 0;
+
+            const percentage = (count / product.productRatings.length) * 100;
+
+            return {
+                score,
+                count,
+                average,
+                percentage,
+            };
+        });
+    }
+
+    calculateAverageRating(scores) {
+        if (!scores || scores.length === 0) {
+            return 0;
+        }
+        const sumScores = scores.reduce((total, rating) => total + rating.ratingScore, 0);
+        const average = sumScores / scores.length;
+        return average;
+    }
+
     // ADMIN
 
     // Save product
@@ -96,7 +127,7 @@ class ProductController {
         }
     }
 
-    async showDetailsProductAdmin(req, res, next) {
+    showDetailsProductAdmin = async (req, res, next) => {
         try {
             const product = await Products.findById(req.params.id).populate([
                 { path: "productVariations" },
@@ -113,46 +144,13 @@ class ProductController {
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
-            // Calculate the average rating
-            function calculateAverageRating(scores) {
-                if (!scores || scores.length === 0) {
-                    return 0;
-                }
-                const sumScores = scores.reduce((total, rating) => total + rating.ratingScore, 0);
-                const average = sumScores / scores.length;
-                return average;
-            }
-
-            // Compute the general classification rating
-            const average = calculateAverageRating(product.productRatings);
-
-            // Criar o objeto de estatísticas
-            const ratingStats = [1, 2, 3, 4, 5].map((score) => {
-                // Ordenar as avaliações pelo valor da avaliação (ratingScore)
-                const sortedRatings = product.productRatings.sort((a, b) => b.ratingScore - a.ratingScore);
-
-                const ratings = sortedRatings.filter((rating) => rating.ratingScore === score);
-
-                const count = ratings.length;
-
-                const average = count > 0 ? ratings.reduce((sum, rating) => sum + rating.ratingScore, 0) / count : 0;
-
-                const percentage = (count / product.productRatings.length) * 100;
-                return {
-                    score,
-                    count,
-                    average,
-                    percentage,
-                };
-            });
-
             return res.status(200).json({
-                product: { ...product._doc, productStatistc: { ratingAverage: average, ratingStats: ratingStats } },
+                product: { ...product._doc, productStatistc: { ratingAverage: this.calculateAverageRating(product.productRatings), ratingStats: this.ratingStats(product) } },
             });
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     // Update product
     async updateProduct(req, res, next) {
@@ -278,12 +276,11 @@ class ProductController {
 
             await product.save();
 
-            return res.status(200).json({ success: true, message: "Imagens adicionadas", product });
+            return res.status(200).json({ success: true, message: "Imagens adicionadas" });
         } catch (error) {
             next(error);
         }
     }
-
     // Delete product
 
     async deleteProduct(req, res, next) {
@@ -381,6 +378,7 @@ class ProductController {
 
         try {
             const products = await Products.paginate(query, options);
+            console.log(products);
             return res.status(200).json(products);
         } catch (error) {
             next(error);
@@ -416,7 +414,7 @@ class ProductController {
     }
 
     // Show One
-    async showDetailsProduct(req, res, next) {
+    showDetailsProduct = async (req, res, next) => {
         const userId = req.auth ? req.auth._id : null;
         const productId = req.params.id;
         let canRate = false;
@@ -437,6 +435,7 @@ class ProductController {
                 ]);
 
             if (!product) {
+                console.log(false);
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
@@ -445,6 +444,7 @@ class ProductController {
 
                 if (customer) {
                     const orders = await Orders.find({ customer: customer._id, "cartPayd.productId": productId });
+                    console.log(orders);
 
                     if (orders.length > 0) {
                         canRate = true;
@@ -486,12 +486,12 @@ class ProductController {
             });
 
             return res.status(200).json({
-                product: { ...product._doc, productStatistc: { ratingAverage: average, ratingStats: ratingStats }, canRate },
+                product: { ...product._doc, productStatistc: { ratingAverage: this.calculateAverageRating(product.productRatings), ratingStats: this.ratingStats(product) }, canRate },
             });
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     async getRatingsProduct(req, res, next) {
         try {

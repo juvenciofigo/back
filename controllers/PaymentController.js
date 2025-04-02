@@ -1,6 +1,6 @@
 const Orders = require("../models/Orders");
 const Payments = require("../models/Payments");
-const { Products } = require("../models/Products");
+const { Products } = require("../models/Products/Products");
 const Variations = require("../models/Variations");
 const Mpesa = require("./integracoes/Mpesa/MpesaTrasation");
 

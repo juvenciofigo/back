@@ -15,19 +15,22 @@ const SaleSchema = new mongoose.Schema(
         customer: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Customer",
-            require:true
+            require: true,
         },
     },
-    { _id: false }
+    { timestamps: true }
 );
 
-const TagsSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        unique: true,
-        required: true,
+const TagsSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            unique: true,
+            required: true,
+        },
     },
-});
+    { timestamps: true }
+);
 
 const ProfitSchema = new mongoose.Schema(
     {
@@ -46,9 +49,7 @@ const ProfitSchema = new mongoose.Schema(
             },
         },
     },
-    {
-        _id: false,
-    }
+    { timestamps: true }
 );
 
 const ProductSchema = new mongoose.Schema(

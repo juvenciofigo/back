@@ -1,4 +1,4 @@
-const {Products} = require("../models/Products"),
+const { Products } = require("../models/Products/Products"),
     Variations = require("../models/Variations"),
     { deleteFilesFirebase } = require("../config/firebase");
 

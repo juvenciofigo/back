@@ -1,4 +1,4 @@
-const {Products} = require("../models/Products"),
+const { Products } = require("../models/Products/Products"),
     Customers = require("../models/Customers"),
     Ratings = require("../models/Ratings"),
     Orders = require("../models/Orders");

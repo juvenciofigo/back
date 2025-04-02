@@ -1,7 +1,7 @@
 const mongoose = require("mongoose"),
     Variations = require("../models/Variations"),
     Carts = require("../models/Carts"),
-    { Products } = require("../models/Products"),
+    { Products } = require("../models/Products/Products"),
     api = require("../config/index").api;
 
 async function newCart(userId, bodyData) {
@@ -194,7 +194,6 @@ class CartController {
             }
 
             for (const product of products) {
-            
                 const productDetails = await Products.findById(product.productId);
 
                 if (!productDetails) {

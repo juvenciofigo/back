@@ -98,20 +98,18 @@ app.use("/", statistics);
 
 // Error Handling
 app.use((error, req, res, next) => {
-    console.log(error);
+    // console.log(error);
     
     if (error.errors) {
         const errors = Object.values(error.errors).map((error) => error.properties.message);
-        console.log(errors);
         return res.status(400).json({ message: errors.toLocaleString() });
     } else if (error instanceof multer.MulterError) {
-        console.log(error);
+        console.log("multer erro", error);
+        
         return res.status(400).json({ message: error.message });
     } else if (error.code === "credentials_required") {
-        console.log(error);
         return res.status(400).json({ message: "Sem autorizacao" });
     } else {
-        console.error(error);
         return res.status(500).json({ message: "Erro interno do servidor" });
     }
 });

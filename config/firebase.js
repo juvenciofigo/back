@@ -1,5 +1,6 @@
 var admin = require("firebase-admin");
 const BUCKET = process.env.STORAGE_BUCKET_fb;
+const sharp = require("sharp");
 
 // Configuração das credenciais do Firebase API
 const serviceAccount = {
@@ -22,17 +23,60 @@ admin.initializeApp({
 });
 const bucket = admin.storage().bucket();
 
+// Marca de agua para foto
+const svgText1 = `
+        <svg width="800" height="80" class="tesc" >
+            <text x="50" y="80" font-size="100" fill="white" text-anchor="start" dominant-baseline="middle"
+                style="font-family: Arial, sans-serif; font-weight: bold; opacity: 0.5;">
+                ${process.env.STORE_NAME}
+            </text>
+        </svg>
+    `;
+const svgText2 = `
+        <svg width="800" height="80" class="tesc" >
+            <text x="50" y="80" font-size="100" fill="black" text-anchor="start" dominant-baseline="middle"
+                style="font-family: Arial, sans-serif; font-weight: bold; opacity: 0.5;">
+                ${process.env.STORE_NAME}
+            </text>
+        </svg>
+    `;
+
+const textBuffer1 = Buffer.from(svgText1);
+const textBuffer2 = Buffer.from(svgText2);
+// Marca de agua para foto
+
 // Função para fazer o upload de arquivos
 const uploadFirebase = async (req, res, next) => {
-    if (!req.files) return next();
-
+    if (!req.files || req.files.length === 0) {
+        return next(); // Nenhum arquivo foi enviado
+    }
     const files = req.files;
+
+    const filesWebp = files.filter((file) => file.mimetype.toLowerCase() === "image/webp");
+    const filesToConvert = files.filter((file) => file.mimetype.toLowerCase() !== "image/webp");
+
+    let convertedFiles = [];
+    if (filesToConvert.length > 0) {
+        convertedFiles = await Promise.all(
+            filesToConvert.map(async (file) => {
+                const webpBuffer = await sharp(file.buffer)
+                    .composite([
+                        { input: textBuffer1, gravity: "northwest" },
+                        { input: textBuffer2, gravity: "southeast" },
+                    ])
+                    .webp({ quality: 100 })
+                    .toBuffer();
+                return { ...file, buffer: webpBuffer, mimetype: "image/webp" };
+            })
+        );
+    }
+    const finalFiles = [...filesWebp, ...convertedFiles];
 
     try {
         const imageUrls = await Promise.all(
-            files.map((file) => {
+            finalFiles.map((file) => {
                 return new Promise((resolve, reject) => {
-                    const uniqueName = `${Date.now()}_${file.originalname}`; // Nome único do arquivo
+                    const uniqueName = `${Date.now()}_${file.originalname}.webp`; // Nome único do arquivo
 
                     const blob = bucket.file(uniqueName); // Cria uma referência para o arquivo no Firebase Storage
 
