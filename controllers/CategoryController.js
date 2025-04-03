@@ -83,7 +83,7 @@ class CategoryController {
     }
 
     async createCategory(req, res, next) {
-        const { categoryName, code } = req.body;
+        const { categoryName } = req.body;
         try {
             // Verificar se a categoria já existe com o mesmo nome
             const existingCategory = await Category.findOne({ categoryName: categoryName });
@@ -95,7 +95,7 @@ class CategoryController {
             // Criar uma nova instância de Categories
             const category = new Category({
                 categoryName,
-                code: categoryName.toLowerCase(),
+                code: categoryName.toLowerCase().replace(/\s/g, ""),
             });
 
             // Salvar a nova categoria no banco de dados
@@ -274,47 +274,50 @@ class CategoryController {
     }
 
     async updateProduct(req, res, next) {
-        const options = {
-            page: Number(req.query.offset) || 1, // Página padrão 1 se offset não fornecido
-            limit: Number(req.query.limit) || 30, // Limite padrão de 30 se limit não fornecido
-        };
-
         try {
-            const category = await Category.findById(req.params.id);
+            // Configuração da paginação
+            const options = {
+                page: Number(req.query.offset) || 1, // Página padrão 1 se offset não for fornecido
+                limit: Number(req.query.limit) || 30, // Limite padrão de 30 se limit não for fornecido
+            };
 
+            // Busca a categoria pelo ID fornecido
+            const category = await Category.findById(req.params.id);
+            if (!category) {
+                return res.status(404).json({ success: false, message: "Categoria não encontrada." });
+            }
+
+            // Obtém os produtos do corpo da requisição
             const { products } = req.body;
 
-            if (products) category.products = products;
-            await category.save();
+            if (Array.isArray(products)) {
+                category.products = products;
+                await category.save();
+            }
 
-            let _products = await Products.find({
+            // Busca os produtos pertencentes à categoria ou listados na requisição
+            const _products = await Products.find({
                 $or: [
                     { productCategory: req.params.id },
-                    {
-                        _id: {
-                            $in: products,
-                        },
-                    },
+                    { _id: { $in: products || [] } }, // Garante que não ocorra erro caso `products` seja undefined
                 ],
             });
 
-            _products = await Promise.all(
+            // Atualiza a categoria dos produtos de forma assíncrona
+            await Promise.all(
                 _products.map(async (product) => {
-                    if (!products.includes(product._id.toString())) {
-                        product.productCategory = null;
-                    } else {
-                        product.productCategory = req.params.id;
-                    }
+                    product.productCategory = products?.includes(product._id.toString()) ? req.params.id : null;
                     await product.save();
-                    return product;
                 })
             );
 
+            // Paginação dos produtos atualizados
             const results = await Products.paginate({ productCategory: req.params.id }, options);
-            res.status(200).json({ products: results });
-            return;
+
+            // Retorna os produtos atualizados
+            return res.status(200).json({ success: true, products: results });
         } catch (error) {
-            next(error);
+            next(error); // Passa o erro para o middleware de tratamento de erros
         }
     }
 }

@@ -2,11 +2,8 @@ var router = require("express").Router();
 var UserController = require("../controllers/UserController");
 const UserValidation = require("../controllers/validations/userValidation");
 const AdminValidator = require("../controllers/validations/adminValidator");
-const CustomerValidator = require("../controllers/validations/customerValidator");
 
 const auth = require("./auth");
-
-router.get("/", UserController.default);
 
 ////////// Admin ///////////
 

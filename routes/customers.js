@@ -27,11 +27,11 @@ router.get("/customer/:id", auth.require, CustomerValidator, CustomerValidation.
 
 router.post("/customer/:userId", auth.require, CustomerValidation.createCustomer, CustomerController.createCustomer);
 
-router.get("/customer/:userId/addresses", auth.require, CustomerController.allAddress);
+router.get("/customer/:userId/addresses", auth.require,CustomerValidator, CustomerController.allAddress);
 
-router.post("/customer/:userId/address/", auth.require, CustomerValidation.addAddress, CustomerController.addAddress);
+router.post("/customer/:userId/address/", auth.require, CustomerValidation.addAddress, CustomerValidator, CustomerController.addAddress);
 
-router.delete("/customer/:addressId/address/", auth.require, CustomerController.deleteAddress);
+router.delete("/customer/:addressId/address/", auth.require, CustomerValidator, CustomerController.deleteAddress);
 
 router.put("/customer/:id", auth.require, CustomerValidator, CustomerValidation.updateCustomer, CustomerController.updateMySelf);
 

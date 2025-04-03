@@ -4,26 +4,25 @@ const { Category, SubCategory, Sub_category } = require("../models/Categories"),
     { Products } = require("../models/Products/Products"),
     Ratings = require("../models/Ratings"),
     Orders = require("../models/Orders"),
-    { deleteFilesFirebase } = require("../config/firebase"),
-    api = require("../config/index").api;
-
-const getSort = (sortType) => {
-    switch (sortType) {
-        case "alphabet_a-z":
-            return { productName: 1 };
-        case "alphabet_z-a":
-            return { productName: -1 };
-        case "price-ascending":
-            return { productPrice: 1 };
-        case "price-descending":
-            return { productPrice: -1 };
-        default:
-            return { createdAt: -1 };
-    }
-};
-const dontSelect = "-productVendor -order_items -timesPurchased -totalRevenue -sales -acquisitionCost -additionalCosts";
+    { deleteFilesFirebase } = require("../config/firebase");
 
 class ProductController {
+    getSort = (sortType) => {
+        switch (sortType) {
+            case "alphabet_a-z":
+                return { productName: 1 };
+            case "alphabet_z-a":
+                return { productName: -1 };
+            case "price-ascending":
+                return { productPrice: 1 };
+            case "price-descending":
+                return { productPrice: -1 };
+            default:
+                return { createdAt: -1 };
+        }
+    };
+    dontSelect = "-productVendor -order_items -timesPurchased -totalRevenue -sales -acquisitionCost -additionalCosts";
+
     ratingStats(product) {
         return [1, 2, 3, 4, 5].map((score) => {
             // Ordenar as avaliações pelo valor da avaliação (ratingScore)
@@ -330,10 +329,6 @@ class ProductController {
         // Opções de paginação e classificação
         const query = {};
 
-        const category = req.query.category;
-        const subcategory = req.query.subcategory;
-        const sub_category = req.query.sub_category;
-
         const options = {
             page: Number(req.query.offset) || 1,
             limit: Number(req.query.limit) || 30,
@@ -363,17 +358,14 @@ class ProductController {
 
     ///
 
-    async availiableProducts(req, res, next) {
+    availiableProducts = async (req, res, next) => {
         // Opções de paginação e classificação
         const query = { productAvailability: true };
-        const category = req.query.category;
-        const subcategory = req.query.subcategory;
-        const sub_category = req.query.sub_category;
 
         const options = {
             page: Number(req.query.offset) || 1,
             limit: 10,
-            select: dontSelect,
+            select: this.dontSelect,
         };
 
         if (req.query.category) {
@@ -393,17 +385,17 @@ class ProductController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
-    async searchProducts(req, res, next) {
+    searchProducts = async (req, res, next) => {
         const search = new RegExp(req.query.search, "i");
         const category = req.query.category;
 
         const options = {
             page: Number(req.query.offset) || 0,
             limit: Number(req.query.limit) || 3,
-            sort: getSort(req.query.sortType),
-            select: dontSelect,
+            sort: this.getSort(req.query.sortType),
+            select: this.dontSelect,
             populate: ["productCategory"],
             productAvailability: true,
         };
@@ -421,7 +413,7 @@ class ProductController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     // Show One
     showDetailsProduct = async (req, res, next) => {
@@ -461,39 +453,6 @@ class ProductController {
                     }
                 }
             }
-
-            // Calculate the average rating
-            function calculateAverageRating(scores) {
-                if (!scores || scores.length === 0) {
-                    return 0;
-                }
-                const sumScores = scores.reduce((total, rating) => total + rating.ratingScore, 0);
-                const average = sumScores / scores.length;
-                return average;
-            }
-
-            // Compute the general classification rating
-            const average = calculateAverageRating(product.productRatings);
-
-            // Criar o objeto de estatísticas
-            const ratingStats = [1, 2, 3, 4, 5].map((score) => {
-                // Ordenar as avaliações pelo valor da avaliação (ratingScore)
-                const sortedRatings = product.productRatings.sort((a, b) => b.ratingScore - a.ratingScore);
-
-                const ratings = sortedRatings.filter((rating) => rating.ratingScore === score);
-
-                const count = ratings.length;
-
-                const average = count > 0 ? ratings.reduce((sum, rating) => sum + rating.ratingScore, 0) / count : 0;
-
-                const percentage = (count / product.productRatings.length) * 100;
-                return {
-                    score,
-                    count,
-                    average,
-                    percentage,
-                };
-            });
 
             return res.status(200).json({
                 product: { ...product._doc, productStatistc: { ratingAverage: this.calculateAverageRating(product.productRatings), ratingStats: this.ratingStats(product) }, canRate },

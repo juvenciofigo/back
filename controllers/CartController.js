@@ -1,19 +1,10 @@
 const mongoose = require("mongoose"),
     Variations = require("../models/Variations"),
     Carts = require("../models/Carts"),
-    { Products } = require("../models/Products/Products"),
-    api = require("../config/index").api;
+    { Products } = require("../models/Products/Products");
 
-async function newCart(userId, bodyData) {
-    const cart = new Carts({
-        cartItens: bodyData || [],
-        cartUser: userId,
-    });
-
-    await cart.save();
-    return cart;
-}
 class CartController {
+    
     async createCart(req, res, next) {
         const { user_id } = req.params;
         const bodyData = req.body;
@@ -26,7 +17,7 @@ class CartController {
                 return cart.save();
             }
 
-            const createCart = await newCart(user_id, bodyData);
+             await newCart(user_id, bodyData);
 
             return res.status(200).json({ success: true });
         } catch (error) {

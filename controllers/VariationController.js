@@ -188,7 +188,6 @@ class VariationController {
 
     // Delete Variations
     async deleteVariation(req, res, next) {
-        const { product } = req.query;
         try {
             // Busca o comentário pelo ID nos parâmetros da requisição
             const variation = await Variations.findById(req.params.id);

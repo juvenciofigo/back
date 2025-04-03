@@ -29,4 +29,5 @@ const ViewsProcustsSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+ViewsProcustsSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("ViewsProcucts", ViewsProcustsSchema, "viewsProcucts");

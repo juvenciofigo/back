@@ -93,7 +93,8 @@ const deleteFilesFirebase = async (fileUrls) => {
     try {
         // Função para extrair o nome do arquivo do link
         const extractFileName = (url) => {
-            const regex = /https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/[^\/]+\/o\/([^?]+)\?alt=media/;
+            const regex = /https:\/\/firebasestorage.googleapis.com\/v0\/b\/[^/]+\/o\/([^?]+)\?alt=media/;
+
             const match = url.match(regex);
             if (match && match[1]) {
                 return decodeURIComponent(match[1]); // Decodifica e retorna o nome do arquivo

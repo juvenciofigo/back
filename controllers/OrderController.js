@@ -1,5 +1,3 @@
-const { number } = require("joi");
-
 const OrderRegistrations = require("../models/OrderRegistrations"),
     Deliveries = require("../models/Deliveries"),
     Variations = require("../models/Variations"),
@@ -8,8 +6,7 @@ const OrderRegistrations = require("../models/OrderRegistrations"),
     Payments = require("../models/Payments"),
     Orders = require("../models/Orders"),
     Users = require("../models/Users"),
-    Cart = require("../models/Carts"),
-    api = require("../config/index").api;
+    Cart = require("../models/Carts");
 
 const getSort = (sortType) => {
     switch (sortType) {
@@ -19,10 +16,10 @@ const getSort = (sortType) => {
             return { productName: -1 };
         case "price-ascending":
             return { productPrice: 1 };
+        case "createAt-aescending":
+            return { createdAt: 1 };
         case "price-descending":
             return { productPrice: -1 };
-        case "createAt-descending":
-            return { createdAt: 1 };
         case "createAt-descending":
             return { createdAt: -1 };
         default:
@@ -69,7 +66,7 @@ class OrderController {
             }
             return res.status(200).json({ success: true, orders });
         } catch (error) {
-            next();
+            next(error);
         }
     }
 
@@ -91,11 +88,11 @@ class OrderController {
             const orderReg = await OrderRegistrations.find({ order: order._id });
             return res.status(200).json({ success: true, order, orderReg });
         } catch (error) {
-            next();
+            next(error);
         }
     }
 
-    async deleteOrderAdmin(req, res) {
+    async deleteOrderAdmin(req, res, next) {
         try {
             const order = await Orders.findOne({ _id: req.params.id }).populate("customerOrder paymentOrder deliveryOrder");
 
@@ -121,7 +118,7 @@ class OrderController {
 
             return res.status(200).json({ success: true, order });
         } catch (error) {
-            next();
+            next(error);
         }
     }
 
@@ -143,7 +140,7 @@ class OrderController {
 
             return res.status(200).json({ success: true, order });
         } catch (error) {
-            next();
+            next(error);
         }
     }
 
@@ -216,7 +213,7 @@ class OrderController {
             const orderReg = await OrderRegistrations.find({ order: order._id });
             return res.status(200).json({ success: true, order, orderReg });
         } catch (error) {
-            next();
+            next(error);
         }
     }
 

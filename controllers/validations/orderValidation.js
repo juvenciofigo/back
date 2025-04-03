@@ -1,4 +1,3 @@
-const { query } = require("express");
 const Joi = require("joi");
 
 // Middlewares de validação para pedidos do administrador
@@ -11,7 +10,8 @@ const getAllOrdersAdmin = (req, res, next) => {
     }).validate(req.query);
 
     if (error) {
-        next(error);
+         console.log(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -22,7 +22,8 @@ const getOrderAdmin = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        next(error);
+         console.log(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -33,7 +34,8 @@ const deleteOrderAdmin = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        next(error);
+         console.log(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -44,7 +46,8 @@ const getOrderCartAdmin = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        next(error);
+         console.log(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -92,7 +95,8 @@ const getOrder = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        next(error);
+         console.log(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -103,7 +107,8 @@ const deleteOrder = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        next(error);
+         console.log(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -114,7 +119,8 @@ const getOrderCart = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        next(error);
+         console.log(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };

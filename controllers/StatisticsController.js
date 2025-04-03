@@ -1,18 +1,7 @@
-const Addresses = require("../models/Addresses"),
-    Carts = require("../models/Carts"),
-    Categories = require("../models/Categories"),
-    Customers = require("../models/Customers"),
+const Customers = require("../models/Customers"),
     Visits = require("../models/visita"),
-    Deliveries = require("../models/Deliveries"),
-    Notifications = require("../models/Notifications"),
-    OrderRegistrations = require("../models/OrderRegistrations"),
     Orders = require("../models/Orders"),
-    Payments = require("../models/Payments"),
-    { Products } = require("../models/Products/Products"),
-    Ratings = require("../models/Ratings"),
-    Stores = require("../models/Stores"),
-    Users = require("../models/Users"),
-    Variations = require("../models/Variations");
+    Users = require("../models/Users");
 
 class EstatisticController {
     async superficial(req, res, next) {

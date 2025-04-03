@@ -93,6 +93,7 @@ class RatingController {
     // Update Rating
     async updateRating(req, res, next) {
         try {
+            console.log(req, res);
         } catch (error) {
             next(error);
         }

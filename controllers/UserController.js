@@ -28,13 +28,12 @@ class UserController {
     async visitaReg(req, res, next) {
         try {
             try {
-                const visita = await Visita.findOneAndUpdate(
+                await Visita.findOneAndUpdate(
                     {}, // Se o campo estiver vazio, ele buscará o primeiro documento
                     { $inc: { VisitaCount: 1 } }, // Incrementa o campo VisitaCount em 1
                     { new: true, upsert: true } // Retorna o documento atualizado e cria um novo se não existir
                 );
 
-               
                 res.json({ success: true });
             } catch (err) {
                 console.error("Erro ao registrar a visita: ", err);
@@ -52,13 +51,12 @@ class UserController {
 
         try {
             const userDetails = await Users.findById(user).select("-recovery -salt -password -role -deleted -cart -customer");
-            
+
             if (!userDetails) return res.status(404).json({ message: "Usuário não encontrado!" });
 
             if (userDetails.deleted === true) {
                 return res.status(404).json({ message: "Conta apagada!" });
             }
-
 
             return res.status(200).json(userDetails);
         } catch (error) {
@@ -177,20 +175,11 @@ class UserController {
             next(error);
         }
     }
-    // default
-    async default(req, res, next) {
-        const { email, password } = req.body;
-        try {
-            return res.status(200).json({ success: true });
-        } catch (error) {
-            next(error);
-        }
-    }
 
     // RECOVERY
 
     //
-    async showRecovery(req, res, next) {
+    async showRecovery(_, res,) {
         return res.render("recovery");
     }
 
@@ -245,7 +234,7 @@ class UserController {
 
     async completeRecovery(req, res, next) {
         const { token, password } = req.body;
-        
+
         try {
             if (!token || !password) {
                 return res.render("recovery/store", { message: "Preencha novamente com a sua senha", success: false, token: token });

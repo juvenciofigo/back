@@ -67,7 +67,7 @@ const UserSchema = new mongoose.Schema(
 UserSchema.plugin(uniqueValidator, { message: "nome de usuário sendo usado, escolha outro" });
 
 UserSchema.methods.setPassword = function (password) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         this.salt = bcrypt.genSaltSync(10);
         this.password = bcrypt.hashSync(password, this.salt);
         resolve();

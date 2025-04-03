@@ -32,6 +32,7 @@ module.exports = ({ user, recovery }, cb) => {
         transporter.sendMail(emailOptions, (error, info) => {
             if (error) {
                 console.error(error);
+                console.error(info);
                 return cb("Aconteceu um erro no envio do email, tente novamente.");
             } else {
                 return cb(null, "Link para redefinição de senha foi enviado com sucesso para seu email.");

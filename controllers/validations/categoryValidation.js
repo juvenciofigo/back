@@ -8,7 +8,8 @@ const createCategory = (req, res, next) => {
     }).validate(req.body);
 
     if (error) {
-        next(error);
+         console.log(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -20,7 +21,8 @@ const createSubCategories = (req, res, next) => {
     }).validate(req.body);
 
     if (error) {
-        next(error);
+         console.log(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -32,7 +34,8 @@ const createSub_categories = (req, res, next) => {
     }).validate(req.body);
 
     if (error) {
-        next(error);
+         console.log(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -43,7 +46,8 @@ const categoryDetails = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        next(error);
+         console.log(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };
@@ -56,7 +60,8 @@ const updateCategory = (req, res, next) => {
     const { error: paramsError } = paramsSchema.validate(req.params);
 
     if (paramsError) {
-        next(error);
+         console.log(paramsError);
+        return res.status(400).json({ message: paramsError.details[0].message });
     }
     const bodySchema = Joi.object({
         categoryName: Joi.string().optional(),
@@ -68,7 +73,8 @@ const updateCategory = (req, res, next) => {
     const { error: bodyError } = bodySchema.validate(req.body);
 
     if (bodyError) {
-        next(error);
+         console.log(bodyError);
+        return res.status(400).json({ message: bodyError.details[0].message });
     }
     next();
 };
@@ -79,7 +85,8 @@ const removeCategory = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
-        next(error);
+         console.log(error);
+        return res.status(400).json({ message: error.details[0].message });
     }
     next();
 };

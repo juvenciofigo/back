@@ -3,7 +3,6 @@ const OrderController = require("../controllers/OrderController");
 const auth = require("./auth");
 const AdminValidator = require("../controllers/validations/adminValidator");
 const orderValidation = require("../controllers/validations/orderValidation");
-const CustomerValidator = require("../controllers/validations/customerValidator");
 
 // Rotas para Admin
 
