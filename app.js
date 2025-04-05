@@ -1,5 +1,5 @@
-require("./database/connection");
 require("dotenv").config();
+require("./database/connection");
 const multer = require("multer");
 const express = require("express");
 const path = require("path");
