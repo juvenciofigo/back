@@ -150,15 +150,22 @@ const ProductSchema = new mongoose.Schema(
             default: 0,
         },
         deliveryEstimate: {
-            additionalCost: {
-                type: Number,
-                default: 0,
-            },
-            estimatedTime: {
-                type: String,
-                required: true,
-                emun: ["Imediata", "7 dias", "30 dias"],
-            },
+            type: [
+                {
+                    additionalCost: {
+                        type: Number,
+                        default: 0,
+                        required: true,
+                    },
+                    estimatedTime: {
+                        type: String,
+                        default: "Imediata",
+                        required: true,
+                        emun: ["Imediata", "7 dias", "30 dias"],
+                    },
+                },
+            ],
+            default: [],
         },
         sales: [SaleSchema],
         profit: [ProfitSchema],

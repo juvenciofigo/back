@@ -195,11 +195,11 @@ class CustomerController {
      */
 
     async createCustomer(req, res, next) {
-        const { userId } = req.params;
+        const { id } = req.params;
         const { cellNumber, province, city } = req.body;
 
         try {
-            const user = await Users.findById(userId).select("-recovery -salt -password -role");
+            const user = await Users.findById(id).select("-recovery -salt -password -role");
 
             if (!user) {
                 return res.status(400).json({ message: "Usuário não encontrado!" });
@@ -224,17 +224,17 @@ class CustomerController {
     }
 
     async addAddress(req, res, next) {
-        const { userId } = req.params;
+        const { id } = req.params;
         const { firstName, lastName, email, cellNumber, complete, province, postalCode, city, reference } = req.body;
 
         try {
-            const user = await Users.findById(userId).select("-recovery -salt -password -role -cart -createdAt -deleted -updatedAt");
+            const user = await Users.findById(id).select("-recovery -salt -password -role -cart -createdAt -deleted -updatedAt");
 
             if (!user) {
                 return res.status(404).json({ message: "Usuario não encontrado." });
             }
 
-            let customer = await Customers.findOne({ user: userId });
+            let customer = await Customers.findOne({ user: id });
 
             if (!customer) {
                 return res.status(202).json({ user: user, message: "Complete seu perfil!" });
@@ -248,7 +248,7 @@ class CustomerController {
             await address.save();
             await Customers.updateOne({ _id: customer._id }, { $push: { addresses: address._id } });
 
-            const addresses = await Address.find({ user: userId, deleted: false });
+            const addresses = await Address.find({ user: id, deleted: false });
 
             return res.status(200).json({ message: "Endereço adicionado", addresses, address });
         } catch (error) {
@@ -258,17 +258,17 @@ class CustomerController {
 
     async deleteAddress(req, res, next) {
         const { addressId } = req.params;
-        const userId = req.auth._id;
+        const id = req.auth._id;
 
         // Validação básica dos parâmetros
-        if (!addressId || !userId) {
+        if (!addressId || !id) {
             return res.status(400).json({ message: "Parâmetros inválidos" });
         }
 
         try {
             // Atualiza o endereço diretamente no banco de dados
             const updatedAddress = await Address.findOneAndUpdate(
-                { _id: addressId, user: userId }, // Filtro
+                { _id: addressId, user: id }, // Filtro
                 { deleted: true }, // Atualização
                 { new: true } // Retorna o documento atualizado
             );
@@ -279,7 +279,7 @@ class CustomerController {
             }
 
             // Busca os endereços ativos do usuário
-            const addresses = await Address.find({ user: userId, deleted: false });
+            const addresses = await Address.find({ user: id, deleted: false });
 
             // Retorna a resposta com os endereços atualizados
             return res.status(200).json({
@@ -308,9 +308,9 @@ class CustomerController {
     }
 
     async allAddress(req, res, next) {
-        const { userId } = req.params;
+        const { id } = req.params;
         try {
-            const addresses = await Address.find({ user: userId, deleted: false });
+            const addresses = await Address.find({ user: id, deleted: false });
 
             return res.status(200).json(addresses);
         } catch (error) {

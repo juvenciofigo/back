@@ -27,6 +27,22 @@ const OrderSchema = new mongoose.Schema(
                 picture: {
                     type: String,
                 },
+                deliveryEstimate: {
+                    type: {
+                        additionalCost: {
+                            type: Number,
+                            default: 0,
+                            required: true,
+                        },
+                        estimatedTime: {
+                            type: String,
+                            default: "Imediata",
+                            required: true,
+                            emun: ["Imediata", "7 dias", "30 dias"],
+                        },
+                    },
+                    default: [],
+                },
                 variation: {
                     type: {
                         color: {

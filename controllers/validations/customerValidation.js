@@ -185,7 +185,7 @@ const removeMySelf = (req, res, next) => {
 
 const createCustomer = (req, res, next) => {
     const schema = Joi.object({
-        userId: Joi.string().alphanum().length(24).required().messages({
+        id: Joi.string().alphanum().length(24).required().messages({
             "string.base": "UserID deve ser uma string",
             "string.alphanum": "UserID deve ser alfanumérico",
             "string.length": "UserID deve ter 24 caracteres",
@@ -348,7 +348,7 @@ const updateCustomerAdmin = (req, res, next) => {
 
 const addAddress = (req, res, next) => {
     const schema = Joi.object({
-        userId: Joi.string().alphanum().length(24).required().messages({
+        id: Joi.string().alphanum().length(24).required().messages({
             "string.base": "UserID deve ser uma string",
             "string.alphanum": "UserID deve ser alfanumérico",
             "string.length": "UserID deve ter 24 caracteres",

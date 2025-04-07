@@ -221,7 +221,7 @@ class OrderController {
         const { cart, address } = req.body;
         const userID = req.auth._id;
         let cartProducts = [];
-        let shippingPrice = 10;
+        let shippingPrice = 0;
 
         const session = await Orders.startSession();
         session.startTransaction(); // Iniciar transação
@@ -229,6 +229,7 @@ class OrderController {
         try {
             // Verificar existência do carrinho
             const existCart = await Cart.findOne({ cartUser: userID, _id: cart }).session(session);
+
             if (!existCart) {
                 await session.abortTransaction();
                 session.endSession();
@@ -239,21 +240,12 @@ class OrderController {
             let customer = await Customers.findOne({ user: userID }).session(session);
 
             if (!customer) {
-                const user = await Users.findById(userID).session(session);
-                customer = new Customers({
-                    email: user.email,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    cellNumber: user.cellNumber,
-                    user: user._id,
-                    cart: user.cart,
-                });
+                const user = await Users.findById(userID).select("-recovery -salt -password -role -cart -createdAt -deleted -updatedAt");
 
-                user.customer = customer._id;
-                await customer.save({ session });
-                await user.save({ session });
+                return res.status(202).json({ user: user, message: "Cliente não encontrado." });
             }
 
+        
             // Gerar referência única para o pedido
             async function generateUniqueReference() {
                 let reference;
@@ -269,14 +261,18 @@ class OrderController {
             // Processar cada item do carrinho
             for (const item of existCart.cartItens) {
                 const product = await Products.findById(item.productId).session(session);
+
                 if (!product) continue;
 
+                const estimate = product?.deliveryEstimate?.id(item.deliveryEstimate);
                 const color = await Variations.findById(item.variation.color).session(session);
                 const model = await Variations.findById(item.variation.model).session(session);
                 const size = await Variations.findById(item.variation.size).session(session);
                 const material = await Variations.findById(item.variation.material).session(session);
 
                 let price = 0;
+
+                if (estimate?.additionalCost) price += estimate?.additionalCost;
                 if (color) price += color.variationPrice;
                 if (model) price += model.variationPrice;
                 if (material) price += material.variationPrice;
@@ -290,6 +286,7 @@ class OrderController {
                     variation: { color, model, size, material },
                     picture: product.productImage[0],
                     itemPrice,
+                    deliveryEstimate: estimate,
                     quantity: Number(item.quantity),
                     subtotal: Number(itemPrice * item.quantity),
                 });
@@ -318,8 +315,6 @@ class OrderController {
                 payment: newPayment._id,
                 delivery: newDelivery._id,
                 referenceOrder: reference,
-                // totalPrice: shippingPrice + totalProductsPrice,
-                // totalProductsPrice,
             });
 
             const newOrderReg = new OrderRegistrations({

@@ -6,6 +6,33 @@ const { Category, SubCategory, Sub_category } = require("../models/Categories"),
     Orders = require("../models/Orders"),
     { deleteFilesFirebase } = require("../config/firebase");
 
+// async function migrateDeliveryEstimate() {
+//     try {
+//         const result = await Products.updateMany(
+//             // { $or: [{ deliveryEstimate: { $exists: false } }, { deliveryEstimate: { $not: { $type: "array" } } }] },
+//             {
+//                 $set: {
+//                     deliveryEstimate: [
+//                         {
+//                             additionalCost: 0,
+//                             estimatedTime: "Imediata",
+//                         },
+//                         {
+//                             additionalCost: 7,
+//                             estimatedTime: "7 dias",
+//                         },
+//                     ],
+//                 },
+//             }
+//         );
+//         console.log("Produtos atualizados:", result);
+//         console.log("Produtos atualizados:", result.modifiedCount);
+//     } catch (error) {
+//         console.error("Erro ao migrar produtos:", error);
+//     }
+// }
+// migrateDeliveryEstimate();
+
 class ProductController {
     getSort = (sortType) => {
         switch (sortType) {
@@ -151,8 +178,6 @@ class ProductController {
                 // },
             };
 
-            console.log(pro);
-
             return res.status(200).json({
                 product: pro,
             });
@@ -184,6 +209,8 @@ class ProductController {
             productName,
             acquisitionCost,
             additionalCosts,
+            additionalCost,
+            estimatedTime,
         } = req.body;
 
         try {
@@ -230,6 +257,8 @@ class ProductController {
                 sku,
                 acquisitionCost,
                 additionalCosts,
+                additionalCost,
+                estimatedTime,
             });
 
             // Atualizar as categorias do produto
@@ -380,7 +409,6 @@ class ProductController {
 
         try {
             const products = await Products.paginate(query, options);
-            console.log(products);
             return res.status(200).json(products);
         } catch (error) {
             next(error);
@@ -437,7 +465,6 @@ class ProductController {
                 ]);
 
             if (!product) {
-                console.log(false);
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
@@ -446,7 +473,6 @@ class ProductController {
 
                 if (customer) {
                     const orders = await Orders.find({ customer: customer._id, "cartPayd.productId": productId });
-                    console.log(orders);
 
                     if (orders.length > 0) {
                         canRate = true;

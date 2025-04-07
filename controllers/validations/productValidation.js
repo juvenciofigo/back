@@ -22,6 +22,14 @@ const Create = (req, res, next) => {
         productWidth: Joi.number().optional(),
         productHeight: Joi.number().optional(),
         sku: Joi.string().required(),
+        deliveryEstimate: Joi.array()
+            .items(
+                Joi.object({
+                    additionalCost: Joi.number().optional(),
+                    estimatedTime: Joi.string().valid("Imediata", "7 dias", "30 dias").optional(),
+                })
+            )
+            .optional(),
         // acquisitionCost: Joi.number.required(),
         // additionalCosts: Joi.number.required(),
     }).validate(req.body, { abortEarly: false });
@@ -62,6 +70,14 @@ const Update = (req, res, next) => {
         productLength: Joi.number().optional(),
         productWidth: Joi.number().optional(),
         productHeight: Joi.number().optional(),
+        deliveryEstimate: Joi.array()
+            .items(
+                Joi.object({
+                    additionalCost: Joi.number().optional(),
+                    estimatedTime: Joi.string().valid("Imediata", "7 dias", "30 dias").optional(),
+                })
+            )
+            .optional(),
         sku: Joi.string().optional(),
         // acquisitionCost: Joi.number.required(),
         // additionalCosts: Joi.number.required(),

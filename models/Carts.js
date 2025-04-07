@@ -14,6 +14,9 @@ const CartSchema = new mongoose.Schema(
                     default: 1,
                     required: true,
                 },
+                deliveryEstimate: {
+                    type: mongoose.Schema.Types.ObjectId,
+                },
                 variation: {
                     type: {
                         color: {
