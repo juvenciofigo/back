@@ -3,8 +3,6 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-    console.log(file);
-
     if (/^image\//.test(file.mimetype)) {
         cb(null, true);
     } else {

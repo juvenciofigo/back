@@ -229,7 +229,6 @@ class CartController {
             for (const product of products) {
                 const productDetails = await Products.findById(product.productId);
                 if (!productDetails) {
-                    console.log(`Produto não encontrado: ${product.productId}`);
                     continue;
                 }
 

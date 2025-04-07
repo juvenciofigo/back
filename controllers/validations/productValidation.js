@@ -25,8 +25,8 @@ const Create = (req, res, next) => {
         deliveryEstimate: Joi.array()
             .items(
                 Joi.object({
-                    additionalCost: Joi.number().optional(),
-                    estimatedTime: Joi.string().valid("Imediata", "7 dias", "30 dias").optional(),
+                    estimatedTime: Joi.string().valid("Imediata", "7 dias", "30 dias").required(),
+                    additionalCost: Joi.number().required(),
                 })
             )
             .optional(),
@@ -36,7 +36,6 @@ const Create = (req, res, next) => {
 
     if (error) {
         console.log(error);
-
         return res.status(400).json({ message: error.details[0].message });
     }
     next();
@@ -73,8 +72,9 @@ const Update = (req, res, next) => {
         deliveryEstimate: Joi.array()
             .items(
                 Joi.object({
-                    additionalCost: Joi.number().optional(),
-                    estimatedTime: Joi.string().valid("Imediata", "7 dias", "30 dias").optional(),
+                    estimatedTime: Joi.string().valid("Imediata", "7 dias", "30 dias").required(),
+                    additionalCost: Joi.number().required(),
+                    _id: Joi.string().alphanum().length(24).optional(),
                 })
             )
             .optional(),
@@ -86,6 +86,7 @@ const Update = (req, res, next) => {
     const { error } = bodySchema.validate(req.body);
 
     if (error) {
+        console.log(error);
         return res.status(400).json({ message: error.details[0].message });
     }
     next();
@@ -97,6 +98,7 @@ const Image = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
+        console.log(error);
         return res.status(400).json({ message: error.details[0].message });
     }
     next();
@@ -108,6 +110,7 @@ const Delete = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
+        console.log(error);
         return res.status(400).json({ message: error.details[0].message });
     }
     next();
@@ -119,6 +122,7 @@ const getBtId = (req, res, next) => {
     }).validate(req.params);
 
     if (error) {
+        console.log(error);
         return res.status(400).json({ message: error.details[0].message });
     }
     next();
@@ -135,6 +139,7 @@ const All = (req, res, next) => {
     }).validate(req.query);
 
     if (error) {
+        console.log(error);
         return res.status(400).json({ message: error.details[0].message });
     }
     next();

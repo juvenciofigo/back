@@ -101,44 +101,51 @@ class ProductController {
             });
 
             // Verificar se todas as categorias existem
-            const categoryPromises = productCategory.map((id) => Category.findById(id));
-            const categories = await Promise.all(categoryPromises);
+            let categories = [];
+            if (productCategory) {
+                const categoryPromises = productCategory.map((id) => Category.findById(id));
+                categories = await Promise.all(categoryPromises);
 
-            if (categories.some((category) => !category)) {
-                return res.status(400).json({ message: "Uma ou mais categorias não existem", success: false });
+                if (categories.some((category) => !category)) {
+                    return res.status(400).json({ message: "Uma ou mais categorias não existem", success: false });
+                }
+
+                // Adicionar produto a cada categoria
+                categories.forEach((category) => {
+                    category.products.push(product._id);
+                });
             }
-
-            // Adicionar produto a cada categoria
-            categories.forEach((category) => {
-                category.products.push(product._id);
-            });
 
             // SubCategories
-            const subCategoryPromises = productSubcategory.map((id) => SubCategory.findById(id));
-            const subCategories = await Promise.all(subCategoryPromises);
+            let subCategories = [];
+            if (productSubcategory) {
+                const subCategoryPromises = productSubcategory.map((id) => SubCategory.findById(id));
+                subCategories = await Promise.all(subCategoryPromises);
 
-            if (subCategories.some((subCategory) => !subCategory)) {
-                return res.status(400).json({ message: "Uma ou mais subCategorias não existem", success: false });
+                if (subCategories.some((subCategory) => !subCategory)) {
+                    return res.status(400).json({ message: "Uma ou mais subCategorias não existem", success: false });
+                }
+                subCategories.forEach((subCategory) => {
+                    subCategory.products.push(product._id);
+                });
             }
-            subCategories.forEach((subCategory) => {
-                subCategory.products.push(product._id);
-            });
 
             // Sub_categories
+            let sub_categories = [];
+            if (productSub_category) {
+                const sub_categoryPromises = productSub_category.map((id) => Sub_category.findById(id));
+                sub_categories = await Promise.all(sub_categoryPromises);
 
-            const sub_categoryPromises = productSub_category.map((id) => Sub_category.findById(id));
-            const sub_categories = await Promise.all(sub_categoryPromises);
+                if (sub_categories.some((sub_category) => !sub_category)) {
+                    return res.status(400).json({ message: "Uma ou mais sub_categorias não existem", success: false });
+                }
 
-            if (sub_categories.some((sub_category) => !sub_category)) {
-                return res.status(400).json({ message: "Uma ou mais sub_categorias não existem", success: false });
+                sub_categories.forEach((sub_category) => {
+                    sub_category.products.push(product._id);
+                });
             }
 
-            sub_categories.forEach((sub_category) => {
-                sub_category.products.push(product._id);
-            });
-
             // saves
-            await product.save();
 
             // Salvar categorias, subcategorias e sub_categorias
             await Promise.all([
@@ -146,6 +153,8 @@ class ProductController {
                 ...subCategories.map((subCategory) => subCategory.save()),
                 ...sub_categories.map((sub_category) => sub_category.save()),
             ]);
+            await product.save();
+            console.log(product);
 
             return res.status(200).json({ product, success: true, message: "Produto Criado!" });
         } catch (error) {
@@ -210,7 +219,7 @@ class ProductController {
             acquisitionCost,
             additionalCosts,
             additionalCost,
-            estimatedTime,
+            deliveryEstimate,
         } = req.body;
 
         try {
@@ -258,7 +267,7 @@ class ProductController {
                 acquisitionCost,
                 additionalCosts,
                 additionalCost,
-                estimatedTime,
+                deliveryEstimate,
             });
 
             // Atualizar as categorias do produto

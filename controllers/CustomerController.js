@@ -17,8 +17,9 @@ class CustomerController {
             limit: Number(req.query.limit) || 30,
             populate: {
                 path: "user",
-                select: "-salt -hash -password",
+                select: "-salt -hash -password -recovery",
             },
+            select: "-addresses ",
         };
         try {
             const customers = await Customers.paginate({}, options);
