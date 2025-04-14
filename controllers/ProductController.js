@@ -2,10 +2,13 @@ const { Category, SubCategory, Sub_category } = require("../models/Categories"),
     ViewsProducts = require("../models/Products/ViewsProducts"),
     Variations = require("../models/Variations"),
     Customers = require("../models/Customers"),
+    Users = require("../models/Users"),
     { Products } = require("../models/Products/Products"),
+    { getLocationFromIP } = require("../helpers/geoLocation"),
     Ratings = require("../models/Ratings"),
     Orders = require("../models/Orders"),
     { deleteFilesFirebase } = require("../config/firebase");
+
 
 // async function migrateDeliveryEstimate() {
 //     try {
@@ -35,7 +38,6 @@ const { Category, SubCategory, Sub_category } = require("../models/Categories"),
 // migrateDeliveryEstimate();
 
 const UAParser = require("ua-parser-js");
-const axios = require("axios");
 
 class ProductController {
     getSort = (sortType) => {
@@ -86,6 +88,10 @@ class ProductController {
     }
 
     trackProductView = async (req, userId = null, productId) => {
+        if (userId) {
+            const user = await Users.findById(userId);
+            if (user.role.includes("admin")) return;
+        }
         try {
             const ip = req.headers["x-forwarded-for"] ? req.headers["x-forwarded-for"].split(",")[0] : req.connection.remoteAddress;
             const device = req.headers["user-agent"] || "unknown";
@@ -100,9 +106,9 @@ class ProductController {
                 const result = parser.getResult();
 
                 return {
-                    navegador: result.browser.name, 
+                    navegador: result.browser.name,
                     navegadorVersao: result.browser.version,
-                    sistemaOperacional: result.os.name, 
+                    sistemaOperacional: result.os.name,
                     soVersao: result.os.version,
                     tipoDispositivo: result.device.type || "desktop", // mobile, tablet, ou desktop
                     fabricante: result.device.vendor || "Desconhecido",
@@ -111,19 +117,7 @@ class ProductController {
             }
 
             // Buscar localização
-            let locationInfo = null;
-            try {
-                const response = await axios.get(`http://ip-api.com/json/${ip}`);
-                const { country, regionName, city } = response.data;
-
-                locationInfo = {
-                    country: country || "Moçambique",
-                    province: regionName || undefined,
-                    city: city,
-                };
-            } catch (err) {
-                console.warn("Falha ao obter localização via IP:", err.message);
-            }
+            let locationInfo = getLocationFromIP(ip);
 
             let view = await ViewsProducts.findOne({
                 product: productId,
@@ -147,7 +141,7 @@ class ProductController {
                 await ViewsProducts.create({
                     product: productId,
                     users: userId ? [userId] : [],
-                    guests: !userId ? [{ ip, userAgent: detectarDispositivo(device)}] : [],
+                    guests: [{ ip, userAgent: detectarDispositivo(device) }],
                     views: 1,
                     referrer: referrer ? [referrer] : [],
                     location: locationInfo ? [locationInfo] : [],
@@ -553,15 +547,6 @@ class ProductController {
             if (!product) {
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
-
-            // function trackProductView() {
-            //     const productId = req.params.productId;
-            //     const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-            //     const userId = req.user?._id; // se estiver autenticado
-            //     const province = req.headers["x-user-province"] || null; // se quiser passar isso no frontend
-            //     const referrer = req.get("Referrer") || null;
-            //     console.log(productId, ip, userId, province, referrer);
-            // }
 
             this.trackProductView(req, userId, productId);
 
