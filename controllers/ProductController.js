@@ -147,7 +147,7 @@ class ProductController {
                 await ViewsProducts.create({
                     product: productId,
                     users: userId ? [userId] : [],
-                    guests: !userId ? [{ ip, userAgent: device }] : [],
+                    guests: !userId ? [{ ip, userAgent: detectarDispositivo(device)}] : [],
                     views: 1,
                     referrer: referrer ? [referrer] : [],
                     location: locationInfo ? [locationInfo] : [],
