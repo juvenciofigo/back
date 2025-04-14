@@ -1,4 +1,5 @@
 const { Category, SubCategory, Sub_category } = require("../models/Categories"),
+    ViewsProducts = require("../models/Products/ViewsProducts"),
     Variations = require("../models/Variations"),
     Customers = require("../models/Customers"),
     { Products } = require("../models/Products/Products"),
@@ -32,6 +33,9 @@ const { Category, SubCategory, Sub_category } = require("../models/Categories"),
 //     }
 // }
 // migrateDeliveryEstimate();
+
+const UAParser = require("ua-parser-js");
+const axios = require("axios");
 
 class ProductController {
     getSort = (sortType) => {
@@ -80,6 +84,79 @@ class ProductController {
         const average = sumScores / scores.length;
         return average;
     }
+
+    trackProductView = async (req, userId = null, productId) => {
+        try {
+            const ip = req.headers["x-forwarded-for"] ? req.headers["x-forwarded-for"].split(",")[0] : req.connection.remoteAddress;
+            const device = req.headers["user-agent"] || "unknown";
+            const referrer = req.get("Referrer") || null;
+
+            const today = new Date();
+            const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+            const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+            function detectarDispositivo(userAgentString) {
+                const parser = new UAParser(userAgentString);
+                const result = parser.getResult();
+
+                return {
+                    navegador: result.browser.name, 
+                    navegadorVersao: result.browser.version,
+                    sistemaOperacional: result.os.name, 
+                    soVersao: result.os.version,
+                    tipoDispositivo: result.device.type || "desktop", // mobile, tablet, ou desktop
+                    fabricante: result.device.vendor || "Desconhecido",
+                    modelo: result.device.model || "Desconhecido",
+                };
+            }
+
+            // Buscar localização
+            let locationInfo = null;
+            try {
+                const response = await axios.get(`http://ip-api.com/json/${ip}`);
+                const { country, regionName, city } = response.data;
+
+                locationInfo = {
+                    country: country || "Moçambique",
+                    province: regionName || undefined,
+                    city: city,
+                };
+            } catch (err) {
+                console.warn("Falha ao obter localização via IP:", err.message);
+            }
+
+            let view = await ViewsProducts.findOne({
+                product: productId,
+                createdAt: { $gte: startOfDay, $lte: endOfDay },
+            });
+
+            if (view) {
+                if (userId && !view.users.includes(userId)) {
+                    view.users.push(userId);
+                    view.views += 1;
+                } else if (!userId) {
+                    view.guests.push({ ip, userAgent: detectarDispositivo(device) });
+                    view.views += 1;
+                }
+
+                if (referrer) view.referrer.push(referrer);
+                if (locationInfo) view.location.push(locationInfo);
+
+                await view.save();
+            } else {
+                await ViewsProducts.create({
+                    product: productId,
+                    users: userId ? [userId] : [],
+                    guests: !userId ? [{ ip, userAgent: device }] : [],
+                    views: 1,
+                    referrer: referrer ? [referrer] : [],
+                    location: locationInfo ? [locationInfo] : [],
+                });
+            }
+        } catch (error) {
+            console.error("Erro ao rastrear visualização de produto:", error.message);
+        }
+    };
 
     // ADMIN
 
@@ -476,6 +553,17 @@ class ProductController {
             if (!product) {
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
+
+            // function trackProductView() {
+            //     const productId = req.params.productId;
+            //     const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+            //     const userId = req.user?._id; // se estiver autenticado
+            //     const province = req.headers["x-user-province"] || null; // se quiser passar isso no frontend
+            //     const referrer = req.get("Referrer") || null;
+            //     console.log(productId, ip, userId, province, referrer);
+            // }
+
+            this.trackProductView(req, userId, productId);
 
             if (userId) {
                 const customer = await Customers.findOne({ user: userId });
