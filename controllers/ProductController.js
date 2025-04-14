@@ -514,7 +514,7 @@ class ProductController {
 
         const options = {
             page: Number(req.query.offset) || 1,
-            limit: 10,
+            limit: 30,
             select: this.dontSelect,
         };
 
