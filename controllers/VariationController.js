@@ -5,31 +5,27 @@ const { Products } = require("../models/Products/Products"),
 class VariationController {
     // Show all
     async getAllVariations(req, res, next) {
-        // Extrai o parâmetro 'product' da consulta
         const { product } = req.query;
 
         try {
-            // Verifica se o parâmetro 'product' está presente
+            if (!product) {
+                return res.status(400).json({ success: false, message: "Produto Inválido" });
+            }
+
             const _product = await Products.findById(product).sort({ variationType: -1 });
 
             if (!_product) {
-                // Responde com um erro 400 se 'product' não estiver presente
                 return res.status(400).json({ success: false, message: "O produto não foi encontrado." });
             }
 
-            // Consulta o banco de dados para obter as variações do produto
             const variations = await Variations.find({ variationProduct: product });
 
-            // Verifica se foram encontradas variações para o produto
             if (!variations || variations.length === 0) {
-                // Responde com um erro 404 se não houver variações encontradas
                 return res.status(200).json({ success: true, message: "Sem variações encontradas para o produto especificado." });
             }
 
-            // Responde com as variações encontradas
             return res.status(200).json({ success: true, message: "Variações encontradas com sucesso.", variations });
         } catch (error) {
-            // Trata erros, repassando para o middleware de erro
             next(error);
         }
     }
@@ -103,7 +99,9 @@ class VariationController {
             await variation.save();
 
             // Responde com sucesso e a nova variação criada
-            return res.status(200).json({ variation, success: true, message: "Variação Criada!" });
+            const variations = await Variations.find({ variationProduct: product });
+
+            return res.status(200).json({ variation, variations, success: true, message: "Variação Criada!" });
         } catch (error) {
             // Trata erros, repassando para o middleware de erro
             next(error);
@@ -116,30 +114,26 @@ class VariationController {
 
         try {
             const variation = await Variations.findById(req.params.id);
+
             if (!variation) {
                 return res.status(400).json({ message: "Variação não existente", success: false });
             }
 
-            // Se variationImage for undefined, inicializa como array vazio
             if (variationImage === undefined) {
                 variationImage = [];
             }
 
-            // Filtra as imagens removidas
             const removedImages = variation.variationImage.filter((image) => !variationImage.includes(image));
 
-            // Atualização das imagens
             if (removedImages.length > 0) {
                 await deleteFilesFirebase(removedImages);
                 variation.variationImage = variationImage;
             }
 
-            // Adiciona novas imagens enviadas
             if (Array.isArray(req.files) && req.files && req.files.length > 0) {
                 variation.variationImage.push(...req.files);
             }
 
-            // Atualiza as propriedades da variação com os valores fornecidos
             if (sku) variation.sku = sku;
             if (variationType) variation.variationType = variationType;
             if (variationValue) variation.variationValue = variationValue;
@@ -152,13 +146,12 @@ class VariationController {
             if (weight) variation.delivery.weight = weight;
             if (shippingFree !== undefined) variation.delivery.shippingFree = shippingFree;
 
-            // Salva a variação atualizada no banco de dados
             await variation.save();
 
-            // Retorna uma resposta de sucesso com a variação atualizada
-            return res.status(200).json({ variation, success: true, message: "Variação atualizada com sucesso!" });
+            const variations = await Variations.find({ variationProduct: variation.variationProduct });
+
+            return res.status(200).json({ variation, variations, success: true, message: "Variação atualizada com sucesso!" });
         } catch (error) {
-            // Trata erros, repassando para o middleware de erro
             next(error);
         }
     }
@@ -178,8 +171,9 @@ class VariationController {
 
             await variation.save();
 
-            // Retorna uma resposta de sucesso com a variação atualizada
-            return res.status(200).json({ success: true, variation });
+            const variations = await Variations.find({ variationProduct: variation.variationProduct });
+
+            return res.status(200).json({ success: true, variation, variations });
         } catch (error) {
             // Trata erros, repassando para o middleware de erro
             next(error);
@@ -209,7 +203,8 @@ class VariationController {
             // Deleta o comentário
             await variation.deleteOne();
 
-            return res.status(200).json({ success: true });
+            const variations = await Variations.find({ variationProduct: variation.variationProduct });
+            return res.status(200).json({ success: true, variations });
         } catch (error) {
             next(error);
         }
