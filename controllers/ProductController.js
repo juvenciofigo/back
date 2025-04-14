@@ -3,29 +3,20 @@ const { Category, SubCategory, Sub_category } = require("../models/Categories"),
     Variations = require("../models/Variations"),
     Customers = require("../models/Customers"),
     Users = require("../models/Users"),
-    { Products } = require("../models/Products/Products"),
+    { Products, Brands } = require("../models/Products/Products"),
     { getLocationFromIP } = require("../helpers/geoLocation"),
     Ratings = require("../models/Ratings"),
     Orders = require("../models/Orders"),
     { deleteFilesFirebase } = require("../config/firebase");
 
-
+            // { $or: [{ deliveryEstimate: { $exists: false } }, { deliveryEstimate: { $not: { $type: "array" } } }] },
 // async function migrateDeliveryEstimate() {
 //     try {
 //         const result = await Products.updateMany(
-//             // { $or: [{ deliveryEstimate: { $exists: false } }, { deliveryEstimate: { $not: { $type: "array" } } }] },
+// {},
 //             {
 //                 $set: {
-//                     deliveryEstimate: [
-//                         {
-//                             additionalCost: 0,
-//                             estimatedTime: "Imediata",
-//                         },
-//                         {
-//                             additionalCost: 7,
-//                             estimatedTime: "7 dias",
-//                         },
-//                     ],
+//                     productBrand: null
 //                 },
 //             }
 //         );
@@ -157,7 +148,7 @@ class ProductController {
     // Save product
 
     async createProduct(req, res, next) {
-        const { sku, productCategory, productSubcategory, productSub_category } = req.body;
+        const { sku, productCategory, productSubcategory, productSub_category, productBrand } = req.body;
 
         try {
             const existingSku = await Products.findOne({ sku });
@@ -224,6 +215,19 @@ class ProductController {
                 ...subCategories.map((subCategory) => subCategory.save()),
                 ...sub_categories.map((sub_category) => sub_category.save()),
             ]);
+
+            // --------- brand ----------
+            const _brand = await Brands.findById(productBrand);
+
+            if (_brand) {
+                // Relacionar produto com a marca
+                _brand.products.push(product._id);
+                await _brand.save();
+
+                // Atualizar a referência da marca no produto
+                product.productBrand = _brand._id;
+            }
+
             await product.save();
             console.log(product);
 
@@ -237,6 +241,7 @@ class ProductController {
         try {
             const product = await Products.findById(req.params.id).populate([
                 { path: "productVariations" },
+                { path: "productBrand", select: "-products -createdAt -updatedAt" },
                 {
                     path: "productRatings",
                     populate: [
@@ -268,7 +273,7 @@ class ProductController {
 
     // Update product
     async updateProduct(req, res, next) {
-        var {
+        let {
             productDescription,
             productAvailability,
             productPrice,
@@ -300,26 +305,37 @@ class ProductController {
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
 
-            // Se productImage for undefined, inicializa como array vazio
             if (productImage === undefined) {
                 productImage = [];
             }
 
-            // Filtra as imagens removidas
+            // Filtrar e remover imagens do Firebase
             const removedImages = product.productImage.filter((image) => !productImage.includes(image));
 
-            // Atualização das imagens
             if (removedImages.length > 0) {
                 await deleteFilesFirebase(removedImages);
                 product.productImage = productImage;
             }
 
-            // Adiciona novas imagens enviadas
+            // Adiciona novas imagens
             if (Array.isArray(req.files) && req.files.length > 0) {
                 product.productImage.push(...req.files);
             }
 
-            // Atualizar as propriedades do produto com os valores fornecidos
+            const oldBrandId = product?.productBrand?.toString();
+
+            if (oldBrandId && oldBrandId !== productBrand) {
+                await Brands.findByIdAndUpdate(oldBrandId, {
+                    $pull: { products: req.params.id },
+                });
+            }
+
+            // Adiciona o produto à nova marca (sem duplicar)
+            await Brands.findByIdAndUpdate(productBrand, {
+                $addToSet: { products: req.params.id },
+            });
+
+            // Atualizar os dados do produto
             product.set({
                 productName,
                 productDescription,
@@ -341,16 +357,14 @@ class ProductController {
                 deliveryEstimate,
             });
 
-            // Atualizar as categorias do produto
+            // Atualizar categorias e subcategorias
             const updateCategories = async (categoryModel, productCategory, productField) => {
                 if (productCategory && (!product[productField] || !arraysEqual(product[productField], productCategory))) {
-                    // Remover produto das categorias antigas
                     if (product[productField] && product[productField].length > 0) {
                         await categoryModel.updateMany({ _id: { $in: product[productField] } }, { $pull: { products: product._id } });
                     }
 
-                    // Adicionar produto às novas categorias
-                    await categoryModel.updateMany({ _id: { $in: productCategory } }, { $push: { products: product._id } });
+                    await categoryModel.updateMany({ _id: { $in: productCategory } }, { $addToSet: { products: product._id } });
 
                     product[productField] = productCategory;
                 }
@@ -358,7 +372,7 @@ class ProductController {
 
             const arraysEqual = (arr1, arr2) => {
                 if (arr1.length !== arr2.length) return false;
-                return arr1.every((item, index) => item.equals(arr2[index]));
+                return arr1.every((item, index) => item.toString() === arr2[index].toString());
             };
 
             await updateCategories(Category, productCategory, "productCategory");
@@ -461,6 +475,33 @@ class ProductController {
         }
     }
 
+    showAllBrandsdmin = async (req, res, next) => {
+        try {
+            const brands = await Brands.find();
+            res.status(200).json({ brands });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    createBrand = async (req, res, next) => {
+        try {
+            const { brand } = req.body;
+            console.log();
+
+            const exists = await Brands.findOne({ name: brand });
+
+            if (exists) return res.status(400).json({ message: "Nome existente" });
+
+            const newBrand = new Brands({ name: brand });
+            await newBrand.save();
+
+            const brands = await Brands.find();
+            res.status(201).json({ brands, message: "Marca Criada!3" });
+        } catch (error) {
+            next(error);
+        }
+    };
     ///
 
     // CLIENT
@@ -534,6 +575,7 @@ class ProductController {
                 .select("-productVendor -order_items -timesPurchased -totalRevenue -sales -acquisitionCost -additionalCosts")
                 .populate([
                     { path: "productVariations" },
+                    { path: "productBrand" },
                     {
                         path: "productRatings",
                         match: { deleted: false },

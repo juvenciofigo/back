@@ -21,6 +21,10 @@ router.get("/products/admin", auth.require, AdminValidator, productValidation.Al
 
 router.get("/product/admin/:id", auth.require, AdminValidator, productValidation.getBtId, ProductController.showDetailsProductAdmin);
 
+router.get("/brands/admin/", auth.require, AdminValidator, ProductController.showAllBrandsdmin);
+
+router.post("/brands/admin/", auth.require, AdminValidator, ProductController.createBrand);
+
 //////////////////////////
 //Cliente
 /////////////

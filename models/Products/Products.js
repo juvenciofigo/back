@@ -28,6 +28,29 @@ const TagsSchema = new mongoose.Schema(
             unique: true,
             required: true,
         },
+        products: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Products",
+                require: true,
+            },
+        ],
+    },
+    { timestamps: true }
+);
+const BrandsSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            unique: true,
+            required: true,
+        },
+        products: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Products",
+            },
+        ],
     },
     { timestamps: true }
 );
@@ -116,7 +139,8 @@ const ProductSchema = new mongoose.Schema(
             type: String,
         },
         productBrand: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Brands",
             default: undefined,
         },
         productWeight: {
@@ -175,6 +199,7 @@ const ProductSchema = new mongoose.Schema(
 
 ProductSchema.plugin(mongoosePaginate);
 const Tags = mongoose.model("Tags", TagsSchema, "tags");
-const Products = mongoose.model("Product", ProductSchema, "products");
+const Products = mongoose.model("Products", ProductSchema, "products");
+const Brands = mongoose.model("Brands", BrandsSchema, "brands");
 
-module.exports = { Tags, Products };
+module.exports = { Tags, Products, Brands };

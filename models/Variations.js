@@ -4,7 +4,7 @@ const VariationRouterSchema = new mongoose.Schema(
     {
         variationProduct: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Product",
+            ref: "Products",
             required: true,
         },
         variationType: {
