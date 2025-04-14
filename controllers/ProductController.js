@@ -550,7 +550,7 @@ class ProductController {
         };
 
         const query = {
-            $or: [{ productName: { $regex: search } }, { productDescription: { $regex: search } }, { sku: { $regex: search } }, { tags: { $regex: search } }, { productBrand: { $regex: search } }],
+            $or: [{ productName: { $regex: search } }, { productDescription: { $regex: search } }, { sku: { $regex: search } }, { tags: { $regex: search } }],
         };
 
         if (category) query.productCategory = category;
