@@ -542,7 +542,7 @@ class ProductController {
 
         const options = {
             page: Number(req.query.offset) || 0,
-            limit: Number(req.query.limit) || 3,
+            limit: Number(req.query.limit) || 30,
             sort: this.getSort(req.query.sortType),
             select: this.dontSelect,
             populate: ["productCategory"],
