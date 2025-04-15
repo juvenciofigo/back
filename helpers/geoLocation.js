@@ -2,27 +2,27 @@ const redis = require("../controllers/integracoes/redisClient");
 const axios = require("axios");
 
 async function getLocationFromIP(ip) {
-    console.log(false);
     const cached = await redis.get(`ip:${ip}`);
 
     if (cached) {
+        console.log("cached",cached);
         return JSON.parse(cached);
     }
 
-    const response = await axios.get(`http://ip-api.com/json/${ip}`);
-    const { country, regionName, city } = response.data;
+    const response = await axios.get(`https://ipapi.co/${ip}/json/`);
+    const { country_name, region, city } = response.data;
+
+    console.log("response",response);
 
     const location = {
-        country: country || "Moçambique",
-        province: regionName || undefined,
+        country: country_name || "Moçambique",
+        province: region || undefined,
         city: city,
     };
 
     // Cache por 24 horas (86400 segundos)
-    await redis.set(`ip:${ip}`, JSON.stringify(location), "EX", 86400*2);
+    await redis.set(`ip:${ip}`, JSON.stringify(location), "EX", 86400 * 2);
 
-    console.log(location);
-    
     return location;
 }
 
