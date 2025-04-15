@@ -108,7 +108,7 @@ class ProductController {
             }
 
             // Buscar localização
-            let locationInfo = getLocationFromIP(ip);
+            let locationInfo = await getLocationFromIP(ip);
 
             let view = await ViewsProducts.findOne({
                 product: productId,
