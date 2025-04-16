@@ -1,12 +1,13 @@
-const redis = require("../controllers/integracoes/redisClient");
+const { setCache, getCache } = require("../controllers/integracoes/redisClient");
 const axios = require("axios");
 
 async function getLocationFromIP(ip) {
     if (ip === "::1") return null;
-    const cached = await redis.get(`ip:${ip}`);
+
+    const cached = await getCache(`ip:${ip}`);
 
     if (cached) {
-        return JSON.parse(cached);
+        return cached;
     }
 
     const response = await axios.get(`https://ipapi.co/${ip}/json/`);
@@ -18,8 +19,8 @@ async function getLocationFromIP(ip) {
         city: city,
     };
 
-    // Cache por 24*2 horas (86400*2 segundos)
-    await redis.set(`ip:${ip}`, JSON.stringify(location), "EX", 86400 * 2);
+    
+    await setCache(`ip:${ip}`, location );
 
     return location;
 }
