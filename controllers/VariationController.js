@@ -1,6 +1,7 @@
 const { Products } = require("../models/Products/Products"),
     Variations = require("../models/Variations"),
     { deleteFilesFirebase } = require("../config/firebase");
+const { uploadFirebase } = require("../config/firebase");
 
 class VariationController {
     // Show all
@@ -77,7 +78,6 @@ class VariationController {
                 variationPrice,
                 variationPromotion,
                 variationStock,
-                variationImage: req.files,
                 delivery: {
                     dimensions: {
                         heightCm,
@@ -92,6 +92,11 @@ class VariationController {
             // Adiciona a nova variação ao array de variações do produto
             await _product.productVariations.push(variation._id);
 
+            // Adiciona novas imagens
+            if (Array.isArray(req.files) && req.files.length > 0) {
+                await uploadFirebase(req);
+                variation.variationImage = req.files;
+            }
             // Salva o produto com a nova variação
             await _product.save();
 
@@ -130,9 +135,6 @@ class VariationController {
                 variation.variationImage = variationImage;
             }
 
-            if (Array.isArray(req.files) && req.files && req.files.length > 0) {
-                variation.variationImage.push(...req.files);
-            }
 
             if (sku) variation.sku = sku;
             if (variationType) variation.variationType = variationType;
@@ -146,6 +148,12 @@ class VariationController {
             if (weight) variation.delivery.weight = weight;
             if (shippingFree !== undefined) variation.delivery.shippingFree = shippingFree;
 
+            
+            if (Array.isArray(req.files) && req.files && req.files.length > 0) {
+                await uploadFirebase(req);
+                variation.variationImage.push(...req.files);
+            }
+            
             await variation.save();
 
             const variations = await Variations.find({ variationProduct: variation.variationProduct });

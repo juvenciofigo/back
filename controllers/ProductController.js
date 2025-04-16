@@ -9,7 +9,7 @@ const { Category, SubCategory, Sub_category } = require("../models/Categories"),
     Orders = require("../models/Orders"),
     { deleteFilesFirebase } = require("../config/firebase");
 
-            // { $or: [{ deliveryEstimate: { $exists: false } }, { deliveryEstimate: { $not: { $type: "array" } } }] },
+// { $or: [{ deliveryEstimate: { $exists: false } }, { deliveryEstimate: { $not: { $type: "array" } } }] },
 // async function migrateDeliveryEstimate() {
 //     try {
 //         const result = await Products.updateMany(
@@ -29,6 +29,7 @@ const { Category, SubCategory, Sub_category } = require("../models/Categories"),
 // migrateDeliveryEstimate();
 
 const UAParser = require("ua-parser-js");
+const { uploadFirebase } = require("../config/firebase");
 
 class ProductController {
     getSort = (sortType) => {
@@ -145,8 +146,7 @@ class ProductController {
 
     // ADMIN
 
-    // Save product
-
+    // New product
     async createProduct(req, res, next) {
         const { sku, productCategory, productSubcategory, productSub_category, productBrand } = req.body;
 
@@ -158,7 +158,6 @@ class ProductController {
             }
 
             const product = new Products({
-                productImage: req.files,
                 ...req.body,
             });
 
@@ -228,9 +227,13 @@ class ProductController {
                 product.productBrand = _brand._id;
             }
 
-            await product.save();
-            console.log(product);
+            // Adiciona novas imagens
+            if (Array.isArray(req.files) && req.files.length > 0) {
+                await uploadFirebase(req);
+                product.productImage = req.files;
+            }
 
+            await product.save();
             return res.status(200).json({ product, success: true, message: "Produto Criado!" });
         } catch (error) {
             next(error);
@@ -317,11 +320,6 @@ class ProductController {
                 product.productImage = productImage;
             }
 
-            // Adiciona novas imagens
-            if (Array.isArray(req.files) && req.files.length > 0) {
-                product.productImage.push(...req.files);
-            }
-
             const oldBrandId = product?.productBrand?.toString();
 
             if (oldBrandId && oldBrandId !== productBrand) {
@@ -375,6 +373,12 @@ class ProductController {
                 return arr1.every((item, index) => item.toString() === arr2[index].toString());
             };
 
+            // Adiciona novas imagens
+            if (Array.isArray(req.files) && req.files.length > 0) {
+                await uploadFirebase(req);
+                product.productImage.push(...req.files);
+            }
+
             await updateCategories(Category, productCategory, "productCategory");
             await updateCategories(SubCategory, productSubcategory, "productSubcategory");
             await updateCategories(Sub_category, productSub_category, "productSub_category");
@@ -402,6 +406,8 @@ class ProductController {
             if (!req.files || req.files.length === 0) {
                 return res.status(400).json({ message: "Nenhuma imagem enviada!" });
             }
+
+            await uploadFirebase(req);
 
             // Adicionar as novas imagens ao array existente
             product.productImage = [...product.productImage, ...req.files];

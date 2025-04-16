@@ -4,16 +4,15 @@ const auth = require("./auth");
 const AdminValidator = require("../controllers/validations/adminValidator");
 const productValidation = require("../controllers/validations/productValidation");
 const upload = require("../config/multer");
-const { uploadFirebase } = require("../config/firebase");
 
 //////////////////////////
 //ADMIN
 /////////////
-router.put("/product/:id", auth.require, AdminValidator, upload.array("files"), productValidation.Update, uploadFirebase, ProductController.updateProduct);
+router.put("/product/:id", auth.require, AdminValidator, upload.array("files"), productValidation.Update,  ProductController.updateProduct);
 
-router.post("/product", auth.require, AdminValidator, upload.array("files"), productValidation.Create, uploadFirebase, ProductController.createProduct);
+router.post("/product", auth.require, AdminValidator, upload.array("files"), productValidation.Create,  ProductController.createProduct);
 
-router.put("/product/image/:id", auth.require, AdminValidator, productValidation.Image, upload.array("files"), uploadFirebase, ProductController.updateImage);
+router.put("/product/image/:id", auth.require, AdminValidator, productValidation.Image, upload.array("files"), ProductController.updateImage);
 
 router.delete("/product/:id", auth.require, AdminValidator, productValidation.Delete, ProductController.deleteProduct);
 

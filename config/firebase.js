@@ -25,11 +25,11 @@ const bucket = admin.storage().bucket();
 
 // Função para aplicar a marca d'água
 
-const uploadFirebase = async (req, res, next) => {
+const uploadFirebase = async (req) => {
     const files = req.files;
 
     if (!files || files.length === 0) {
-        return next();
+        return 
     }
 
     const filesWebp = files.filter((file) => file.mimetype.toLowerCase() === "image/webp");
@@ -70,7 +70,7 @@ const uploadFirebase = async (req, res, next) => {
                     blobStream.on("error", (error) => reject(error));
 
                     blobStream.on("finish", async () => {
-                        // URL pública do arquivo
+                        // URLzz pública do arquivo
                         const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(blob.name)}?alt=media`;
                         resolve(publicUrl);
                     });
@@ -80,11 +80,11 @@ const uploadFirebase = async (req, res, next) => {
             })
         );
 
-        req.files = imageUrls; // Atribui as URLs dos arquivos processados à requisição
-        next();
+        req.files = imageUrls; 
+        return;
     } catch (error) {
         console.error("Erro ao fazer upload dos arquivos:", error.message);
-        res.status(500).json({ message: "Erro ao fazer upload dos arquivos." });
+        throw new Error ("Erro ao fazer upload dos arquivos")
     }
 };
 

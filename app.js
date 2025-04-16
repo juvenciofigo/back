@@ -115,26 +115,37 @@ app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 
-// Handler de erros (com detalhamento)
+// Middleware global de tratamento de erros
 app.use((error, _, res) => {
+    // Log no console
+    console.log("app", error);
+
+    // Logs diferenciados para ambiente de desenvolvimento ou produção
     if (process.env.NODE_ENV !== "production") {
-        console.error(error); // Log detalhado para desenvolvimento
+        console.error(error); // Log completo no desenvolvimento
     } else {
-        logger.error(error.message); // Log em produção com Winston
+        logger.error(error.message); // Log simplificado no ambiente de produção (com Winston)
     }
 
-    // Verificação de erros específicos
+    // 1. Erros de validação do Mongoose
     if (error.errors) {
         const errors = Object.values(error.errors).map((err) => err.properties.message);
-        return res.status(400).json({ message: errors.toLocaleString() });
-    } else if (error instanceof multer.MulterError) {
+        return res.status(400).json({ message: errors.join(", ") });
+    }
+
+    // 2. Erros do Multer (upload de arquivos)
+    if (error instanceof multer.MulterError) {
         logger.error("Erro no Multer:", error.message);
         return res.status(400).json({ message: error.message });
-    } else if (error.code === "credentials_required") {
-        return res.status(400).json({ message: "Sem autorização" });
-    } else {
-        return res.status(500).json({ message: "Erro interno do servidor" });
     }
+
+    // 3. Erros de autenticação
+    if (error.code === "credentials_required") {
+        return res.status(401).json({ message: "Sem autorização" });
+    }
+
+    // 4. Erro genérico interno
+    return res.status(500).json({ message: "Erro interno do servidor" });
 });
 
 // Handler para página não encontrada
