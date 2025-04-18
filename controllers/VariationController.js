@@ -61,6 +61,12 @@ class VariationController {
         const { product } = req.params;
 
         try {
+            const isSku = await Variations.findOne({ sku });
+
+            if (isSku) {
+                return res.status(400).json({ message: "SKU já em uso", success: false });
+            }
+
             const _product = await Products.findById(product);
 
             if (!_product) {
@@ -86,11 +92,9 @@ class VariationController {
                     shippingFree,
                 },
             });
-            console.log(variation);
 
             if (Array.isArray(req.files) && req.files.length > 0) {
-                const res = await uploadFirebase(req);
-                console.log(res);
+                await uploadFirebase(req);
                 variation.variationImage = req.files;
             }
 
@@ -102,7 +106,6 @@ class VariationController {
 
             return res.status(200).json({ variation, variations, success: true, message: "Variação Criada!" });
         } catch (error) {
-            console.log(error);
             next(error);
         }
     }
