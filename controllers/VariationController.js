@@ -186,28 +186,24 @@ class VariationController {
     // Delete Variations
     async deleteVariation(req, res, next) {
         try {
-            // Busca o comentário pelo ID nos parâmetros da requisição
             const variation = await Variations.findById(req.params.id);
 
-            // Se o comentário não existe, retorna um erro
             if (!variation) {
                 return res.status(400).json({ success: false, message: "Variação não encontrada" });
             }
 
-            // Busca o produto relacionado ao comentário
             const product = await Products.findById(variation.variationProduct);
 
-            // Se o produto existe, remove o ID do comentário da lista de avaliações do produto
             if (product) {
                 product.productVariations = product.productVariations.filter((item) => item.toString() !== req.params.id.toString());
                 await product.save();
             }
 
-            // Deleta o comentário
             await variation.deleteOne();
 
             const variations = await Variations.find({ variationProduct: variation.variationProduct });
-            return res.status(200).json({ success: true, variations });
+
+            return res.status(200).json({ success: true, message: "Variação apagada!", variations });
         } catch (error) {
             next(error);
         }

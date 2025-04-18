@@ -134,15 +134,7 @@ const deleteVariation = (req, res, next) => {
     if (paramsError) {
         return res.status(400).json({ message: paramsError.details[0].message });
     }
-    const querySchema = Joi.object({
-        product: Joi.string().alphanum().length(24).required(),
-    });
 
-    const { error: queryError } = querySchema.validate(req.query);
-
-    if (queryError) {
-        return res.status(400).json({ message: queryError.details[0].message });
-    }
     next();
 };
 
