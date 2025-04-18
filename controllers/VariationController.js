@@ -86,9 +86,11 @@ class VariationController {
                     shippingFree,
                 },
             });
+            console.log(variation);
 
             if (Array.isArray(req.files) && req.files.length > 0) {
-                await uploadFirebase(req);
+                const res = await uploadFirebase(req);
+                console.log(res);
                 variation.variationImage = req.files;
             }
 
@@ -100,7 +102,6 @@ class VariationController {
 
             return res.status(200).json({ variation, variations, success: true, message: "Variação Criada!" });
         } catch (error) {
-            // Trata erros, repassando para o middleware de erro
             console.log(error);
             next(error);
         }
