@@ -61,10 +61,8 @@ class VariationController {
         const { product } = req.params;
 
         try {
-            // Verifica se o produto existe
             const _product = await Products.findById(product);
 
-            // Se o produto não existir, retorna um erro 400
             if (!_product) {
                 return res.status(400).json({ message: "Produto não existente", success: false });
             }
@@ -89,21 +87,15 @@ class VariationController {
                 },
             });
 
-            // Adiciona a nova variação ao array de variações do produto
-            await _product.productVariations.push(variation._id);
-
-            // Adiciona novas imagens
             if (Array.isArray(req.files) && req.files.length > 0) {
                 await uploadFirebase(req);
                 variation.variationImage = req.files;
             }
-            // Salva o produto com a nova variação
+
+            await variation.save();
+            _product.productVariations.push(variation._id);
             await _product.save();
 
-            // Salva a nova variação no banco de dados
-            await variation.save();
-
-            // Responde com sucesso e a nova variação criada
             const variations = await Variations.find({ variationProduct: product });
 
             return res.status(200).json({ variation, variations, success: true, message: "Variação Criada!" });
@@ -135,7 +127,6 @@ class VariationController {
                 variation.variationImage = variationImage;
             }
 
-
             if (sku) variation.sku = sku;
             if (variationType) variation.variationType = variationType;
             if (variationValue) variation.variationValue = variationValue;
@@ -148,12 +139,11 @@ class VariationController {
             if (weight) variation.delivery.weight = weight;
             if (shippingFree !== undefined) variation.delivery.shippingFree = shippingFree;
 
-            
             if (Array.isArray(req.files) && req.files && req.files.length > 0) {
                 await uploadFirebase(req);
                 variation.variationImage.push(...req.files);
             }
-            
+
             await variation.save();
 
             const variations = await Variations.find({ variationProduct: variation.variationProduct });
