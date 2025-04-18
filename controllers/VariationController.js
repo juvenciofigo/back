@@ -101,6 +101,7 @@ class VariationController {
             return res.status(200).json({ variation, variations, success: true, message: "Variação Criada!" });
         } catch (error) {
             // Trata erros, repassando para o middleware de erro
+            console.log(error);
             next(error);
         }
     }
