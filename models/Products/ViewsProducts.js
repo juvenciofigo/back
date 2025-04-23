@@ -8,41 +8,35 @@ const ViewsProductsSchema = new mongoose.Schema(
             ref: "Products",
             required: true,
         },
-        users: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
-            },
-        ],
         views: {
             type: Number,
             default: 1,
         },
         guests: [
             {
-                ip: String,
-                userAgent: Object,
-            },
-        ],
-        location: [
-            {
-                city: {
-                    type: String,
-                    default: undefined,
+                ip: { type: String },
+                userAgent: { type: Object },
+                location: {
+                    city: {
+                        type: String,
+                        default: undefined,
+                    },
+                    country: {
+                        type: String,
+                        default: undefined,
+                    },
+                    province: {
+                        type: String,
+                        default: undefined,
+                    },
                 },
-                country: {
+                referrer: {
                     type: String,
-                    default: undefined,
                 },
-                province: {
-                    type: String,
-                    default: undefined,
+                user: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "User",
                 },
-            },
-        ],
-        referrer: [
-            {
-                type: String,
             },
         ],
     },

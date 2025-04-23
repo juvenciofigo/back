@@ -80,63 +80,57 @@ class ProductController {
     }
 
     trackProductView = async (req, userId = null, productId) => {
-        if (userId) {
-            const user = await Users.findById(userId);
-            if (user.role.includes("admin")) return;
-        }
         try {
+            if (userId) {
+                const user = await Users.findById(userId);
+                if (user?.role.includes("admin")) return;
+            }
+
             const ip = req.headers["x-forwarded-for"] ? req.headers["x-forwarded-for"].split(",")[0] : req.connection.remoteAddress;
-            const device = req.headers["user-agent"] || "unknown";
+            const userAgent = req.headers["user-agent"] || "unknown";
             const referrer = req.get("Referrer") || null;
+
+            const parser = new UAParser(userAgent);
+            const deviceInfo = parser.getResult();
+
+            const userAgentParsed = {
+                navegador: deviceInfo.browser.name,
+                navegadorVersao: deviceInfo.browser.version,
+                sistemaOperacional: deviceInfo.os.name,
+                soVersao: deviceInfo.os.version,
+                tipoDispositivo: deviceInfo.device.type || "desktop",
+                fabricante: deviceInfo.device.vendor || "Desconhecido",
+                modelo: deviceInfo.device.model || "Desconhecido",
+            };
 
             const today = new Date();
             const startOfDay = new Date(today.setHours(0, 0, 0, 0));
             const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
-            function detectarDispositivo(userAgentString) {
-                const parser = new UAParser(userAgentString);
-                const result = parser.getResult();
-
-                return {
-                    navegador: result.browser.name,
-                    navegadorVersao: result.browser.version,
-                    sistemaOperacional: result.os.name,
-                    soVersao: result.os.version,
-                    tipoDispositivo: result.device.type || "desktop", // mobile, tablet, ou desktop
-                    fabricante: result.device.vendor || "Desconhecido",
-                    modelo: result.device.model || "Desconhecido",
-                };
-            }
-
-            // Buscar localização
-            let locationInfo = await getLocationFromIP(ip);
+            const locationInfo = await getLocationFromIP(ip);
 
             let view = await ViewsProducts.findOne({
                 product: productId,
                 createdAt: { $gte: startOfDay, $lte: endOfDay },
             });
 
+            const guestData = {
+                ip,
+                userAgent: userAgentParsed,
+                location: locationInfo || undefined,
+                referrer: referrer || undefined,
+                user: userId || undefined,
+            };
+
             if (view) {
-                if (userId && !view.users.includes(userId)) {
-                    view.users.push(userId);
-                    view.views += 1;
-                } else if (!userId) {
-                    view.guests.push({ ip, userAgent: detectarDispositivo(device) });
-                    view.views += 1;
-                }
-
-                if (referrer) view.referrer.push(referrer);
-                if (locationInfo) view.location.push(locationInfo);
-
+                view.guests.push(guestData);
+                view.views += 1;
                 await view.save();
             } else {
                 await ViewsProducts.create({
                     product: productId,
-                    users: userId ? [userId] : [],
-                    guests: [{ ip, userAgent: detectarDispositivo(device) }],
                     views: 1,
-                    referrer: referrer ? [referrer] : [],
-                    location: locationInfo ? [locationInfo] : [],
+                    guests: [guestData],
                 });
             }
         } catch (error) {
