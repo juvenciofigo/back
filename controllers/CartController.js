@@ -27,7 +27,6 @@ class CartController {
     addProductsCart = async (req, res, next) => {
         const { userId } = req.params;
         const tempCart = req.body;
-
         try {
             let cart = await Carts.findOne({ cartUser: userId });
 
@@ -43,11 +42,11 @@ class CartController {
             function isSameItem(a, b) {
                 return (
                     a.productId?.toString() === b.productId?.toString() &&
-                    a.variation?.color === b.variation?.color &&
-                    a.variation?.model === b.variation?.model &&
-                    a.variation?.material === b.variation?.material &&
-                    a.variation?.size === b.variation?.size &&
-                    a.deliveryEstimate === b.deliveryEstimate
+                    a.variation?.color?.toString() === b.variation?.color?.toString() &&
+                    a.variation?.model?.toString() === b.variation?.model?.toString() &&
+                    a.variation?.material?.toString() === b.variation?.material?.toString() &&
+                    a.variation?.size?.toString() === b.variation?.size?.toString() &&
+                    a.deliveryEstimate?.toString() === b.deliveryEstimate?.toString()
                 );
             }
 
@@ -75,13 +74,9 @@ class CartController {
             } else {
                 const { productId, quantity, variation, deliveryEstimate } = req.body;
 
-                const tempItem = {
-                    productId,
-                    variation,
-                    deliveryEstimate,
-                };
-
-                const existingProductIndex = cart.cartItens.findIndex((item) => isSameItem(item, tempItem));
+                const existingProductIndex = cart.cartItens.findIndex((item) => {
+                    return isSameItem(item, req.body);
+                });
 
                 if (existingProductIndex !== -1) {
                     cart.cartItens[existingProductIndex].quantity += Number(quantity) || 1;
@@ -175,7 +170,7 @@ class CartController {
             for (const product of products) {
                 const productDetails = await Products.findById(product.productId);
 
-                if (!productDetails) continue; 
+                if (!productDetails) continue;
 
                 const estimate = productDetails?.deliveryEstimate?.id(product.deliveryEstimate);
                 const color = await Variations.findById(product.variation.color);
