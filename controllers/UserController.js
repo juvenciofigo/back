@@ -94,9 +94,34 @@ class UserController {
         }
     }
 
-    // Update user
+   
+    // Login
+    async authenticateUser(req, res, next) {
+        const { email, password } = req.body;
+        try {
+            const emailLowerCase = email.toLowerCase();
 
-    async updateUser(req, res, next) {
+            const user = await Users.findOne({ email: emailLowerCase });
+
+            if (!user) return res.status(404).json({ success: false, message: "Usuário não encontrado! Verifique o  email" });
+
+            if (user.deleted === true) {
+                return res.status(404).json({ message: "Conta apagada!" });
+            }
+
+            if (!user.validatePassword(password)) {
+                return res.status(401).json({ success: false, message: "Senha inválida" });
+            }
+
+            return res.status(200).json({ success: true, user: user.toAuthJSON() });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+     // Update user
+
+     async updateUser(req, res, next) {
         const authId = req.auth._id;
         const user = req.params.id;
 
@@ -152,29 +177,6 @@ class UserController {
         }
     }
 
-    // Login
-    async authenticateUser(req, res, next) {
-        const { email, password } = req.body;
-        try {
-            const emailLowerCase = email.toLowerCase();
-
-            const user = await Users.findOne({ email: emailLowerCase });
-
-            if (!user) return res.status(404).json({ success: false, message: "Usuário não encontrado! Verifique o  email" });
-
-            if (user.deleted === true) {
-                return res.status(404).json({ message: "Conta apagada!" });
-            }
-
-            if (!user.validatePassword(password)) {
-                return res.status(401).json({ success: false, message: "Senha inválida" });
-            }
-
-            return res.status(200).json({ success: true, user: user.toAuthJSON() });
-        } catch (error) {
-            next(error);
-        }
-    }
 
     // RECOVERY
 
