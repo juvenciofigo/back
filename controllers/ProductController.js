@@ -289,6 +289,7 @@ class ProductController {
     // Update product
     async updateProduct(req, res, next) {
         let {
+            productSpecifications,
             productDescription,
             productAvailability,
             productPrice,
@@ -348,6 +349,7 @@ class ProductController {
             // Atualizar os dados do produto
             product.set({
                 productName,
+                productSpecifications,
                 productDescription,
                 productAvailability,
                 productPrice,

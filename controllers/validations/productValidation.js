@@ -6,6 +6,7 @@ const Create = (req, res, next) => {
     const { error } = Joi.object({
         productName: Joi.string().required(),
         productDescription: Joi.string().required(),
+        productSpecifications: Joi.string().required(),
         productAvailability: Joi.boolean().required(),
         productPrice: Joi.number().required(),
         productStock: Joi.boolean().required(),
@@ -54,6 +55,7 @@ const Update = (req, res, next) => {
     const bodySchema = Joi.object({
         productName: Joi.string().optional(),
         productDescription: Joi.string().optional(),
+        productSpecifications: Joi.string().optional(),
         productAvailability: Joi.boolean().optional(),
         productPrice: Joi.number().optional(),
         productStock: Joi.boolean().optional(),

@@ -85,6 +85,10 @@ const ProductSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        productSpecifications: {
+            type: String,
+            required: true,
+        },
         productAvailability: {
             type: Boolean,
             default: true,
