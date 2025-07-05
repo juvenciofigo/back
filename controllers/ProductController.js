@@ -10,6 +10,7 @@ const { Category, SubCategory, Sub_category } = require("../models/Categories"),
     { deleteFilesFirebase } = require("../config/firebase");
 
 // { $or: [{ deliveryEstimate: { $exists: false } }, { deliveryEstimate: { $not: { $type: "array" } } }] },
+
 // async function migrateDeliveryEstimate() {
 //     try {
 //         const result = await Products.updateMany(
@@ -26,6 +27,7 @@ const { Category, SubCategory, Sub_category } = require("../models/Categories"),
 //         console.error("Erro ao migrar produtos:", error);
 //     }
 // }
+
 // migrateDeliveryEstimate();
 
 const UAParser = require("ua-parser-js");
@@ -269,9 +271,11 @@ class ProductController {
             if (!product) {
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
-
+            
+            const viewsProducts = await ViewsProducts.find({ product: "66a3f89ecedb89bc95e40ee1" }).populate([{ path: "guests" }]);
             const pro = {
                 ...product._doc,
+                viewsProducts,
                 // productStatistc: {
                 ratingAverage: this.calculateAverageRating(product.productRatings),
                 ratingStats: this.ratingStats(product),
