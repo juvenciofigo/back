@@ -1,14 +1,14 @@
-const { setCache, getCache } = require("../controllers/integracoes/redisClient");
+// const { setCache, getCache } = require("../controllers/integracoes/redisClient");
 const axios = require("axios");
 
 async function getLocationFromIP(ip) {
     if (ip === "::1") return null;
 
-    const cached = await getCache(`ip:${ip}`);
+    // const cached = await getCache(`ip:${ip}`);
 
-    if (cached) {
-        return cached;
-    }
+    // if (cached) {
+        // return cached;
+    // }
 
     const response = await axios.get(`https://ipapi.co/${ip}/json/`);
     const { country_name, region, city } = response.data;
@@ -20,7 +20,7 @@ async function getLocationFromIP(ip) {
     };
 
     
-    await setCache(`ip:${ip}`, location );
+    // await setCache(`ip:${ip}`, location );
 
     return location;
 }
