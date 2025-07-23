@@ -22,9 +22,9 @@ module.exports = ({ user, recovery }, cb) => {
     `;
 
     const emailOptions = {
-        from:process.env.GMAIL_USER,
+        from: process.env.GMAIL_USER,
         to: user.email,
-        subject: "Redefinição de Senha - Nome da loja",
+        subject: `Redefinição de Senha - ${process.env.STORE_NAME}`,
         html: message,
     };
 
