@@ -104,6 +104,7 @@ class ProductController {
 
             // Buscar localização
             const locationInfo = await getLocationFromIP(ip);
+            console.log(locationInfo);
 
             // Estrutura básica do guest
             const guestData = {
@@ -138,6 +139,7 @@ class ProductController {
                 });
             }
         } catch (error) {
+            console.log(error);
             console.error("Erro ao rastrear visualização de produto:", error.message);
         }
     };
@@ -271,7 +273,7 @@ class ProductController {
             if (!product) {
                 return res.status(404).json({ message: "Produto não encontrado!" });
             }
-            
+
             const viewsProducts = await ViewsProducts.find({ product: "66a3f89ecedb89bc95e40ee1" }).populate([{ path: "guests" }]);
             const pro = {
                 ...product._doc,
