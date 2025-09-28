@@ -1,0 +1,28 @@
+<%- include('../partials/head') %>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6 col-sm-offset-3">
+            <h2>Recuperar senha</h2>
+            <hr />
+            <br />
+            <% if (success) { %>
+                <div class="alert alert-success"> <%= success %></div>
+            <% } else if (message && !success) { %>
+                <div class="alert alert-danger"><%= message %></div>
+            <% } %> 
+
+            <p>Digite seu email para receber instruções de como reiniciar a sua senha</p>
+
+            <form action="/createRecovery" method="post">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" placeholder="Digite seu email" aria-describedby="helpId" required />
+                    <small id="helpId" class="text-muted">Ajuda</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Recuperar senha</button>
+            </form>
+        </div>
+    </div>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,55 @@
+<%- include('../partials/head') %>
+<div class="container">
+    <div class="row">
+        <!-- prettier-ignore -->
+        <div class="col-sm-6 col-sm-offset-3">
+            <h2>Recuperar senha</h2>
+            <hr />
+            <br />
+            <% if (success) { %>
+                <div class="alert alert-success"><%= success %></div>
+                <div class="alert alert-success">
+                    <h3>Agora pode fazer seu login novamente</h3>
+                </div>
+            <% } %>
+
+            <% if (!success) { %>
+                <p>Digite aqui sua nova senha</p>
+
+                <form
+                    action="/recoverPass"
+                    method="post">
+                    <input
+                        type="hidden"
+                        name="token"
+                        value="<%= token %>" />
+                    <div class="form-group">
+                        <label
+                            for="password"
+                            class="form-label"
+                            >Senha</label
+                        >
+                        <input
+                            type="password"
+                            name="password"
+                            class="form-control"
+                            placeholder="Digite nova senha"
+                            aria-describedby="helpId" />
+                        <small
+                            id="helpId"
+                            class="text-muted"
+                            >Ajuda</small
+                        >
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+                        Criar nova senha
+                    </button>
+                </form>
+            <% } %>
+        </div>
+    </div>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,1 @@
+-   [] Criar carinho quando registar o user novo;

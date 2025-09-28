@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+    .receipt-container { max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; }
+    .header { text-align: center; margin-bottom: 20px; }
+    .header h1 { margin: 0; color: #4CAF50; }
+    .header p { margin: 5px 0; color: #888; }
+    .customer-info, .items-list { margin-bottom: 20px; }
+    .customer-info h2 { font-size: 16px; margin: 0; }
+    .items-list table { width: 100%; border-collapse: collapse; }
+    .items-list th, .items-list td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; }
+    .items-list th { background-color: #f9f9f9; }
+    .total { text-align: right; font-weight: bold; margin-top: 10px; }
+    .footer { text-align: center; color: #888; font-size: 12px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="receipt-container">
+    <!-- Cabeçalho do Recibo -->
+    <div class="header">
+      <h1>Sua Loja</h1>
+      <p>Recibo de Compra</p>
+      <p>Data: 13/11/2024</p>
+    </div>
+
+    <!-- Informações do Cliente -->
+    <div class="customer-info">
+      <h2>Cliente:</h2>
+      <p>Nome do Cliente: João Silva</p>
+      <p>Email: joao.silva@example.com</p>
+    </div>
+
+    <!-- Lista de Itens -->
+    <div class="items-list">
+      <h2>Itens Comprados:</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Quantidade</th>
+            <th>Preço Unitário</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Produto A</td>
+            <td>2</td>
+            <td>500 MZN</td>
+            <td>1000 MZN</td>
+          </tr>
+          <tr>
+            <td>Produto B</td>
+            <td>1</td>
+            <td>300 MZN</td>
+            <td>300 MZN</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Total da Compra -->
+    <p class="total">Total: 1300 MZN</p>
+
+    <!-- Rodapé do Recibo -->
+    <div class="footer">
+      <p>Obrigado por sua compra!</p>
+      <p>Entre em contato conosco para qualquer dúvida.</p>
+    </div>
+  </div>
+</body>
+</html>
