@@ -1,7 +1,6 @@
 import "dotenv/config";
 
 import express, { Express, Request, Response, NextFunction } from "express";
-import { Error as MongooseError } from "mongoose";
 import multer from "multer";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
@@ -11,15 +10,21 @@ import cors from "cors";
 import compression from "compression";
 import bodyParser from "body-parser";
 import rateLimit from "express-rate-limit";
-import winston from "winston";
+
+// Logger com Winston
+import logger from "../logs/logger.js";
 
 import "../database/connection.js";
 
 // Rotas
-import UserNew from "./modules/user/routes.js";
-import CartNew from "./modules/cart/routes.js";
-import CategoryNew from "./modules/category/routes.js";
+import User from "./modules/user/routes.js";
+import Cart from "./modules/cart/routes.js";
+import Category from "./modules/category/routes.js";
+import Product from "./modules/product/routes.js";
 import { BaseError } from "./shared/BaseError.js";
+import status from "http-status";
+import { MongoError } from "./shared/errors.js";
+
 
 // Old //
 // import usersRouter from "../routes/users.js";
@@ -42,16 +47,6 @@ const app: Express = express();
 const isProduction = process.env.NODE_ENV === "production";
 const PORT = parseInt(process.env.PORT || "3000", 10);
 
-// Logger com Winston
-const logger = winston.createLogger({
-    level: "info",
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.printf(({ timestamp, level, message }) => `${timestamp} [${level.toUpperCase()}]: ${message}`)
-    ),
-    transports: [new winston.transports.Console(), new winston.transports.File({ filename: "app.log" })],
-});
-
 // Rate Limiter
 const limiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minuto
@@ -59,8 +54,6 @@ const limiter = rateLimit({
     message: "Muitas requisições. Tente novamente mais tarde.",
     keyGenerator: (req: Request): string => {
         const ip = (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0] ?? req.socket.remoteAddress ?? "unknown";
-
-        // logger.info(`IP do cliente: ${ip}`);
         return ip;
     },
     handler: (req: Request, res: Response) => {
@@ -78,7 +71,15 @@ app.use("/public/images", express.static(join(__dirname, "public/images"), { max
 app.set("views", join(__dirname, "views"));
 app.set("view engine", "ejs");
 
-app.use(isProduction ? morgan("common") : morgan("dev"));
+app.use(
+    isProduction
+        ? morgan("common", {
+              stream: {
+                  write: (message) => logger.info(message.trim()),
+              },
+          })
+        : morgan("dev")
+);
 app.use(cors());
 app.disable("x-powered-by");
 app.use(compression());
@@ -87,17 +88,11 @@ app.use(bodyParser.json({ limit: "1mb" }));
 app.use(cookieParser());
 app.use(limiter);
 
-// Log de IP
-app.use((req: Request, _res: Response, next: NextFunction) => {
-    const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-    logger.info(`IP do Cliente: ${clientIp}`);
-    next();
-});
-
 // Rotas
-app.use("/", UserNew);
-app.use("/", CartNew);
-app.use("/", CategoryNew);
+app.use("/", User);
+app.use("/", Cart);
+app.use("/", Category);
+app.use("/", Product);
 
 // Old
 // app.use("/", usersRouter);
@@ -122,18 +117,31 @@ app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
     logger.error((error.message && error.stack) || "Erro interno do servidor");
 
     if (error instanceof BaseError) {
-        return res.status(error.statusCode).json({ message: error.message  + "🤦‍♂️" });
+        return res.status(error.statusCode).json({ message: error.message + "🤦‍♂️" });
     }
 
     if (error.name === "UnauthorizedError") {
-        return res.status(401).json({ error: error.message });
-    }
-    // Caso seja erro de validação do Mongoose
-    if (error instanceof MongooseError.ValidatorError) {
-        const errors = Object.values(error).map((err) => err?.properties?.message || "Erro de validação");
-        return res.status(400).json({ message: errors.join(", ") });
+        return res.status(status.UNAUTHORIZED).json({ message: "Unauthorized" });
     }
 
+    // if (error.name === "MongoServerError") {
+    //     return res.status(status.CONFLICT).json({ message: error.message });
+    // }
+
+    // Caso seja erro de validação do Mongoose
+    
+    const mongoError = error as MongoError;
+    
+    if (mongoError.name === "MongoServerError") {
+        if (mongoError.code === 11000 && mongoError.keyValue) {
+            const field = Object.keys(mongoError.keyValue)[0] || 0;
+            const value = mongoError.keyValue[field];
+            return res.status(400).json({
+                message: `O valor '${value}' para o campo '${field}' já existe.`
+            });
+        }
+        return res.status(400).json({ message: mongoError.message || "Erro no MongoDB" });
+    }
     // Caso seja erro do Multer
     if (error instanceof multer.MulterError) {
         return res.status(400).json({ message: error.message });

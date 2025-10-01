@@ -8,4 +8,5 @@ export interface Sub_categoryRepository {
     findSub_categoryById(sub_categoryId: string): Promise<ISub_category | null>;
     fetchSub_categoriesBySubCategory(subCategoryId: string): Promise<ISub_category[] | []>;
     updateSub_category(input: IUpadteSub_category): Promise<ISub_category | null>;
+    addProductToSub_category(categoryId: string, productId: string | string[]): Promise<ISub_category | null>;
 }

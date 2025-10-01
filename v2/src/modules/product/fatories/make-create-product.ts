@@ -1,7 +1,17 @@
-import { MongooseProductRepository, CreateProductService } from "../index.js";
+import { MongooseProductRepository, MongooseCategoryRepository, MongooseSubCategoryRepository, MongooseSub_categoryRepository, CreateProductService, MongooseBrandRepository } from "../index.js";
 
 export function makeCreateProduct() {
     const mongooseProductRepository = new MongooseProductRepository();
-    const createProductService = new CreateProductService(mongooseProductRepository);
+    const mongooseCategoryRepository = new MongooseCategoryRepository();
+    const mongooseSubCategoryRepository = new MongooseSubCategoryRepository();
+    const mongooseSub_categoryRepository = new MongooseSub_categoryRepository();
+    const mongooseBrandRepository = new MongooseBrandRepository();
+    const createProductService = new CreateProductService(
+        mongooseProductRepository,
+        mongooseCategoryRepository,
+        mongooseSubCategoryRepository,
+        mongooseSub_categoryRepository,
+        mongooseBrandRepository
+    );
     return createProductService;
 }

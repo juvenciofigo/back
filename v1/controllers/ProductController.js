@@ -181,6 +181,7 @@ class ProductController {
             let categories = [];
             if (productCategory) {
                 const categoryPromises = productCategory.map((id) => Category.findById(id));
+                
                 categories = await Promise.all(categoryPromises);
 
                 if (categories.some((category) => !category)) {

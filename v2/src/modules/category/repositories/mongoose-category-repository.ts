@@ -18,7 +18,7 @@ export class MongooseCategoryRepository implements CategoryRepository {
     }
 
     async findCategoryById(categoryId: string): Promise<ICategory | null> {
-        const category = await CategoryModel.findById(categoryId).populate("subCategories").populate("products");
+        const category = await CategoryModel.findById(categoryId);
         return category;
     }
 
@@ -36,6 +36,22 @@ export class MongooseCategoryRepository implements CategoryRepository {
         return categoryUpdate;
     }
 
+    async addProductToCategory(categoryId: string, productId: string | string[]): Promise<ICategory | null> {
+        const category = await CategoryModel.findByIdAndUpdate(
+            categoryId,
+            {
+                $addToSet: {
+                    products: {
+                        $each: Array.isArray(productId) ? productId : [productId],
+                    },
+                },
+            },
+            { new: true }
+        );
+
+        return category;
+    }
+
     async getAvaliableCategories(): Promise<ICategory[]> {
         const categories = await CategoryModel.find({ availability: true }).populate({
             path: "subCategories",
@@ -44,6 +60,11 @@ export class MongooseCategoryRepository implements CategoryRepository {
             },
         });
 
+
+        
+
         return categories;
     }
+
+    
 }

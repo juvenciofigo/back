@@ -42,4 +42,20 @@ export class MongooseSubCategoryRepository implements SubCategoryRepository {
 
         return subCategoryUpdate;
     }
+
+    async addProductToSubCategory(subCategoryId: string, productId: string | string[]): Promise<ISubCategory | null> {
+        const subCategory = await SubCategoryModel.findByIdAndUpdate(
+            subCategoryId,
+            {
+                $addToSet: {
+                    products: {
+                        $each: Array.isArray(productId) ? productId : [productId],
+                    },
+                },
+            },
+            { new: true }
+        );
+
+        return subCategory;
+    }
 }

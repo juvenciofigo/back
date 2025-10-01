@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 
-import { IBrand, IProduct, IProfit, ISale, ITag } from "../index.js";
+import { IProduct, IProfit, ISale, ITag } from "../index.js";
 
 const SaleSchema = new Schema<ISale>(
     {
@@ -35,23 +35,6 @@ const TagsSchema = new Schema<ITag>(
                 type: Schema.Types.ObjectId,
                 ref: "Products",
                 require: true,
-            },
-        ],
-    },
-    { timestamps: true }
-);
-
-const BrandsSchema = new Schema<IBrand>(
-    {
-        name: {
-            type: String,
-            unique: true,
-            required: true,
-        },
-        products: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: "Products",
             },
         ],
     },
@@ -110,10 +93,20 @@ const ProductSchema = new Schema<IProduct>(
             default: [],
         },
         productCategory: {
-            type: [{ type: Schema.Types.ObjectId, ref: "Category" }],
+            type: [
+                {
+                    type: Schema.Types.ObjectId,
+                    ref: "Category",
+                },
+            ],
         },
         productSubcategory: {
-            type: [{ type: Schema.Types.ObjectId, ref: "SubCategory" }],
+            type: [
+                {
+                    type: Schema.Types.ObjectId,
+                    ref: "SubCategory",
+                },
+            ],
         },
         productSub_category: {
             type: [
@@ -124,10 +117,20 @@ const ProductSchema = new Schema<IProduct>(
             ],
         },
         productRatings: {
-            type: [{ type: Schema.Types.ObjectId, ref: "Rating" }],
+            type: [
+                {
+                    type: Schema.Types.ObjectId,
+                    ref: "Rating",
+                },
+            ],
         },
         productVariations: {
-            type: [{ type: Schema.Types.ObjectId, ref: "Variation" }],
+            type: [
+                {
+                    type: Schema.Types.ObjectId,
+                    ref: "Variation",
+                },
+            ],
         },
         productPromotion: {
             type: Number,
@@ -149,6 +152,11 @@ const ProductSchema = new Schema<IProduct>(
             type: Schema.Types.ObjectId,
             ref: "Brands",
             default: undefined,
+        },
+        createBy: {
+            required: true,
+            type: Schema.Types.ObjectId,
+            ref: "User",
         },
         productWeight: {
             type: Number,
@@ -205,6 +213,5 @@ const ProductSchema = new Schema<IProduct>(
 );
 
 ProductSchema.plugin(mongoosePaginate);
-export const Tags = mongoose.model("Tags", TagsSchema, "tags");
-export const Products = mongoose.model("Products", ProductSchema, "products");
-export const Brands = mongoose.model("Brands", BrandsSchema, "brands");
+export const TagsModel = mongoose.model("Tags", TagsSchema, "tags");
+export const ProductsModel = mongoose.model("Products", ProductSchema, "products");

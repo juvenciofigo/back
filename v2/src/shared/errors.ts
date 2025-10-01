@@ -6,6 +6,11 @@ export class UserAlreadyExistsError extends BaseError {
         super("Email already exists", 409); // Conflict
     }
 }
+export interface MongoError extends BaseError {
+    code?: number;
+    keyValue?: Record<string, unknown>;
+}
+
 
 export class UserNotFoundError extends BaseError {
     constructor() {

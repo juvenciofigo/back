@@ -11,7 +11,7 @@ export class MongooseSub_categoryRepository implements Sub_categoryRepository {
         });
 
         await SubCategoryModel.findByIdAndUpdate(subCategoryID, {
-            $push: { sub_categories: sub_category._id },
+            $addToSet: { sub_categories: sub_category._id },
         });
         return sub_category;
     }
@@ -42,5 +42,21 @@ export class MongooseSub_categoryRepository implements Sub_categoryRepository {
         const subCategoryUpdate = await Sub_categoryModel.findByIdAndUpdate(sub_categoryId, { $set: update }, { new: true, runValidators: true });
 
         return subCategoryUpdate;
+    }
+
+    async addProductToSub_category(sub_categoryId: string, productId: string | string[]): Promise<ISub_category | null> {
+        const sub_category = await Sub_categoryModel.findByIdAndUpdate(
+            sub_categoryId,
+            {
+                $addToSet: {
+                    products: {
+                        $each: Array.isArray(productId) ? productId : [productId],
+                    },
+                },
+            },
+            { new: true }
+        );
+
+        return sub_category;
     }
 }
