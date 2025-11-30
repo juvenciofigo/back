@@ -56,6 +56,39 @@ export interface IProduct extends Document {
     updatedAt?: Date;
 }
 
+export interface IProductUpdate {
+    createBy: string;
+    productName?: string;
+    productDescription?: string;
+    productSpecifications?: string;
+    productAvailability?: boolean;
+    productPrice?: number;
+    productStock?: boolean;
+    productImage?: string[];
+    productCategory?: string[];
+    productSubcategory?: string[];
+    productSub_category?: string[];
+    productRatings?: string[];
+    productVariations?: string[];
+    productPromotion?: number;
+    sku?: string;
+    productVendor?: string;
+    productModel?: string;
+    productBrand?: string;
+    productWeight?: number;
+    productLength?: number;
+    productWidth?: number;
+    productHeight?: number;
+    order_items?: string[];
+    timesPurchased?: number;
+    totalRevenue?: number;
+    deliveryEstimate?: string[];
+    sales?: ISale[];
+    profit?: IProfit[];
+    createdAt: Date;
+    updatedAt?: Date;
+}
+
 export interface ICreateProduct {
     createBy: string;
     productName: string;

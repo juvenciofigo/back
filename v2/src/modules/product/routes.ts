@@ -1,16 +1,19 @@
 import { Router } from "express";
 import {
     createProductController,
+    updateProductController,
     fetchProductsController,
+    getProductController,
+    getProductValidator,
+    createProductValidator,
+    // updateProductValidator,
+
     IsAuthValidator,
     IsAdminValidator,
     uploadMulter,
-    getProductController,
     fetchBrandsController,
     createbrandController,
-    createProductValidator,
     createBrandValidator,
-    getProductValidator,
 } from "./index.js";
 const router = Router();
 
@@ -18,7 +21,7 @@ const router = Router();
 //ADMIN
 /////////////
 
-// router.put("/product/:id", auth.require, AdminValidator, upload.array("files"), productValidation.Update, ProductController.updateProduct);
+router.put("/product/:id", IsAuthValidator.require, IsAdminValidator, uploadMulter.array("files"),  updateProductController);
 
 // productCreateValidation,
 router.post("/product", IsAuthValidator.require, IsAdminValidator, uploadMulter.array("files"), createProductValidator, createProductController);

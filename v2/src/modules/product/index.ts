@@ -1,22 +1,28 @@
 // Controllers
 export * from "./controllers/create-product-controller.js";
+export * from "./controllers/update-product-controller.js";
 export * from "./controllers/fetch-products-controller.js";
 export * from "./controllers/get-product-controller.js";
+
 export * from "./controllers/fetch-brands-controller.js";
 export * from "./controllers/create-brand-controller.js";
 
 // Service
 export * from "./services/create-product-service.js";
+export * from "./services/update-product-service.js";
 export * from "./services/fetch-products-service.js";
 export * from "./services/get-product-service.js";
+
 export * from "./services/fetch-brands-service.js";
 export * from "./services/create-brand-service.js";
 
 // Fatories
 export * from "./fatories/make-create-product.js";
+export * from "./fatories/make-update-product.js";
 export * from "./fatories/make-fetch-products.js";
-export * from "./fatories/make-fetch-brands.js";
 export * from "./fatories/make-get-product.js";
+
+export * from "./fatories/make-fetch-brands.js";
 export * from "./fatories/make-create-brand.js";
 
 // Validators
