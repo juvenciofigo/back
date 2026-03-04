@@ -17,8 +17,13 @@ export class MongooseProductRepository implements ProductRepository {
         return product;
     }
 
-    async fetchProducts(): Promise<IProduct[] | []> {
-        const products = await ProductsModel.find();
+    async fetchProducts(query: any, options: any): Promise<any> {
+        const products = await ProductsModel.paginate(query, options);
+        return products;
+    }
+
+    async searchProducts(query: any, options: any): Promise<any> {
+        const products = await ProductsModel.paginate(query, options);
         return products;
     }
 

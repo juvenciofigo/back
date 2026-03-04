@@ -4,6 +4,7 @@ export interface ProductRepository {
     createProduct(data: ICreateProduct): Promise<IProduct>;
     findProductBySku(sku: string): Promise<IProduct | null>;
     findProductById(productId: string): Promise<IProduct | null>;
-    fetchProducts(): Promise<IProduct[] | []>;
-    updateProduct(productId: string,  data: Partial<IProductUpdate>): Promise<IProduct | null>;
+    fetchProducts(query: any, options: any): Promise<any>;
+    searchProducts(query: any, options: any): Promise<any>;
+    updateProduct(productId: string, data: Partial<IProductUpdate>): Promise<IProduct | null>;
 }

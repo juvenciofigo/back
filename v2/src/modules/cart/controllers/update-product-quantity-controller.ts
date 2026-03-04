@@ -4,8 +4,8 @@ import { Request } from "express-jwt";
 
 export async function updateProductQuantityController(req: Request, res: Response, next: NextFunction) {
     const userId = req.auth?._id;
-    const itemId: string = req.params.itemId;
-    const quantity: number = Number(req.params.quantity);
+    const itemId: string = req.params?.itemId || "";
+    const quantity: number = Number(req.params?.quantity || 1);
 
     try {
         const cart = await makeUpdateProductQuantity().execute({ userId, itemId, quantity });

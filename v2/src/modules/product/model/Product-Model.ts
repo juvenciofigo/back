@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, PaginateModel } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 
 import { IProduct, IProfit, ISale, ITag } from "../index.js";
@@ -153,11 +153,11 @@ const ProductSchema = new Schema<IProduct>(
             ref: "Brands",
             default: undefined,
         },
-        createBy: {
-            required: true,
-            type: Schema.Types.ObjectId,
-            ref: "User",
-        },
+        // createBy: {
+        //     required: true,
+        //     type: Schema.Types.ObjectId,
+        //     ref: "User",
+        // },
         productWeight: {
             type: Number,
             default: undefined,
@@ -214,4 +214,4 @@ const ProductSchema = new Schema<IProduct>(
 
 ProductSchema.plugin(mongoosePaginate);
 export const TagsModel = mongoose.model("Tags", TagsSchema, "tags");
-export const ProductsModel = mongoose.model("Products", ProductSchema, "products");
+export const ProductsModel = mongoose.model<IProduct, PaginateModel<IProduct>>("Products", ProductSchema, "products");

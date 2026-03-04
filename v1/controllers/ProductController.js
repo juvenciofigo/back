@@ -181,7 +181,7 @@ class ProductController {
             let categories = [];
             if (productCategory) {
                 const categoryPromises = productCategory.map((id) => Category.findById(id));
-                
+
                 categories = await Promise.all(categoryPromises);
 
                 if (categories.some((category) => !category)) {
@@ -577,7 +577,11 @@ class ProductController {
         };
 
         const query = {
-            $or: [{ productName: { $regex: search } }, { productDescription: { $regex: search } }, { sku: { $regex: search } }, { tags: { $regex: search } }],
+            $or: [
+                { productName: { $regex: search } },
+                { productDescription: { $regex: search } },
+                { sku: { $regex: search } },
+                { tags: { $regex: search } }],
         };
 
         if (category) query.productCategory = category;

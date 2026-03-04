@@ -7,7 +7,7 @@ import { Request, Response, NextFunction } from "express";
 export async function updateQuantityValidator(req: Request, res: Response, next: NextFunction) {
     const { error } = Joi.object({
         itemId: Joi.string().alphanum().length(24).required(),
-        quantity: Joi.number().required(),
+        quantity: Joi.number().min(1).required(),
     }).validate(req.params);
 
     if (error) {

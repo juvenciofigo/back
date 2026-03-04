@@ -2,7 +2,7 @@ import { CartItemNotFoundError, CartNotFoundError, CartRepository, ICart } from 
 
 interface Request {
     userId: string;
-    item: string;
+    itemId: string;
 }
 
 export class RemoveProductToCartService {
@@ -12,7 +12,7 @@ export class RemoveProductToCartService {
         this.cartRepository = cartRepository;
     }
 
-    async execute({ userId, item }: Request) {
+    async execute({ userId, itemId }: Request) {
         const cart: ICart | null = await this.cartRepository.fetchCartByUser(userId);
 
         if (!cart) {
@@ -20,7 +20,7 @@ export class RemoveProductToCartService {
         }
 
         const initialCartItemCount = cart.cartItens.length;
-        cart.cartItens = cart.cartItens.filter((cartItem) => !cartItem.item.equals(item));
+        cart.cartItens = cart.cartItens.filter((cartItem) => !cartItem.item.equals(itemId));
 
         //  Verificar se algum item foi removido
         if (initialCartItemCount === cart.cartItens.length) {

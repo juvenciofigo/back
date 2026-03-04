@@ -4,9 +4,12 @@ import {
     updateProductController,
     fetchProductsController,
     getProductController,
+    searchProductsController,
     getProductValidator,
     createProductValidator,
-    // updateProductValidator,
+    updateProductValidator,
+    searchProductsValidator,
+    fetchProductsValidator,
 
     IsAuthValidator,
     IsAdminValidator,
@@ -21,16 +24,12 @@ const router = Router();
 //ADMIN
 /////////////
 
-router.put("/product/:id", IsAuthValidator.require, IsAdminValidator, uploadMulter.array("files"),  updateProductController);
+router.put("/product/:id", IsAuthValidator.require, IsAdminValidator, uploadMulter.array("files"), updateProductValidator, updateProductController);
 
-// productCreateValidation,
 router.post("/product", IsAuthValidator.require, IsAdminValidator, uploadMulter.array("files"), createProductValidator, createProductController);
 
-router.get("/products", fetchProductsController);
+router.get("/products", fetchProductsValidator, fetchProductsController);
 
-// router.put("/product/image/:id", auth.require, AdminValidator, productValidation.Image, upload.array("files"), ProductController.updateImage);
-
-// router.delete("/product/:id", auth.require, AdminValidator, productValidation.Delete, ProductController.deleteProduct);
 
 router.get("/product/:productId", getProductValidator, getProductController);
 
@@ -48,7 +47,7 @@ router.post("/brands", IsAuthValidator.require, IsAdminValidator, createBrandVal
 
 // router.get("/products", productValidation.All, ProductController.availiableProducts);
 
-// router.get("/products/search/", ProductController.searchProducts); // nao aprovado
+router.get("/products/search", searchProductsValidator, searchProductsController);
 
 // //Ratings
 // router.get("/product/:id/ratings", productValidation.getBtId, ProductController.getRatingsProduct);

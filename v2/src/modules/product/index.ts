@@ -3,6 +3,7 @@ export * from "./controllers/create-product-controller.js";
 export * from "./controllers/update-product-controller.js";
 export * from "./controllers/fetch-products-controller.js";
 export * from "./controllers/get-product-controller.js";
+export * from "./controllers/search-products-controller.js";
 
 export * from "./controllers/fetch-brands-controller.js";
 export * from "./controllers/create-brand-controller.js";
@@ -12,6 +13,7 @@ export * from "./services/create-product-service.js";
 export * from "./services/update-product-service.js";
 export * from "./services/fetch-products-service.js";
 export * from "./services/get-product-service.js";
+export * from "./services/search-products-service.js";
 
 export * from "./services/fetch-brands-service.js";
 export * from "./services/create-brand-service.js";
@@ -21,6 +23,7 @@ export * from "./fatories/make-create-product.js";
 export * from "./fatories/make-update-product.js";
 export * from "./fatories/make-fetch-products.js";
 export * from "./fatories/make-get-product.js";
+export * from "./fatories/make-search-products.js";
 
 export * from "./fatories/make-fetch-brands.js";
 export * from "./fatories/make-create-brand.js";
@@ -29,10 +32,13 @@ export * from "./fatories/make-create-brand.js";
 export * from "../../shared/validators/Is-auth-validator.js";
 export * from "../../shared/validators/is-admin-validator.js";
 
-export * from "./validatores/create-product-validador.js";
-export * from "./validatores/get-product-validador.js";
+export * from "./validators/create-product-validator.js";
+export * from "./validators/get-product-validator.js";
+export * from "./validators/update-product-validator.js";
+export * from "./validators/search-products-validator.js";
+export * from "./validators/fetch-products-validator.js";
 
-export * from "./validatores/create-brand-validador.js";
+export * from "./validators/create-brand-validator.js";
 
 // Errors
 export * from "../../shared/BaseError.js";
@@ -42,10 +48,13 @@ export * from "./interfaces/product-interface-repository.js";
 export * from "./interfaces/brand-interface-repository.js";
 export * from "./model/product-interface-model.js";
 export * from "./model/Brand-Model.js";
+export * from "../product/interfaces/product-interface-repository.js"
+export * from "./model/variation-interface-model.js";
 
 // Models
 export * from "./model/Product-Model.js";
 export * from "./model/Brand-Model.js";
+export * from "./model/Variation-Model.js";
 
 // Repository
 export * from "./repositories/mongoose-product-repository.js";

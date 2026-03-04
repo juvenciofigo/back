@@ -1,22 +1,17 @@
 import { Types } from "mongoose";
-import { CartNotFoundError, CartRepository, ICart } from "../index.js";
+import { CartNotFoundError, CartRepository, ICart, IItem, IItemVariation } from "../index.js";
 
 interface Request {
     userId: string | null;
-    body: unknown[];
+    body: IItem[];
 }
 
 interface CartProduct {
-    item: string;
+    item: Types.ObjectId;
     productId: string;
     productName: string;
     picture: string;
-    variation: {
-        color?: Types.ObjectId;
-        model?: Types.ObjectId;
-        size?: Types.ObjectId;
-        material?: Types.ObjectId;
-    };
+    variation: IItemVariation;
     estimate?: Types.ObjectId;
     productPrice: number;
     quantity: number;
@@ -31,7 +26,7 @@ export class GetCartDetailsService {
     }
 
     async execute({ userId, body }: Request) {
-        let products = [];
+        let products: IItem[];
         let cartProducts: CartProduct[] = [];
         let cartId: string | undefined;
 
@@ -51,17 +46,19 @@ export class GetCartDetailsService {
         if (!Array.isArray(products) || products.length === 0) return { cartProducts };
 
         for (const product of products) {
-            const productDetails = product.productId;
+            const productDetails: any = product.productId;
             if (!productDetails) continue;
 
             const estimate = productDetails.deliveryEstimate?.id(product.deliveryEstimate);
 
             let price = 0;
+            const variation: any = product.variation;
+
             if (estimate?.additionalCost) price += estimate.additionalCost;
-            if (product.variation?.color?.variationPrice) price += product.variation.color.variationPrice;
-            if (product.variation?.model?.variationPrice) price += product.variation.model.variationPrice;
-            if (product.variation?.size?.variationPrice) price += product.variation.size.variationPrice;
-            if (product.variation?.material?.variationPrice) price += product.variation.material.variationPrice;
+            if (variation?.color?.variationPrice) price += variation.color.variationPrice;
+            if (variation?.model?.variationPrice) price += variation.model.variationPrice;
+            if (variation?.size?.variationPrice) price += variation.size.variationPrice;
+            if (variation?.material?.variationPrice) price += variation.material.variationPrice;
 
             const productPrice = (productDetails.productPrice || 0) + price;
             const subtotal = productPrice * (product.quantity || 1);
@@ -72,10 +69,10 @@ export class GetCartDetailsService {
                 productName: productDetails.productName,
                 picture: productDetails.productImage?.[0] || "",
                 variation: {
-                    color: product.variation?.color,
-                    model: product.variation?.model,
-                    size: product.variation?.size,
-                    material: product.variation?.material,
+                    color: variation?.color,
+                    model: variation?.model,
+                    size: variation?.size,
+                    material: variation?.material,
                 },
                 estimate,
                 productPrice,

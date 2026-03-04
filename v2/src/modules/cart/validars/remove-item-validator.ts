@@ -6,9 +6,7 @@ import { Request, Response, NextFunction } from "express";
 
 export async function removeItemValidator(req: Request, res: Response, next: NextFunction) {
     const { error } = Joi.object({
-        userId: Joi.string().alphanum().length(24).required(),
-        item: Joi.string().alphanum().length(24).required(),
-        quantity: Joi.number().required(),
+        itemId: Joi.string().alphanum().length(24).required(),
     }).validate(req.params);
 
     if (error) {

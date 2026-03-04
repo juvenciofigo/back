@@ -1,18 +1,18 @@
 import { Types } from "mongoose";
 import { Document } from "mongoose";
 
-export interface IVariation {
+export interface IItemVariation {
     color?: Types.ObjectId;
     model?: Types.ObjectId;
     size?: Types.ObjectId;
     material?: Types.ObjectId;
 }
 
-interface IItem {
+export interface IItem {
     productId: Types.ObjectId;
     quantity: number;
     deliveryEstimate?: Types.ObjectId;
-    variation: IVariation;
+    variation: IItemVariation;
     item: Types.ObjectId;
 }
 

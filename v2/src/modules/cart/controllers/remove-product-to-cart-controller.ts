@@ -4,9 +4,10 @@ import { Request } from "express-jwt";
 
 export async function removeProductToCartController(req: Request, res: Response, next: NextFunction) {
     const userId = req.auth?._id;
-    const item: string = req.params?.itemId || "";
+    const itemId: string = req.params?.itemId || "";
     try {
-        const cart = await makeRemoveProductToCart().execute({ userId, item });
+
+        const cart = await makeRemoveProductToCart().execute({ userId, itemId });
 
         return res.status(200).json(cart);
     } catch (error) {
