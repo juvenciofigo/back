@@ -14,6 +14,7 @@ export * from "./services/update-product-service.js";
 export * from "./services/fetch-products-service.js";
 export * from "./services/get-product-service.js";
 export * from "./services/search-products-service.js";
+export * from "./services/trackProductView.js";
 
 export * from "./services/fetch-brands-service.js";
 export * from "./services/create-brand-service.js";
@@ -24,6 +25,7 @@ export * from "./fatories/make-update-product.js";
 export * from "./fatories/make-fetch-products.js";
 export * from "./fatories/make-get-product.js";
 export * from "./fatories/make-search-products.js";
+export * from "./fatories/make-track-product-view.js";
 
 export * from "./fatories/make-fetch-brands.js";
 export * from "./fatories/make-create-brand.js";
@@ -41,20 +43,19 @@ export * from "./validators/fetch-products-validator.js";
 export * from "./validators/create-brand-validator.js";
 
 // Errors
-export * from "../../shared/BaseError.js";
 
 // Interface
 export * from "./interfaces/product-interface-repository.js";
 export * from "./interfaces/brand-interface-repository.js";
 export * from "./model/product-interface-model.js";
 export * from "./model/Brand-Model.js";
-export * from "../product/interfaces/product-interface-repository.js"
 export * from "./model/variation-interface-model.js";
 
 // Models
 export * from "./model/Product-Model.js";
 export * from "./model/Brand-Model.js";
 export * from "./model/Variation-Model.js";
+export * from "./model/Products-Views-Model.js";
 
 // Repository
 export * from "./repositories/mongoose-product-repository.js";

@@ -1,9 +1,6 @@
 import { IUser, UserRepository } from "../index.js";
-
-interface Response {
-    users: IUser[];
-    count: number;
-}
+import { ResponsePaginate } from "../../../shared/interface.js";
+import { convertResponse } from "../../../shared/utils/convertResponse.js";
 
 export class GetAllUserService {
     private usersRepository: UserRepository;
@@ -12,9 +9,9 @@ export class GetAllUserService {
         this.usersRepository = userRepository;
     }
 
-    async execute(): Promise<Response> {
-        const users = await this.usersRepository.getUsers();
+    async execute(page: number = 1, limit: number = 10): Promise<ResponsePaginate<IUser>> {
+        const result = await this.usersRepository.getUsers(page, limit);
 
-        return { count: users.length, users };
+        return convertResponse(result);
     }
 }

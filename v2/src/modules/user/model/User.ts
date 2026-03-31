@@ -1,10 +1,8 @@
 import mongoose, { Schema } from "mongoose";
 import uniqueValidator from "mongoose-unique-validation";
-// import jwt from "jsonwebtoken";
-// import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { IUser } from "../index.js";
-// const secretCode: string = process.env.SECRET || "minhaChaveSecretaSuperSegura";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 const UserSchema = new Schema<IUser>(
     {
@@ -51,7 +49,7 @@ const UserSchema = new Schema<IUser>(
 );
 
 UserSchema.plugin(uniqueValidator, { message: "Email em uso, escolha outro" });
-
+UserSchema.plugin(mongoosePaginate);
 // Métodos
 
 UserSchema.methods.gerTokenRecoveryPass = function () {
@@ -68,5 +66,5 @@ UserSchema.methods.finalTokenRecoveryPass = function () {
     return this.recovery;
 };
 
-export const UserModel = mongoose.model<IUser>("User", UserSchema, "users");
-/////////////////////// nome do model, nome do SChema, nome da coleção
+export const UserModel = mongoose.model<IUser, mongoose.PaginateModel<IUser>>("User", UserSchema, "users");
+// nome do model, nome do SChema, nome da coleção

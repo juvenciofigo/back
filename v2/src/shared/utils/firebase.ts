@@ -1,29 +1,41 @@
 import admin from "firebase-admin";
 import { applyWatermark, convertFiles } from "./sharp.js";
 
-const BUCKET = process.env.STORAGE_BUCKET_fb;
+let bucketInstance: any;
 
-// Configuração das credenciais do Firebase API
-const serviceAccount = {
-    type: process.env.TYPE_fb,
-    project_id: process.env.PROJECT_ID_fb,
-    private_key_id: process.env.PRIVATE_KEY_ID_fb,
-    private_key: process.env.PRIVATE_KEY_fb?.replace(/\\n/g, "\n"),
-    client_email: process.env.CLIENT_EMAIL_fb,
-    client_id: process.env.CLIENT_ID_fb,
-    auth_uri: process.env.AUTH_URI_fb,
-    token_uri: process.env.TOKEN_URI_fb,
-    auth_provider_x509_cert_url: process.env.AUTH_PROVIDER_X509_CERT_URL_fb,
-    client_x509_cert_url: process.env.CLIENT_X509_CERT_URL_fb,
-    universe_domain: process.env.UNIVERSE_DOMAIN_fb,
-};
 
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket: BUCKET,
-});
+export function getBucket() {
+    if (!bucketInstance) {
+        const BUCKET = process.env.STORAGE_BUCKET_fb;
 
-const bucket = admin.storage().bucket();
+        // Configuração das credenciais do Firebase API
+        const serviceAccount = {
+            type: process.env.TYPE_fb,
+            project_id: process.env.PROJECT_ID_fb,
+            private_key_id: process.env.PRIVATE_KEY_ID_fb,
+            private_key: process.env.PRIVATE_KEY_fb?.replace(/\\n/g, "\n"),
+            client_email: process.env.CLIENT_EMAIL_fb,
+            client_id: process.env.CLIENT_ID_fb,
+            auth_uri: process.env.AUTH_URI_fb,
+            token_uri: process.env.TOKEN_URI_fb,
+            auth_provider_x509_cert_url: process.env.AUTH_PROVIDER_X509_CERT_URL_fb,
+            client_x509_cert_url: process.env.CLIENT_X509_CERT_URL_fb,
+            universe_domain: process.env.UNIVERSE_DOMAIN_fb,
+        };
+
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+            storageBucket: BUCKET,
+        });
+
+        bucketInstance = admin.storage().bucket();
+    }
+
+    return bucketInstance;
+}
+
+// Removida a chamada automática para evitar erros nos testes
+// const bucket = getBucket();
 
 /**
  * Upload de arquivos para Firebase Storage
@@ -50,6 +62,7 @@ export const uploadFirebase = async (files: Express.Multer.File[]): Promise<stri
     );
 
     try {
+        const bucket = getBucket();
         const imageUrls = await Promise.all(
             finalFiles.map(
                 (file) =>
@@ -99,6 +112,7 @@ export const deleteFilesFirebase = async (fileUrls: string[]): Promise<void> => 
     };
 
     try {
+        const bucket = getBucket();
         const deletePromises = fileUrls.map((url) => {
             const fileName = extractFileName(url);
             return bucket.file(fileName).delete();

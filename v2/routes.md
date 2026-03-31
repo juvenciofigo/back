@@ -15,12 +15,12 @@
 
 | Método   | Endpoint             | Acesso  | Status      | Descrição                                     |
 |----------|----------------------|---------|-------------|-----------------------------------------------|
-| `POST`   | `/register`          | Público | Ativa       | Criar novo usuário                            |
-| `POST`   | `/authetication`     | Público | Ativa       | Login — retorna JWT                           |
+| `POST`   | `/register`          | Público | Ativa       | Criar novo usuário                            |✅
+| `POST`   | `/authentication`    | Público | Ativa       | Login — retorna JWT                           |✅
 | `GET`    | `/user/:id`          | Auth    | Ativa       | Ver perfil do utilizador                      |
 | `PUT`    | `/user/:id`          | Auth    | Parcial     | Atualizar dados do utilizador                 |
-| `DELETE` | `/user/:id`          | Auth    | Ativa       | Apagar conta do utilizador                    |
-| `GET`    | `/users/admin`       | Admin   | Ativa       | Listar todos os utilizadores                  |
+| `DELETE` | `/user/:id`          | Auth    | Ativa       | Apagar conta do utilizador                    |✅
+| `GET`    | `/users/admin`       | Admin   | Ativa       | Listar todos os utilizadores                  |✅
 | `GET`    | `/showRecovery`      | Público | Legada (v1) | Página de recuperação de senha                |
 | `POST`   | `/createRecovery`    | Público | Legada (v1) | Iniciar recuperação de senha (envio de email) |
 | `GET`    | `/recoverPass`       | Público | Legada (v1) | Confirmar token de recuperação                |
@@ -126,14 +126,15 @@
 
 | Método   | Endpoint                           | Acesso   | Status   | Descrição                             |
 |----------|------------------------------------|----------|----------|---------------------------------------|
-| `POST`   | `/cart`                            | Auth     | Ativa    | Criar carrinho                        |
-| `POST`   | `/cart/product`                    | Auth     | Ativa    | Adicionar produto ao carrinho         |
+| `GET`    | `/carts/admin`                     | Admin    | Ativa    | Listar todos os carrinhos (admin)     |
+
+| `POST`   | `/cart`                            | Auth     | Ativa    | Criar carrinho                        |✅
+| `POST`   | `/cart/item`                       | Auth     | Ativa    | Adicionar produto ao carrinho         |✅
+| `DELETE` | `/cart`                            | Auth     | Sugerida | Esvaziar o carrinho inteiro           |
 | `POST`   | `/cart/details`                    | Opcional | Ativa    | Ver itens do carrinho                 |
 | `DELETE` | `/cart/product/:itemId`            | Auth     | Ativa    | Remover item do carrinho              |
 | `PATCH`  | `/cart/product/:itemId/:quantity`  | Auth     | Ativa    | Atualizar quantidade de item          |
-| `GET`    | `/carts/admin`                     | Admin    | Ativa    | Listar todos os carrinhos (admin)     |
 | `GET`    | `/cart/:userId`                    | Auth     | Sugerida | Ver carrinho do utilizador logado     |
-| `DELETE` | `/cart`                            | Auth     | Sugerida | Esvaziar o carrinho inteiro           |
 | `POST`   | `/cart/checkout`                   | Auth     | Sugerida | Finalizar compra (gerar pedido)       |
 | `POST`   | `/cart/coupon`                     | Auth     | Sugerida | Aplicar cupão de desconto ao carrinho |
 | `DELETE` | `/cart/coupon`                     | Auth     | Sugerida | Remover cupão do carrinho             |
@@ -201,26 +202,27 @@
 
 ## 📊 Estatísticas `/statistics`
 
-| Método | Endpoint                   | Acesso  | Status      | Descrição                                 |
-|--------|----------------------------|---------|-------------|-------------------------------------------|
-| `GET`  | `/estatistic`              | Admin   | Legada (v1) | Resumo geral (vendas, pedidos, clientes)  |
-| `GET`  | `/ordersByCustumer/:user`  | Público | Legada (v1) | Pedidos por cliente                       |
-| `GET`  | `/DataByMonth`             | Público | Legada (v1) | Dados agrupados por mês                   |
-| `GET`  | `/recentOrders`            | Público | Legada (v1) | Pedidos recentes                          |
-| `GET`  | `/statistics/sales`        | Admin   | Sugerida    | Relatório de vendas (com filtros de data) |
-| `GET`  | `/statistics/products/top` | Admin   | Sugerida    | Produtos mais vendidos                    |
-| `GET`  | `/statistics/revenue`      | Admin   | Sugerida    | Receita total e por período               |
-| `GET`  | `/statistics/customers/new`| Admin   | Sugerida    | Novos clientes por período                |
+| Método | Endpoint                      | Acesso  | Status      | Descrição                                            |
+|--------|-------------------------------|---------|-------------|------------------------------------------------------|
+| `GET`  | `/estatistic`                 | Admin   | Legada (v1) | Resumo geral (vendas, pedidos, clientes)             |
+| `GET`  | `/ordersByCustumer/:user`     | Público | Legada (v1) | Pedidos por cliente                                  |
+| `GET`  | `/DataByMonth`                | Público | Legada (v1) | Dados agrupados por mês                              |
+| `GET`  | `/recentOrders`               | Público | Legada (v1) | Pedidos recentes                                     |
+| `GET`  | `/statistics/sales`           | Admin   | Sugerida    | Relatório de vendas (com filtros de data)            |
+| `GET`  | `/statistics/products/top`    | Admin   | Sugerida    | Produtos mais vendidos                               |
+| `GET`  | `/statistics/revenue`         | Admin   | Sugerida    | Receita total e por período                          |
+| `GET`  | `/statistics/customers/new`   | Admin   | Sugerida    | Novos clientes por período                           |
+| `GET`  | `/statistics/revenue-by-month`| Admin   | Sugerida    | Faturação total agregada por mês (Soma de Subtotais).|
 
 ---
 
 ## 🎁 Wishlist `/wishlist`
 
-| Método | Endpoint | Acesso | Status | Descrição |
-|---|---|---|---|---|
-| `GET` | `/wishlist/:userId` | 🔑 Auth | 💡 Sugerida | Ver lista de desejos |
-| `POST` | `/wishlist/product/:productId` | 🔑 Auth | 💡 Sugerida | Adicionar produto à wishlist |
-| `DELETE` | `/wishlist/product/:productId` | 🔑 Auth | 💡 Sugerida | Remover produto da wishlist |
+| Método  | Endpoint                       | Acesso | Status      | Descrição                    |
+|---------|--------------------------------|--------|-------------|------------------------------|
+| `GET`   | `/wishlist/:userId`            | Auth   | 💡 Sugerida | Ver lista de desejos         |
+| `POST`  | `/wishlist/product/:productId` | Auth   | 💡 Sugerida | Adicionar produto à wishlist |
+| `DELETE`| `/wishlist/product/:productId` | Auth   | 💡 Sugerida | Remover produto da wishlist  |
 
 ---
 

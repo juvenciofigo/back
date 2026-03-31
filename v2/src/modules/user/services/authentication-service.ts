@@ -1,4 +1,4 @@
-import { GenerateTokenUtils, InvalidCredencialsError, IUser, UserRepository } from "../index.js";
+import { GenerateTokenUtils, InvalidCredentialsError, IUser, UserRepository } from "../index.js";
 import { compare } from "bcrypt";
 
 interface Request {
@@ -14,7 +14,7 @@ interface Response {
     token: string;
 }
 
-export class AuthtenticationService {
+export class AuthenticationService {
     private userRepository: UserRepository;
 
     constructor(userRepository: UserRepository) {
@@ -25,13 +25,14 @@ export class AuthtenticationService {
         const user: IUser | null = await this.userRepository.findByEmail(data.email);
 
         if (!user || user.deleted === true) {
-            throw new InvalidCredencialsError();
+            throw new InvalidCredentialsError();
         }
+        console.log(user);
 
         const IsValidePassword = compare(data.password, user.password);
 
         if (!IsValidePassword) {
-            throw new InvalidCredencialsError();
+            throw new InvalidCredentialsError();
         }
 
         return {

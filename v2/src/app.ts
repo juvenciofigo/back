@@ -14,31 +14,17 @@ import rateLimit from "express-rate-limit";
 // Logger com Winston
 import logger from "../logs/logger.js";
 
-import "../database/connection.js";
-
+// Conexão do DB movida para server.ts
+// import "../database/connection.js";
 // Rotas
 import User from "./modules/user/routes.js";
 import Cart from "./modules/cart/routes.js";
 import Category from "./modules/category/routes.js";
 import Product from "./modules/product/routes.js";
+import Statistics from "./modules/statistics/routes.js";
 import { BaseError } from "./shared/BaseError.js";
 import status from "http-status";
 import { MongoError } from "./shared/errors.js";
-
-
-// Old //
-// import usersRouter from "../routes/users.js";
-// import customersRouter from "../routes/customers.js";
-// import cartRouter from "../routes/carts.js";
-// import productsRouter from "../routes/products.js";
-// import categoryRouter from "../routes/categorys.js";
-// import ratingsRouter from "../routes/ratings.js";
-// import variationsRouter from "../routes/variations.js";
-// import ordersRouter from "../routes/orders.js";
-// import deliveriesRouter from "../routes/deliveries.js";
-// import paymentsRouter from "../routes/payments.js";
-// import statisticsRouter from "../routes/statistics.js";
-// import { BaseError } from "./shared/BaseError.js";
 
 // Config __dirname para ESM
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -90,22 +76,10 @@ app.use(limiter);
 
 // Rotas
 app.use("/", User);
-app.use("/", Cart);
+app.use("/carts", Cart);
 app.use("/", Category);
 app.use("/", Product);
-
-// Old
-// app.use("/", usersRouter);
-// app.use("/", customersRouter);
-// app.use("/", cartRouter);
-// app.use("/", productsRouter);
-// app.use("/", categoryRouter);
-// app.use("/", ratingsRouter);
-// app.use("/", variationsRouter);
-// app.use("/", ordersRouter);
-// app.use("/", deliveriesRouter);
-// app.use("/", paymentsRouter);
-// app.use("/", statisticsRouter);
+app.use("/statistics", Statistics);
 
 // Rota inicial simples
 app.get("/", (_req: Request, res: Response) => {
@@ -123,10 +97,6 @@ app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
     if (error.name === "UnauthorizedError") {
         return res.status(status.UNAUTHORIZED).json({ message: "Unauthorized" });
     }
-
-    // if (error.name === "MongoServerError") {
-    //     return res.status(status.CONFLICT).json({ message: error.message });
-    // }
 
     // Caso seja erro de validação do Mongoose
     
@@ -164,7 +134,6 @@ app.use((_req: Request, res: Response) => {
     });
 });
 
-// Inicialização do servidor
-app.listen(PORT, () => {
-    console.log(isProduction ? `Servidor rodando na porta ${PORT} em produção` : `Servidor rodando em modo DEV na URL http://localhost:${PORT}`);
-});
+// Inicialização movida para server.ts
+
+export default app;

@@ -30,39 +30,39 @@ export * from "./services/fetch-sub_categories-by-subCategory-service.js";
 export * from "./services/fetch-sub_category-service.js";
 export * from "./services/update-sub_category-service.js";
 
-// Fatories
-export * from "./fatories/make-create-category.js";
-export * from "./fatories/make-update-category.js";
-export * from "./fatories/make-get-available-categories.js";
-export * from "./fatories/make-fetch-category.js";
+// Factories
+export * from "./factories/make-create-category.js";
+export * from "./factories/make-update-category.js";
+export * from "./factories/make-get-available-categories.js";
+export * from "./factories/make-fetch-category.js";
 
-export * from "./fatories/make-create-subCategory.js";
-export * from "./fatories/make-fetch-subcateries-by-category.js";
-export * from "./fatories/make-fetch-subCategory.js";
-export * from "./fatories/make-update-subCategory.js";
+export * from "./factories/make-create-subCategory.js";
+export * from "./factories/make-fetch-subcategories-by-category.js";
+export * from "./factories/make-fetch-subCategory.js";
+export * from "./factories/make-update-subCategory.js";
 
-export * from "./fatories/make-create-sub_category.js";
-export * from "./fatories/make-fetch-sub_categories-by-subCagotery.js";
-export * from "./fatories/make-fetch-sub_category.js";
-export * from "./fatories/make-update-sub_category.js";
+export * from "./factories/make-create-sub_category.js";
+export * from "./factories/make-fetch-sub_categories-by-subCategory.js";
+export * from "./factories/make-fetch-sub_category.js";
+export * from "./factories/make-update-sub_category.js";
 
 // Validators
 export * from "../../shared/validators/Is-auth-validator.js";
 export * from "../../shared/validators/is-admin-validator.js";
 
-export * from "./validatores/create-category-validator.js";
-export * from "./validatores/update-category-validator.js";
-export * from "./validatores/fetch-category-validator.js";
+export * from "./validators/create-category-validator.js";
+export * from "./validators/update-category-validator.js";
+export * from "./validators/fetch-category-validator.js";
 
-export * from "./validatores/create-subCategory-validator.js";
-export * from "./validatores/fetch-subCategory-validator.js";
-export * from "./validatores/update-category-validator.js";
-export * from "./validatores/update-subCategory-validator.js";
+export * from "./validators/create-subCategory-validator.js";
+export * from "./validators/fetch-subCategory-validator.js";
+export * from "./validators/update-category-validator.js";
+export * from "./validators/update-subCategory-validator.js";
 
-export * from "./validatores/create-sub_category-validator.js";
-export * from "./validatores/fetch-sub_categories-validator.js";
-export * from "./validatores/fetch-sub_category-validator.js";
-export * from "./validatores/update-sub_category-validator.js";
+export * from "./validators/create-sub_category-validator.js";
+export * from "./validators/fetch-sub_categories-validator.js";
+export * from "./validators/fetch-sub_category-validator.js";
+export * from "./validators/update-sub_category-validator.js";
 
 // Errors
 export * from "../../shared/errors.js";

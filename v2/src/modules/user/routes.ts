@@ -1,34 +1,38 @@
 import { Router } from "express";
 const router = Router();
 import {
-    registerUserValitaror,
+    // validators
+    registerUserValidator,
     getUserValidator,
     updateUserValidator,
+    IsAuthValidator,
+    IsAdminValidator,
     //
     registerUserController,
-    authenticateUser,
+    authenticateUserValidator,
+
+    // admin
     getUsersController,
-    authtenticationController,
     getUserProfileController,
     deleteUserController,
     updateUserController,
-    IsAuthValidator,
-    IsAdminValidator,
+    // client
+    authenticationController,
 } from "./index.js";
 
 ////////// Admin ///////////
 
 // obter todos os usuários
-router.get("/users/admin", IsAuthValidator.require, IsAdminValidator, getUsersController); // testado
+router.get("/users", IsAuthValidator.require, IsAdminValidator, getUsersController); //✅
 
 // obter detalhes de um usuário específico
-// router.get("/user/:id/admin", auth.require, AdminValidator, UserValidation.show, UserController.getUserDetails); // testado
+// router.get("/user/:id/admin", auth.require, AdminValidator, UserValidation.show, UserController.getUserDetails);
 
 // // atualizar informações de um usuário
-// router.put("/user/:id/admin", auth.require, AdminValidator, UserValidation.update, UserController.updateUser); // nao aprovado
+// router.put("/user/:id/admin", auth.require, AdminValidator, UserValidation.update, UserController.updateUser);
 
 // //Delete a user.
-// router.delete("/user/:id/ admin", auth.require, AdminValidator, AdminValidator, UserController.deleteUser); // testado
+// router.delete("/user/:id/ admin", auth.require, AdminValidator, AdminValidator, UserController.deleteUser);
 
 // //
 
@@ -37,31 +41,31 @@ router.get("/users/admin", IsAuthValidator.require, IsAdminValidator, getUsersCo
 // router.get("/visitaReg", UserController.visitaReg);
 
 // // obter detalhes de um usuário específico
-// router.get("/user/:id", auth.require, UserValidation.show, UserController.getUserDetails); // testado
+// router.get("/user/:id", auth.require, UserValidation.show, UserController.getUserDetails);
 
-router.get("/user/:id", IsAuthValidator.require, getUserValidator, getUserProfileController); // testado
+router.post("/authentication", authenticateUserValidator, authenticationController); //✅
+
+router.get("/user/:id", IsAuthValidator.require, getUserValidator, getUserProfileController);
 
 // // atualizar informações de um usuário
-router.put("/user/:id", IsAuthValidator.require, updateUserValidator, updateUserController); // nao aprovado
+router.put("/user/:id", IsAuthValidator.require, updateUserValidator, updateUserController);
 
 // //Delete a user.
-router.delete("/user/:id", IsAuthValidator.require, deleteUserController); // testado
+router.delete("/user", IsAuthValidator.require, deleteUserController); //✅
 
-router.post("/authetication", authenticateUser, authtenticationController); //testado
-
-router.post("/register", registerUserValitaror, registerUserController); // testado
+router.post("/register", registerUserValidator, registerUserController); //✅
 
 // // recuperacao de senha
 // // solicitar recuperação de senha
-// router.get("/showRecovery", UserController.showRecovery); // testado
+// router.get("/showRecovery", UserController.showRecovery);
 
 // // iniciar o processo de recuperação de senha
-// router.post("/createRecovery", UserValidation.createRecovery, UserController.initiateRecovery); // testado
+// router.post("/createRecovery", UserValidation.createRecovery, UserController.initiateRecovery);
 
 // // completar a recuperação de senha
-// router.get("/recoverPass", UserController.GetCompleteRecovery); // testado
+// router.get("/recoverPass", UserController.GetCompleteRecovery);
 
 // // para concluir a recuperação de senha
-// router.post("/recoverPass", UserController.completeRecovery); // testado
+// router.post("/recoverPass", UserController.completeRecovery);
 
 export default router;

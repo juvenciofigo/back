@@ -1,4 +1,5 @@
-import { InvalidCredencialsError, IUser, UserNotFoundError, UserRepository } from "../index.js";
+import { InvalidCredentialsError, UserNotFoundError, UserRepository } from "../index.js";
+
 interface Request {
     userId: string;
 }
@@ -10,17 +11,17 @@ export class DeleteUserService {
         this.usersRepository = userRepository;
     }
 
-    async execute({ userId }: Request): Promise<IUser | null> {
+    async execute({ userId }: Request): Promise<boolean> {
         const user = await this.usersRepository.deleteUser(userId);
 
         if (!user || user.deleted === true) {
-            throw new InvalidCredencialsError();
+            throw new InvalidCredentialsError();
         }
 
         if (!user) {
             throw new UserNotFoundError();
         }
 
-        return user;
+        return true;
     }
 }

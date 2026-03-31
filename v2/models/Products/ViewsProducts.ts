@@ -65,4 +65,4 @@ const ViewsProductsSchema = new Schema<IViewsProducts>(
 ViewsProductsSchema.index({ product: 1, createdAt: 1 });
 
 ViewsProductsSchema.plugin(mongoosePaginate);
-export default mongoose.model("ViewsProducts", ViewsProductsSchema, "viewsProducts");
+// export default mongoose.model("ViewsProducts", ViewsProductsSchema, "viewsProducts");

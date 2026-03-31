@@ -12,7 +12,17 @@ export async function addProductToCartController(req: Request, res: Response, ne
         if (!userId) {
             throw new UnauthorizedError();
         }
-        const carts = await makeAddProductToCart().execute({ userId, tempCart, singleItem: { productId, quantity, variation, deliveryEstimate } });
+        const carts = await makeAddProductToCart()
+            .execute({
+                userId,
+                tempCart,
+                singleItem: {
+                    productId,
+                    quantity,
+                    variation,
+                    deliveryEstimate
+                }
+            });
 
         return res.status(200).json(carts);
     } catch (error) {

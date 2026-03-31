@@ -4,7 +4,7 @@ const Joi = BaseJoi.extend(Extension);
 
 import { NextFunction, Request, Response } from "express";
 
-export async function registerUserValitaror(req: Request, res: Response, next: NextFunction) {
+export async function registerUserValidator(req: Request, res: Response, next: NextFunction) {
     const { error } = Joi.object({
         email: Joi.string().email().required(),
         password: Joi.string().required().min(6),

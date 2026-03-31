@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { makeAuthenticate } from "../index.js";
 
-export async function authtenticationController(req: Request, res: Response, next: NextFunction) {
+export async function authenticationController(req: Request, res: Response, next: NextFunction) {
     try {
         const authenticateService = await makeAuthenticate().execute(req.body);
 

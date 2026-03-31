@@ -1,31 +1,33 @@
 import { Router } from "express";
 const router = Router();
 import {
-    createCartController,
-    IsAuthValidator,
-    getCartsController,
     IsAdminValidator,
+    IsAuthValidator,
+    updateQuantityValidator,
+    removeItemValidator,
+    addProductToCartValidator,
+
+    getCartsController,
     addProductToCartController,
     updateProductQuantityController,
     removeProductToCartController,
     getCartDetailsController,
     getCartTotalController,
-    updateQuantityValidator,
-    removeItemValidator,
 } from "./index.js";
 
-router.post("/cart", IsAuthValidator.require, createCartController); //👌
+// router.post("/cart", IsAuthValidator.require, createCartController);
 
-router.post("/cart/item", IsAuthValidator.require, addProductToCartController);
+router.post("/item", IsAuthValidator.require, addProductToCartValidator, addProductToCartController);
 
-router.get("/carts/admin", IsAuthValidator.require, IsAdminValidator, getCartsController); //👌
+router.delete("/item/:itemId", removeItemValidator, IsAuthValidator.require, removeProductToCartController);
 
-router.delete("/cart/item/:itemId", removeItemValidator, IsAuthValidator.require, removeProductToCartController); //👌
+router.patch("/item/:itemId/:quantity", updateQuantityValidator, IsAuthValidator.require, updateProductQuantityController);
 
-router.patch("/cart/item/:itemId/:quantity", updateQuantityValidator, IsAuthValidator.require, updateProductQuantityController);
+router.post("/details", IsAuthValidator.optional, getCartDetailsController);
 
-router.post("/cart/details", IsAuthValidator.optional, getCartDetailsController); //Retrieve items in the cart for a specific user.
+router.post("/total", IsAuthValidator.optional, getCartTotalController);
 
-router.post("/cart/total", IsAuthValidator.optional, getCartTotalController); //Retrieve only the total price for the specific user's cart
+// Admin routes
+router.get("/admin", IsAuthValidator.require, IsAdminValidator, getCartsController);
 
 export default router;

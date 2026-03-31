@@ -42,7 +42,7 @@ export class ForbiddenError extends BaseError {
     }
 }
 
-export class InvalidCredencialsError extends BaseError {
+export class InvalidCredentialsError extends BaseError {
     constructor() {
         super("Invalid Credentials", 401);
     }

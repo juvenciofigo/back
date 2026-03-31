@@ -167,3 +167,23 @@ export interface IUpdateBrand extends Document {
     name: string;
     products?: string[];
 }
+
+export interface IGuest extends Document {
+    ip: string
+    userAgent: Object
+    location: ILocation
+    referrer: string,
+    user: Types.ObjectId
+}
+export interface ILocation extends Document {
+    city: string
+    country: string
+    province: string
+}
+export interface IViewsProducts extends Document {
+    product: Types.ObjectId
+    views: number
+    guests: IGuest[]
+    createdAt: Date
+    updatedAt?: Date
+}

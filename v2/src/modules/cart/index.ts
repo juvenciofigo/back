@@ -28,6 +28,8 @@ export * from "./fatories/make-get-cart-total.js";
 // Validators
 export * from "./validars/update-quantity-validator.js";
 export * from "./validars/remove-item-validator.js";
+export * from "./validars/add-item-validator.js";
+export * from "./validators/add-product-to-cart-validator.js";
 export * from "../../shared/validators/Is-auth-validator.js";
 export * from "../../shared/validators/is-admin-validator.js";
 
@@ -37,7 +39,7 @@ export * from "../../shared/errors.js";
 
 // Interface
 export * from "./model/cart-interface-model.js";
-export * from "./interfaces/cart-interface-repository.js";
+export * from "./repositories/cart-interface-repository.js";
 export * from "../product/index.js";
 
 // export 

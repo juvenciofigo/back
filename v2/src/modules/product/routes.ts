@@ -15,7 +15,7 @@ import {
     IsAdminValidator,
     uploadMulter,
     fetchBrandsController,
-    createbrandController,
+    createBrandController,
     createBrandValidator,
 } from "./index.js";
 const router = Router();
@@ -28,24 +28,17 @@ router.put("/product/:id", IsAuthValidator.require, IsAdminValidator, uploadMult
 
 router.post("/product", IsAuthValidator.require, IsAdminValidator, uploadMulter.array("files"), createProductValidator, createProductController);
 
-router.get("/products", fetchProductsValidator, fetchProductsController);
-
-
-router.get("/product/:productId", getProductValidator, getProductController);
-
 router.get("/brands", fetchBrandsController);
 
-router.post("/brands", IsAuthValidator.require, IsAdminValidator, createBrandValidator, createbrandController);
+router.post("/brands", IsAuthValidator.require, IsAdminValidator, createBrandValidator, createBrandController);
 
 //////////////////////////
 //Cliente
 /////////////
 
-// router.get("/product/:id", auth.optional, productValidation.getBtId, ProductController.showDetailsProduct); //testado
+router.get("/product/:productId", getProductValidator, getProductController);
 
-// // router.get("/products", productValidation.All, ProductController.getAllProducts);
-
-// router.get("/products", productValidation.All, ProductController.availiableProducts);
+router.get("/products", fetchProductsValidator, fetchProductsController);
 
 router.get("/products/search", searchProductsValidator, searchProductsController);
 

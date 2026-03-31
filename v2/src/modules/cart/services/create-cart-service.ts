@@ -3,9 +3,6 @@ import { CartRepository, ICart } from "../index.js";
 interface Request {
     userId: string;
 }
-interface Response {
-    cart: ICart;
-}
 
 export class CreateCartService {
     private cartRepository: CartRepository;
@@ -14,9 +11,9 @@ export class CreateCartService {
         this.cartRepository = cartRepository;
     }
 
-    async execute({ userId }: Request): Promise<Response> {
+    async execute({ userId }: Request): Promise<ICart> {
         const cart = await this.cartRepository.create(userId);
 
-        return { cart };
+        return cart;
     }
 }
