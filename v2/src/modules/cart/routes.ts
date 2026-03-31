@@ -19,7 +19,7 @@ import {
 
 router.post("/item", IsAuthValidator.require, addProductToCartValidator, addProductToCartController);
 
-router.delete("/item/:itemId", removeItemValidator, IsAuthValidator.require, removeProductToCartController);
+router.delete("/item/:itemId", IsAuthValidator.require, removeItemValidator, removeProductToCartController);
 
 router.patch("/item/:itemId/:quantity", updateQuantityValidator, IsAuthValidator.require, updateProductQuantityController);
 

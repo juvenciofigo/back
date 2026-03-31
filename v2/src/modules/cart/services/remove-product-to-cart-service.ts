@@ -1,4 +1,5 @@
 import { CartItemNotFoundError, CartNotFoundError, CartRepository, ICart } from "../index.js";
+import calculateTotal from "../utils/calculateTotal.js";
 
 interface Request {
     userId: string;
@@ -20,14 +21,19 @@ export class RemoveProductToCartService {
         }
 
         const initialCartItemCount = cart.cartItens.length;
-        cart.cartItens = cart.cartItens.filter((cartItem) => !cartItem.item.equals(itemId));
+        cart.cartItens = cart.cartItens.filter((cartItem) => cartItem.item?.toString() !== itemId) as any;
+
+        cart.markModified("cartItens");
 
         //  Verificar se algum item foi removido
         if (initialCartItemCount === cart.cartItens.length) {
             throw new CartItemNotFoundError();
         }
 
-        await cart.save();
-        return { message: "Produto removido do carrinho" };
+        const newCart = await cart.save();
+
+        const total = calculateTotal(newCart.cartItens);
+
+        return { total, items: newCart.cartItens };
     }
 }

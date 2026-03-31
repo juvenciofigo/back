@@ -31,14 +31,19 @@ export class AddProductToCartService {
         this.productRepository = productRepository;
     }
 
-    private isSameItem(a: ICartItemInput, b: ICartItemInput): boolean {
+    private isSameItem(a: any, b: any): boolean {
+        const getId = (val: any) => {
+            if (!val) return undefined;
+            return (val._id || val).toString();
+        };
+
         return (
-            a.productId?.toString() === b.productId?.toString() &&
-            a.variation?.color?.toString() === b.variation?.color?.toString() &&
-            a.variation?.model?.toString() === b.variation?.model?.toString() &&
-            a.variation?.material?.toString() === b.variation?.material?.toString() &&
-            a.variation?.size?.toString() === b.variation?.size?.toString() &&
-            a.deliveryEstimate?.toString() === b.deliveryEstimate?.toString()
+            getId(a.productId) === getId(b.productId) &&
+            getId(a.variation?.color) === getId(b.variation?.color) &&
+            getId(a.variation?.model) === getId(b.variation?.model) &&
+            getId(a.variation?.material) === getId(b.variation?.material) &&
+            getId(a.variation?.size) === getId(b.variation?.size) &&
+            getId(a.deliveryEstimate) === getId(b.deliveryEstimate)
         );
     }
 
@@ -72,6 +77,8 @@ export class AddProductToCartService {
             }
 
             const existingProductIndex = cart!.cartItens.findIndex((cartItem) => this.isSameItem(cartItem, item));
+
+            console.log(existingProductIndex);
 
             if (existingProductIndex !== -1) {
                 cart!.cartItens[existingProductIndex].quantity += Number(item.quantity) || 1;

@@ -102,42 +102,43 @@
 
 | Método   | Endpoint                                       | Acesso  | Status      | Descrição                                 |
 |----------|------------------------------------------------|---------|-------------|-------------------------------------------|
+| `POST`   | `/category`                                    | Admin   | Ativa       | Criar categoria                           |✅
+| `PUT`    | `/category/:categoryId`                        | Admin   | Ativa       | Atualizar categoria                       |
+| `DELETE` | `/category/:id`                                | Admin   | Legada (v1) | Apagar categoria                          |
+| `GET`    | `/categories/admin`                            | Admin   | Legada (v1) | Listar categorias inativas                |
+| `GET`    | `/category/:id/products`                       | Público | Legada (v1) | Produtos de uma categoria                 |
 | `GET`    | `/categories`                                  | Público | Ativa       | Listar categorias disponíveis             |
 | `GET`    | `/category/:categoryId`                        | Público | Ativa       | Ver detalhes de uma categoria             |
-| `POST`   | `/category`                                    | Admin   | Ativa       | Criar categoria                           |
-| `PUT`    | `/category/:categoryId`                        | Admin   | Ativa       | Atualizar categoria                       |
-| `GET`    | `/subcategories/:categoryId`                   | Público | Ativa       | Listar subcategorias de uma categoria     |
-| `GET`    | `/subcategory/:subCategoryId`                  | Público | Ativa       | Ver subcategoria específica               |
+
 | `POST`   | `/subCategory`                                 | Admin   | Ativa       | Criar subcategoria                        |
 | `PUT`    | `/subcategory/:subCategoryId/:categoryId`      | Admin   | Ativa       | Atualizar subcategoria                    |
-| `GET`    | `/sub_categories/:subCategoryId`               | Público | Ativa       | Listar sub-categorias de uma subcategoria |
-| `GET`    | `/sub_category/:sub_categoryId`                | Público | Ativa       | Ver sub-categoria específica              |
+| `DELETE` | `/subcategory/:id`                             | Admin   | Sugerida    | Apagar subcategoria                       |
+| `GET`    | `/subcategories/:categoryId`                   | Público | Ativa       | Listar subcategorias de uma categoria     |
+| `GET`    | `/subcategory/:subCategoryId`                  | Público | Ativa       | Ver subcategoria específica               |
+
 | `POST`   | `/sub_category`                                | Admin   | Ativa       | Criar sub-categoria                       |
 | `PUT`    | `/sub_category/:sub_categoryId/:subCategoryId` | Admin   | Ativa       | Atualizar sub-categoria                   |
-| `DELETE` | `/category/:id`                                | Admin   | Legada (v1) | Apagar categoria                          |
-| `GET`    | `/categories/unavailable`                      | Admin   | Legada (v1) | Listar categorias inativas                |
-| `GET`    | `/category/:id/products`                       | Público | Legada (v1) | Produtos de uma categoria                 |
-| `DELETE` | `/subcategory/:id`                             | Admin   | Sugerida    | Apagar subcategoria                       |
 | `DELETE` | `/sub_category/:id`                            | Admin   | Sugerida    | Apagar sub-categoria                      |
+| `GET`    | `/sub_categories/:subCategoryId`               | Público | Ativa       | Listar sub-categorias de uma subcategoria |
+| `GET`    | `/sub_category/:sub_categoryId`                | Público | Ativa       | Ver sub-categoria específica              |
 
 ---
 
-## 🛒 Carrinho `/cart`
+## 🛒 Carrinho `/cart` 
 
-| Método   | Endpoint                           | Acesso   | Status   | Descrição                             |
-|----------|------------------------------------|----------|----------|---------------------------------------|
-| `GET`    | `/carts/admin`                     | Admin    | Ativa    | Listar todos os carrinhos (admin)     |
-
-| `POST`   | `/cart`                            | Auth     | Ativa    | Criar carrinho                        |✅
-| `POST`   | `/cart/item`                       | Auth     | Ativa    | Adicionar produto ao carrinho         |✅
-| `DELETE` | `/cart`                            | Auth     | Sugerida | Esvaziar o carrinho inteiro           |
-| `POST`   | `/cart/details`                    | Opcional | Ativa    | Ver itens do carrinho                 |
-| `DELETE` | `/cart/product/:itemId`            | Auth     | Ativa    | Remover item do carrinho              |
-| `PATCH`  | `/cart/product/:itemId/:quantity`  | Auth     | Ativa    | Atualizar quantidade de item          |
-| `GET`    | `/cart/:userId`                    | Auth     | Sugerida | Ver carrinho do utilizador logado     |
-| `POST`   | `/cart/checkout`                   | Auth     | Sugerida | Finalizar compra (gerar pedido)       |
-| `POST`   | `/cart/coupon`                     | Auth     | Sugerida | Aplicar cupão de desconto ao carrinho |
-| `DELETE` | `/cart/coupon`                     | Auth     | Sugerida | Remover cupão do carrinho             |
+| Método   | Endpoint                           | Acesso   | Status   | Descrição                               |
+|----------|------------------------------------|----------|----------|-----------------------------------------|
+| `GET`    | `/carts/admin`                     | Admin    | Ativa    | Listar todos os carrinhos (admin)       |🔶
+| `POST`   | `/cart`                            | Auth     | Ativa    | Criar carrinho                          |✅
+| `POST`   | `/cart/item`                       | Auth     | Ativa    | Adicionar produto ao carrinho           |✅
+| `DELETE` | `/cart/product/:itemId`            | Auth     | Ativa    | Remover item do carrinho                |✅
+| `POST`   | `/cart/details`                    | Opcional | Ativa    | Ver itens do carrinho                   |✅
+| `GET`    | `/cart/total`                      | Opcional | Ativa    | Ver total do carrinho                   |✅
+| `PATCH`  | `/cart/product/:itemId/:quantity`  | Auth     | Ativa    | Atualizar quantidade de item            |✅
+| `POST`   | `/cart/checkout`                   | Auth     | Sugerida | Finalizar compra (gerar pedido)         |
+| `DELETE` | `/cart`                            | Auth     | Sugerida | Esvaziar o carrinho inteiro             |
+| `POST`   | `/cart/coupon`                     | Auth     | Sugerida | Aplicar cupão de desconto ao carrinho   |
+| `DELETE` | `/cart/coupon`                     | Auth     | Sugerida | Remover cupão do carrinho               |
 
 ---
 
