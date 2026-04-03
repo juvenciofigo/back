@@ -13,7 +13,7 @@ export class CreateSubCategoryService {
     }
 
     async execute({ subCategoryName, categoryId }: Request) {
-        const existingCategory = await this.categoryRepository.findCategoryById(categoryId);
+        const existingCategory = await this.categoryRepository.getCategory(categoryId);
 
         if (!existingCategory) {
             throw new BaseError("Category Not Found!", 404);
@@ -22,10 +22,12 @@ export class CreateSubCategoryService {
         const existingSubCategory = existingCategory.subCategories.find((sub) => sub.subCategoryName.toLowerCase() === subCategoryName.toLowerCase());
 
         if (existingSubCategory) {
-            throw new BaseError(`SubCategory ${subCategoryName} Exists On This Category !`, 409);
+            throw new BaseError(`SubCategory "${subCategoryName}" Exists On This Category !`, 409);
         }
 
         const subCategory = await this.subCategoryRepository.createSubCategory(subCategoryName, categoryId);
+
+        await this.categoryRepository.addSubCategoryToCategory(categoryId, subCategory.id);
 
         return { message: "SubCategoria criada", subCategory };
     }

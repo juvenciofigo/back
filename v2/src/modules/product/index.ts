@@ -19,16 +19,16 @@ export * from "./services/trackProductView.js";
 export * from "./services/fetch-brands-service.js";
 export * from "./services/create-brand-service.js";
 
-// Fatories
-export * from "./fatories/make-create-product.js";
-export * from "./fatories/make-update-product.js";
-export * from "./fatories/make-fetch-products.js";
-export * from "./fatories/make-get-product.js";
-export * from "./fatories/make-search-products.js";
-export * from "./fatories/make-track-product-view.js";
+// Factories
+export * from "./factories/make-create-product.js";
+export * from "./factories/make-update-product.js";
+export * from "./factories/make-fetch-products.js";
+export * from "./factories/make-get-product.js";
+export * from "./factories/make-search-products.js";
+export * from "./factories/make-track-product-view.js";
 
-export * from "./fatories/make-fetch-brands.js";
-export * from "./fatories/make-create-brand.js";
+export * from "./factories/make-fetch-brands.js";
+export * from "./factories/make-create-brand.js";
 
 // Validators
 export * from "../../shared/validators/Is-auth-validator.js";

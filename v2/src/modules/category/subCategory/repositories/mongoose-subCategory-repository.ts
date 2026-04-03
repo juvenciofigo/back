@@ -1,4 +1,4 @@
-import { SubCategoryRepository, ISubCategory, CategoryModel, SubCategoryModel, IUpdateSubCategory } from "../index.js";
+import { SubCategoryRepository, ISubCategory, CategoryModel, SubCategoryModel, IUpdateSubCategory } from "../../index.js";
 
 export class MongooseSubCategoryRepository implements SubCategoryRepository {
     // ========= SubCategory ===========
@@ -18,13 +18,20 @@ export class MongooseSubCategoryRepository implements SubCategoryRepository {
         return subCategory;
     }
 
-    async findSubCategoryById(subCategoryId: string): Promise<ISubCategory | null> {
-        const subCategory = await SubCategoryModel.findById(subCategoryId).populate("products sub_categories");
+    async getSubCategory(subCategoryId: string): Promise<ISubCategory | null> {
+        const subCategory = await SubCategoryModel
+            .findById(subCategoryId)
+            .populate("products sub_categories");
         return subCategory;
     }
 
-    async fetchSubcategoriesByCategory(subCategoryId: string): Promise<ISubCategory[] | null> {
-        const subCategories = await SubCategoryModel.find({ category: subCategoryId }).populate({ path: "products sub_categories" });
+    async fetchSubcategories(options: any): Promise<ISubCategory[] | []> {
+        const subCategories = await SubCategoryModel
+            .find(options)
+            .populate(
+                {
+                    path: "products sub_categories"
+                });
 
         return subCategories;
     }
@@ -58,4 +65,25 @@ export class MongooseSubCategoryRepository implements SubCategoryRepository {
 
         return subCategory;
     }
+
+    async deleteSubCategory(subCategoryId: string): Promise<boolean> {
+        const deleted = await SubCategoryModel.findByIdAndDelete(subCategoryId);
+        return !!deleted;
+    }
+
+    async addSub_CategoryToSubCategory(subCategoryId: string, sub_categoryId: string | string[]): Promise<void> {
+        await SubCategoryModel.findByIdAndUpdate(
+            subCategoryId,
+            {
+                $addToSet: {
+                    sub_categories: {
+                        $each: Array.isArray(sub_categoryId) ? sub_categoryId : [sub_categoryId],
+                    },
+                },
+            },
+            { new: true }
+        );
+
+    }
 }
+

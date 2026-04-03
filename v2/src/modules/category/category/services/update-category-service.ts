@@ -1,10 +1,11 @@
-import { BaseError, CategoryRepository } from "../../index.js";
+import { BaseError, CategoryRepository, ICategory } from "../../index.js";
+
 interface Request {
     categoryName: string;
     availability: boolean;
-    products: [];
     categoryId: string;
 }
+
 export class UpdateCategoryService {
     private categoryRepository: CategoryRepository;
 
@@ -12,19 +13,31 @@ export class UpdateCategoryService {
         this.categoryRepository = categoryRepository;
     }
 
-    async execute({ categoryName, availability, categoryId }: Request) {
-        const existingCategoryName = await this.categoryRepository.findCategoryByName(categoryName);
+    async execute({ categoryName, availability, categoryId }: Request): Promise<ICategory> {
+        const update: Partial<ICategory> = {};
 
-        if (existingCategoryName) {
-            throw new BaseError("Name Already Exists", 409);
+        if (categoryName) {
+
+            const existingCategoryName = await this.categoryRepository.findCategoryByName(categoryName);
+
+            if (existingCategoryName) {
+                throw new BaseError("Name Already Exists", 409);
+            }
+
+            update.categoryName = categoryName;
+            update.code = categoryName.toLowerCase().replace(/\s/g, "");
         }
 
-        const category = await this.categoryRepository.updateCategory({ categoryId, categoryName, availability });
+        if (typeof availability === "boolean") {
+            update.availability = availability;
+        }
+
+        const category = await this.categoryRepository.updateCategory(categoryId, update);
 
         if (!category) {
             throw new BaseError("Category Not Found!", 404);
         }
 
-        return { category };
+        return category;
     }
 }

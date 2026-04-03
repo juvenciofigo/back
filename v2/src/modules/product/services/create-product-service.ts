@@ -1,5 +1,5 @@
 import status from "http-status";
-import { BaseError, BrandRepository, CategoryRepository, ICreateProduct, IProduct, ProductRepository, SubCategoryRepository, Sub_categoryRepository, uploadFirebase } from "../index.js";
+import { BaseError, BrandRepository, CategoryRepository, ICreateProduct, IProduct, ProductRepository, SubCategoryRepository, AddProductToSub_CategoryService, uploadFirebase } from "../index.js";
 
 interface Request {
     userId: string;
@@ -10,20 +10,20 @@ export class CreateProductService {
     private productRepository: ProductRepository;
     private categoryRepository: CategoryRepository;
     private subCategoryRepository: SubCategoryRepository;
-    private sub_categoryRepository: Sub_categoryRepository;
+    private addProductToSub_category: AddProductToSub_CategoryService;
     private brandReposiory: BrandRepository;
 
     constructor(
         productRepository: ProductRepository,
         categoryRepository: CategoryRepository,
         subCategoryRepository: SubCategoryRepository,
-        sub_categoryRepository: Sub_categoryRepository,
+        addProductToSub_category: AddProductToSub_CategoryService,
         brandReposiory: BrandRepository
     ) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.subCategoryRepository = subCategoryRepository;
-        this.sub_categoryRepository = sub_categoryRepository;
+        this.addProductToSub_category = addProductToSub_category;
         this.brandReposiory = brandReposiory;
     }
 
@@ -66,7 +66,12 @@ export class CreateProductService {
         const validSub_categories: string[] = [];
         if (productToCreate.productSub_category && productToCreate.productSub_category.length > 0) {
             for (const sub_categoryId of productToCreate.productSub_category) {
-                const sub_category = await this.sub_categoryRepository.addProductToSub_category(sub_categoryId, product.id);
+                const sub_category = await this.addProductToSub_category
+                    .execute(
+                        {
+                            sub_categoryId,
+                            productId: product.id
+                        });
 
                 if (sub_category) {
                     validSub_categories.push(sub_categoryId);

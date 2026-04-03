@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
-import { ISub_category } from "../index.js";
+import { ISub_category } from "../../index.js";
 
 const Sub_categorySchema = new Schema<ISub_category>(
     {

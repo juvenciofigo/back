@@ -1,62 +1,57 @@
-import { SubCategoryModel, ISub_category, Sub_categoryModel, Sub_categoryRepository, IUpadteSub_category } from "../index.js";
+import {  ISub_category, Sub_categoryModel} from "../../index.js";
 
-export class MongooseSub_categoryRepository implements Sub_categoryRepository {
-    // ========= Sub_category ===========
+export class MongooseSub_categoryRepository {
 
-    async createSub_categories(sub_categoryName: string, subCategoryID: string): Promise<ISub_category> {
-        const sub_category = await Sub_categoryModel.create({
-            sub_categoryName,
-            subCategory: subCategoryID,
-            code: sub_categoryName.toLowerCase().replace(/\s/g, ""),
-        });
-
-        await SubCategoryModel.findByIdAndUpdate(subCategoryID, {
-            $addToSet: { sub_categories: sub_category._id },
-        });
-        return sub_category;
+    async createSub_categories(data: Partial<ISub_category>): Promise<ISub_category> {
+        return Sub_categoryModel.create(data);
     }
-    async findSub_categoryById(sub_categoryId: string): Promise<ISub_category | null> {
-        const sub_category = await Sub_categoryModel.findById(sub_categoryId).populate("products subCategory");
-        return sub_category;
+
+    async updateSub_category(
+        subCategoryId: string,
+        update: Partial<ISub_category>
+    ): Promise<ISub_category | null> {
+
+        return Sub_categoryModel.findByIdAndUpdate(
+            subCategoryId,
+            { $set: update },
+            { new: true, runValidators: true }
+        );
+    }
+
+    async deleteSub_category(subCategoryId: string): Promise<boolean> {
+        const deleted = await Sub_categoryModel.findByIdAndDelete(subCategoryId);
+        return Boolean(deleted);
+    }
+
+    async getSub_category(subCategoryId: string): Promise<ISub_category | null> {
+        return Sub_categoryModel
+            .findById(subCategoryId)
+            .populate(["products", "subCategory"]);
+    }
+
+    async fetchSub_categories(options: Record<string, any> = {}): Promise<ISub_category[]> {
+        return Sub_categoryModel
+            .find(options)
+            .populate(["products", "subCategory"]);
     }
 
     async findSub_categoryByName(sub_categoryName: string): Promise<ISub_category | null> {
-        const subCategory = await Sub_categoryModel.findOne({ sub_categoryName: sub_categoryName });
-        return subCategory;
+        return Sub_categoryModel.findOne({ sub_categoryName: sub_categoryName });
     }
 
-    async fetchSub_categoriesBySubCategory(subCategoryId: string): Promise<ISub_category[] | []> {
-        const sub_categories = await Sub_categoryModel.find({ subCategory: subCategoryId }).populate("products subCategory");
-        return sub_categories;
-    }
+    async addProductToSub_category(
+        subCategoryId: string,
+        products: string[]
+    ): Promise<ISub_category | null> {
 
-    async updateSub_category({ sub_categoryId, availability, sub_categoryName }: IUpadteSub_category): Promise<ISub_category | null> {
-        const update: Partial<ISub_category> = {};
-
-        if (sub_categoryName) {
-            update.sub_categoryName = sub_categoryName;
-            update.code = sub_categoryName.toLowerCase().replace(/\s/g, "");
-        }
-        if (typeof availability === "boolean") update.availability = availability;
-
-        const subCategoryUpdate = await Sub_categoryModel.findByIdAndUpdate(sub_categoryId, { $set: update }, { new: true, runValidators: true });
-
-        return subCategoryUpdate;
-    }
-
-    async addProductToSub_category(sub_categoryId: string, productId: string | string[]): Promise<ISub_category | null> {
-        const sub_category = await Sub_categoryModel.findByIdAndUpdate(
-            sub_categoryId,
+        return Sub_categoryModel.findByIdAndUpdate(
+            subCategoryId,
             {
                 $addToSet: {
-                    products: {
-                        $each: Array.isArray(productId) ? productId : [productId],
-                    },
+                    products: { $each: products },
                 },
             },
             { new: true }
         );
-
-        return sub_category;
     }
 }

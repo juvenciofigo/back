@@ -8,7 +8,7 @@ export interface ISub_category extends Document {
     subCategory: Types.ObjectId;
     products: Types.ObjectId[];
 }
-export interface IUpadteSub_category {
+export interface IUpdateSub_category {
     sub_categoryId: string;
     sub_categoryName?: string;
     code?: string;

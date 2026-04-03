@@ -100,31 +100,35 @@
 
 ## 🗂️ Categorias `/category`
 
-| Método   | Endpoint                                       | Acesso  | Status      | Descrição                                 |
-|----------|------------------------------------------------|---------|-------------|-------------------------------------------|
-| `POST`   | `/category`                                    | Admin   | Ativa       | Criar categoria                           |✅
-| `PUT`    | `/category/:categoryId`                        | Admin   | Ativa       | Atualizar categoria                       |
-| `DELETE` | `/category/:id`                                | Admin   | Legada (v1) | Apagar categoria                          |
-| `GET`    | `/categories/admin`                            | Admin   | Legada (v1) | Listar categorias inativas                |
-| `GET`    | `/category/:id/products`                       | Público | Legada (v1) | Produtos de uma categoria                 |
-| `GET`    | `/categories`                                  | Público | Ativa       | Listar categorias disponíveis             |
-| `GET`    | `/category/:categoryId`                        | Público | Ativa       | Ver detalhes de uma categoria             |
+| Método   | Endpoint                              | Acesso  | Status   | Descrição                                                     |
+|----------|---------------------------------------|---------|----------|---------------------------------------------------------------|
+| `POST`   | `/category`                           | Admin   | Ativa    | Criar categoria                                               |✅
+| `PUT`    | `/category/:categoryId`               | Admin   | Ativa    | Atualizar categoria                                           |✅
+| `DELETE` | `/category/:id`                       | Admin   | Legada   | Apagar categoria                                              |✅
+| `GET`    | `/categories/admin`                   | Admin   | Legada   | Listar categorias admin                                       |✅
+| `GET`    | `/categories`                         | Público | Ativa    | Listar categorias publicas                                    |✅
+| `GET`    | `/category/:id/products`              | Público | Legada   | Produtos de uma categoria                                     |✅
+| `GET`    | `/category/:categoryId`               | Público | Ativa    | Ver detalhes de uma categoria                                 |✅
 
-| `POST`   | `/subCategory`                                 | Admin   | Ativa       | Criar subcategoria                        |
-| `PUT`    | `/subcategory/:subCategoryId/:categoryId`      | Admin   | Ativa       | Atualizar subcategoria                    |
-| `DELETE` | `/subcategory/:id`                             | Admin   | Sugerida    | Apagar subcategoria                       |
-| `GET`    | `/subcategories/:categoryId`                   | Público | Ativa       | Listar subcategorias de uma categoria     |
-| `GET`    | `/subcategory/:subCategoryId`                  | Público | Ativa       | Ver subcategoria específica               |
+| `POST`   | `/subCategory`                        | Admin   | Ativa    | Criar subcategoria                                            |✅
+| `PUT`    | `/subcategory/:subCategoryId`         | Admin   | Ativa    | Atualizar subcategoria                                        |✅
+| `DELETE` | `/subcategory/:subCategoryId`         | Admin   | Sugerida | Apagar subcategoria                                           |✅
+| `GET`    | `/subcategories/admin`                | Admin   | Ativa    | Listar subcategorias (filtra por categoria, nome, status)     |✅
+| `GET`    | `/subcategory/:subCategoryId/admin`   | Admin   | Ativa    | Ver subcategoria específica                                   |✅
+| `GET`    | `/subcategories`                      | Público | Ativa    | Listar subcategorias ativas (filtra por categoria, nome)      |✅
+| `GET`    | `/subcategory/:subCategoryId`         | Público | Ativa    | Ver subcategoria específica                                   |✅
 
-| `POST`   | `/sub_category`                                | Admin   | Ativa       | Criar sub-categoria                       |
-| `PUT`    | `/sub_category/:sub_categoryId/:subCategoryId` | Admin   | Ativa       | Atualizar sub-categoria                   |
-| `DELETE` | `/sub_category/:id`                            | Admin   | Sugerida    | Apagar sub-categoria                      |
-| `GET`    | `/sub_categories/:subCategoryId`               | Público | Ativa       | Listar sub-categorias de uma subcategoria |
-| `GET`    | `/sub_category/:sub_categoryId`                | Público | Ativa       | Ver sub-categoria específica              |
+| `POST`   | `/sub_category`                       | Admin   | Ativa    | Criar sub-categoria                                           |✅
+| `PUT`    | `/sub_category/:sub_categoryId`       | Admin   | Ativa    | Atualizar sub-categoria                                       |✅
+| `DELETE` | `/sub_category/:sub_categoryId`       | Admin   | Sugerida | Apagar sub-categoria                                          |✅
+| `GET`    | `/sub_categories/admin`               | Admin   | Ativa    | Listar sub-categorias(filtrar por subcategoria, nome, status) |✅
+| `GET`    | `/sub_category/:sub_categoryId/admin` | Admin   | Ativa    | Ver sub-categoria específica                                  |✅
+| `GET`    | `/sub_categories`                     | Público | Ativa    | Listar sub-categorias ativas (filtrar por subcategoria, nome) |✅
+| `GET`    | `/sub_category/:sub_categoryId`       | Público | Ativa    | Ver sub-categoria específica se ativa                         |✅
 
 ---
 
-## 🛒 Carrinho `/cart` 
+## 🛒 Carrinho `/cart`
 
 | Método   | Endpoint                           | Acesso   | Status   | Descrição                               |
 |----------|------------------------------------|----------|----------|-----------------------------------------|

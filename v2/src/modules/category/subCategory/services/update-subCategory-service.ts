@@ -1,8 +1,7 @@
-import { BaseError, SubCategoryRepository } from "../../index.js";
+import { BaseError, ISubCategory, SubCategoryRepository } from "../../index.js";
 interface Request {
     subCategoryName: string;
     availability: boolean;
-    products: [];
     subCategoryId: string;
     categoryId: string | undefined;
 }
@@ -13,14 +12,25 @@ export class UpdateSubCategoryService {
         this.subCategoryRepository = subCategoryRepository;
     }
 
-    async execute({ subCategoryName, availability, subCategoryId, categoryId }: Request) {
-        const existingSubCategoryName = await this.subCategoryRepository.findSubCategoryByName(subCategoryName);
+    async execute({ subCategoryName, availability, subCategoryId, categoryId }: Request): Promise<ISubCategory | null> {
+        const update: Partial<ISubCategory> = {}
 
-        if (existingSubCategoryName && existingSubCategoryName.category.toString() === categoryId) {
-            throw new BaseError("Subcategory Name Already Exists on this category", 409);
+        if (subCategoryName) {
+            const existingSubCategoryName = await this.subCategoryRepository.findSubCategoryByName(subCategoryName);
+
+            if (existingSubCategoryName && existingSubCategoryName.category.toString() === categoryId) {
+                throw new BaseError("Subcategory Name Already Exists on this category", 409);
+            }
+            update.subCategoryName = subCategoryName
+            update.code = subCategoryName.toLowerCase().replace(/\s/g, "");
         }
 
-        const existingSubCategory = await this.subCategoryRepository.findSubCategoryById(subCategoryId);
+        if (typeof availability === "boolean") {
+            update.availability = availability
+        }
+
+
+        const existingSubCategory = await this.subCategoryRepository.getSubCategory(subCategoryId);
 
         if (!existingSubCategory) {
             throw new BaseError("Subcategory Not Found!", 404);
@@ -28,6 +38,6 @@ export class UpdateSubCategoryService {
 
         const subCategory = await this.subCategoryRepository.updateSubCategory({ subCategoryName, availability, subCategoryId });
 
-        return { subCategory };
+        return subCategory;
     }
 }

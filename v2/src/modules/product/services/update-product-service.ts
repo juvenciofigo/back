@@ -7,7 +7,7 @@ import {
     IProductUpdate,
     ProductRepository,
     SubCategoryRepository,
-    Sub_categoryRepository,
+    AddProductToSub_CategoryService,
     uploadFirebase,
 } from "../index.js";
 interface Request {
@@ -20,20 +20,20 @@ export class UpdateProductService {
     private productRepository: ProductRepository;
     private categoryRepository: CategoryRepository;
     private subCategoryRepository: SubCategoryRepository;
-    private sub_categoryRepository: Sub_categoryRepository;
+    private addProductToSub_category: AddProductToSub_CategoryService;
     private brandReposiory: BrandRepository;
 
     constructor(
         productRepository: ProductRepository,
         categoryRepository: CategoryRepository,
         subCategoryRepository: SubCategoryRepository,
-        sub_categoryRepository: Sub_categoryRepository,
+        addProductToSub_category: AddProductToSub_CategoryService,
         brandReposiory: BrandRepository
     ) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.subCategoryRepository = subCategoryRepository;
-        this.sub_categoryRepository = sub_categoryRepository;
+        this.addProductToSub_category = addProductToSub_category;
         this.brandReposiory = brandReposiory;
     }
 
@@ -84,7 +84,7 @@ export class UpdateProductService {
         const validSub_categories: string[] = [];
         if (productToUpdate.productSub_category && productToUpdate.productSub_category.length > 0) {
             for (const sub_categoryId of productToUpdate.productSub_category) {
-                const sub_category = await this.sub_categoryRepository.addProductToSub_category(sub_categoryId, product.id);
+                const sub_category = await this.addProductToSub_category.execute({ sub_categoryId, productId: product.id });
 
                 if (sub_category) {
                     validSub_categories.push(sub_categoryId);

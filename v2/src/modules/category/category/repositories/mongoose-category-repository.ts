@@ -1,43 +1,35 @@
-import { CategoryModel, CategoryRepository, ICategory, IUpdateCategory } from "../../index.js";
+import { CategoryModel, CategoryRepository, ICategory } from "../../index.js";
 
 export class MongooseCategoryRepository implements CategoryRepository {
     // ========= Category ===========
 
     async createCategory(categoryName: string): Promise<ICategory> {
-        const category = await CategoryModel.create({
+        return await CategoryModel.create({
             categoryName,
             code: categoryName.toLowerCase().replace(/\s/g, ""),
         });
-
-        return category;
     }
 
-    async findCategoryByName(categoryName: string): Promise<ICategory | null> {
-        const category = await CategoryModel.findOne({ categoryName: categoryName }).populate("subCategories");
-        return category;
+    async updateCategory(categoryId: string, update: Partial<ICategory>): Promise<ICategory | null> {
+
+        return await CategoryModel.findByIdAndUpdate(
+            categoryId,
+            { $set: update },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
     }
 
-    async findCategoryById(categoryId: string): Promise<ICategory | null> {
-        const category = await CategoryModel.findById(categoryId);
-        return category;
-    }
-
-    async updateCategory({ categoryId, categoryName, availability }: IUpdateCategory): Promise<ICategory | null> {
-        const update: Partial<ICategory> = {};
-
-        if (categoryName) {
-            update.categoryName = categoryName;
-            update.code = categoryName.toLowerCase().replace(/\s/g, "");
-        }
-        if (availability !== undefined) update.availability = availability;
-
-        const categoryUpdate = await CategoryModel.findByIdAndUpdate(categoryId, { $set: update }, { new: true, runValidators: true });
-
-        return categoryUpdate;
+    async deleteCategory(categoryId: string): Promise<boolean> {
+        const deleted = await CategoryModel.findByIdAndDelete(categoryId);
+        return !!deleted;
     }
 
     async addProductToCategory(categoryId: string, productId: string | string[]): Promise<ICategory | null> {
-        const category = await CategoryModel.findByIdAndUpdate(
+        return await CategoryModel.findByIdAndUpdate(
             categoryId,
             {
                 $addToSet: {
@@ -48,23 +40,46 @@ export class MongooseCategoryRepository implements CategoryRepository {
             },
             { new: true }
         );
-
-        return category;
     }
 
-    async getAvaliableCategories(): Promise<ICategory[]> {
-        const categories = await CategoryModel.find({ availability: true }).populate({
-            path: "subCategories",
-            populate: {
-                path: "sub_categories",
+    async addSubCategoryToCategory(categoryId: string, subCategoryId: string | string[]): Promise<ICategory | null> {
+        return await CategoryModel.findByIdAndUpdate(
+            categoryId,
+            {
+                $addToSet: {
+                    subCategories: {
+                        $each: Array.isArray(subCategoryId) ? subCategoryId : [subCategoryId],
+                    },
+                },
             },
+            { new: true }
+        );
+
+    }
+
+    // Public
+
+    async findCategoryByName(categoryName: string): Promise<ICategory | null> {
+        return await CategoryModel
+            .findOne(
+                { categoryName: categoryName })
+            .populate("subCategories");
+    }
+
+    async fetchCategories(options: any = {}): Promise<ICategory[]> {
+        return await CategoryModel.find(options).populate({
+            path: "subCategories",
         });
 
-
-
-
-        return categories;
     }
 
-
+    async getCategory(categoryId: string): Promise<ICategory | null> {
+        return await CategoryModel
+            .findById(categoryId)
+            .populate(
+                {
+                    path: "subCategories",
+                }
+            );
+    }
 }
