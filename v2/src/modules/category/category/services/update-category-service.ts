@@ -13,12 +13,12 @@ export class UpdateCategoryService {
         this.categoryRepository = categoryRepository;
     }
 
-    async execute({ categoryName, availability, categoryId }: Request): Promise<ICategory> {
+    async execute({ categoryName, availability, categoryId }: Request): Promise<ICategory | null> {
         const update: Partial<ICategory> = {};
 
         if (categoryName) {
 
-            const existingCategoryName = await this.categoryRepository.findCategoryByName(categoryName);
+            const existingCategoryName: ICategory | null = await this.categoryRepository.findCategoryByName(categoryName);
 
             if (existingCategoryName) {
                 throw new BaseError("Name Already Exists", 409);
@@ -32,7 +32,7 @@ export class UpdateCategoryService {
             update.availability = availability;
         }
 
-        const category = await this.categoryRepository.updateCategory(categoryId, update);
+        const category: ICategory | null = await this.categoryRepository.updateCategory(categoryId, update);
 
         if (!category) {
             throw new BaseError("Category Not Found!", 404);

@@ -1,4 +1,4 @@
-import { BaseError, CategoryRepository } from "../../index.js";
+import { BaseError, CategoryRepository, ICategory } from "../../index.js";
 
 interface Request {
     categoryId: string;
@@ -12,7 +12,7 @@ export class DeleteCategoryService {
     }
 
     async execute({ categoryId }: Request): Promise<boolean> {
-        const category = await this.categoryRepository.getCategory(categoryId);
+        const category: ICategory | null = await this.categoryRepository.getCategory(categoryId);
 
         if (!category) {
             throw new BaseError("Category Not Found!", 404);
@@ -28,7 +28,7 @@ export class DeleteCategoryService {
             throw new BaseError("Category has associated products. Move or delete them first.", 400);
         }
 
-        const deleted = await this.categoryRepository.deleteCategory(categoryId);
+        const deleted: boolean = await this.categoryRepository.deleteCategory(categoryId);
 
         if (!deleted) {
             throw new BaseError("Failed to delete category", 500);

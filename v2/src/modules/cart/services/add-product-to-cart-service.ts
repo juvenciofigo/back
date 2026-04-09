@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { CartRepository, ICart, ProductRepository } from "../index.js";
+import { CartRepository, ICart, IProductRepository } from "../index.js";
 import { Types } from "mongoose";
 
 interface IVariation {
@@ -24,9 +24,9 @@ interface AddProductToCartDTO {
 
 export class AddProductToCartService {
     private cartRepository: CartRepository;
-    private productRepository: ProductRepository;
+    private productRepository: IProductRepository;
 
-    constructor(cartRepository: CartRepository, productRepository: ProductRepository) {
+    constructor(cartRepository: CartRepository, productRepository: IProductRepository) {
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
     }
@@ -70,7 +70,7 @@ export class AddProductToCartService {
 
         for (const item of itemsToAdd) {
             // [Melhoria 3] Validação de Presença de Produto Real na Loja
-            const productExists = await this.productRepository.findProductById(item.productId.toString());
+            const productExists = await this.productRepository.getProduct(item.productId.toString());
             if (!productExists) {
                 // Se algum dos produtos da lista enviada num array não existir, lançamos erro aqui
                 throw new Error(`Produto com ID ${item.productId} não foi encontrado na base de dados.`);

@@ -1,58 +1,56 @@
-import { CartNotFoundError, CartRepository, ICart, ICartItem, ICartItemDetails } from "../index.js";
-import { calculateItemPrice } from "../utils/calculateTotal.js";
+import { CartNotFoundError, ICartRepository, ICart, ICartItem } from "../index.js";
+import { IProduct, IProductRepository } from "../../product/index.js";
+import { formatCartItemSnapshot } from "../utils/cartItemSnapshot.js";
 
-interface Request {
-    userId: string | null;
-    body: ICartItem[];
-}
+
 
 export class GetCartDetailsService {
-    private cartRepository: CartRepository;
+    private cartRepository: ICartRepository;
+    private productRepository: IProductRepository;
 
-    constructor(cartRepository: CartRepository) {
+    constructor(cartRepository: ICartRepository, productRepository: IProductRepository) {
         this.cartRepository = cartRepository;
+        this.productRepository = productRepository;
     }
 
-    async execute({ userId, body }: Request) {
-        let items: ICartItem[];
-        let cartProducts: ICartItemDetails[] = [];
+    async execute(userId: string | null, body: ICartItem[]): Promise<any> {
+        let items: ICartItem[] = [];
+        let cartProducts: any[] = [];
         let cartId: string | undefined;
 
-        if (userId) {
+        if (userId) { // se o usuário estiver autenticado, busca os dados do carrinho no banco de dados
+
             const cart: ICart | null = await this.cartRepository.fetchCartByUser(userId);
             if (!cart) throw new CartNotFoundError();
-            if (!cart.cartItens || cart.cartItens.length === 0) return { cartProducts };
+            if (!cart.cartItens || cart.cartItens.length === 0) return { totalProducts: 0, items: [], cartId: cart._id?.toString() };
 
             cartId = cart._id?.toString();
             items = cart.cartItens;
-        } else {
+        } else { // se o usuário não estiver autenticado, busca os dados do carrinho no corpo da requisição
             items = body || [];
         }
 
-        if (!Array.isArray(items) || items.length === 0) return { cartProducts };
+        if (!Array.isArray(items) || items.length === 0) return { totalProducts: 0, items: [], cartId };
 
         for (const item of items) {
-            const productDetails: any = item.productId;
-            if (!productDetails || typeof productDetails === "string") continue;
+            let product: IProduct | null = null;
+            const productId = item.productId as any;
 
-            const productPrice = calculateItemPrice(productDetails, item.variation, item.deliveryEstimate);
-            const subtotal = productPrice * (item.quantity || 1);
+            // Se productId for apenas uma string (ID), busca os detalhes no banco de dados
+            if (typeof productId === "string" || (typeof productId === "object" && !productId.productPrice)) {
+                product = await this.productRepository.getProduct(productId.toString());
+            } else {
+                product = productId;
+            }
 
-            cartProducts.push({
-                item: item.item,
-                productId: productDetails._id.toString(),
-                productName: productDetails.productName,
-                picture: productDetails.productImage?.[0] || "",
-                variation: item.variation,
-                deliveryEstimate: productDetails.deliveryEstimate?.id(item.deliveryEstimate),
-                productPrice,
-                quantity: Number(item.quantity) || 1,
-                subtotal,
-            });
+            if (!product) continue;
+
+            const snapshot = formatCartItemSnapshot({ ...item, productId: product });
+            cartProducts.push(snapshot);
         }
 
         const totalProductsPrice = cartProducts.reduce((total, p) => total + p.subtotal, 0);
-
+        
         return { totalProducts: totalProductsPrice, items: cartProducts, cartId };
     }
 }

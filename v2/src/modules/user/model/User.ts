@@ -6,9 +6,6 @@ import mongoosePaginate from "mongoose-paginate-v2";
 
 const UserSchema = new Schema<IUser>(
     {
-        firstName: { type: String, required: [true, "Preencha o campo"] },
-        lastName: { type: String, required: [true, "Preencha o campo"] },
-        profilePhoto: { type: String },
         password: {
             type: String,
             required: true,

@@ -7,7 +7,7 @@ interface Request {
     quantity: number;
 }
 
-export class UpdateProductQuantitytService {
+export class UpdateProductQuantityService {
     private cartRepository: CartRepository;
 
     constructor(cartRepository: CartRepository) {

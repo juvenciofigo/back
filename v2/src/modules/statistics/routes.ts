@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 // Validadores globais de segurança assumindo partilha na arquitetura
-import { IsAuthValidator } from "../../shared/validators/Is-auth-validator.js";
+import { IsAuthValidator } from "../../shared/validators/is-auth-validator.js";
 import { IsAdminValidator } from "../../shared/validators/is-admin-validator.js";
 
 import {
@@ -12,6 +12,8 @@ import {
     getRevenueByMonthController,
     getTopSellingProductsController,
     getOrdersByCustomerValidator,
+    fetchOrdersController,
+    fetchOrdersValidator,
 } from "./index.js";
 
 const routes = Router();
@@ -29,5 +31,8 @@ routes.get("/recent-orders", getRecentOrdersController);
 // 2. Novas Rotas (Melhorias)
 routes.get("/revenue-by-month", getRevenueByMonthController);
 routes.get("/top-selling-products", getTopSellingProductsController);
+
+// 3. Listagem Avançada (Refatorada)
+routes.get("/fetch-orders", fetchOrdersValidator, fetchOrdersController);
 
 export default routes;

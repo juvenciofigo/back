@@ -1,30 +1,57 @@
-import { Sub_categoryRepository } from "../../index.js";
+import { ISub_categoryRepository } from "../../index.js";
 import { Request } from "express";
 
 export class FetchSub_categoriesAdminService {
-    private sub_categoryRepository: Sub_categoryRepository;
-
-    constructor(sub_categoryRepository: Sub_categoryRepository) {
-        this.sub_categoryRepository = sub_categoryRepository;
-    }
+    constructor(private sub_categoryRepository: ISub_categoryRepository) { }
 
     async execute(req: Request) {
-        const options: any = {};
+        const {
+            subCategoryId,
+            search,
+            availability,
+            sort,
+            page,
+            limit,
+            all
+        } = req.query;
 
-        if (req.query.subCategoryId) {
-            options.subCategory = req.query.subCategoryId;
+        const query: any = {};
+
+        // Filtro por Disponibilidade (Admin pode alternar)
+        if (availability !== undefined) {
+            query.availability = availability === "true";
         }
 
-        if (req.query.availability) {
-            options.availability = req.query.availability;
+        // 1. Filtro por Categoria Pai (Nível 2)
+        if (subCategoryId) {
+            query.subCategory = subCategoryId;
         }
 
-        if (req.query.sub_categoryName) {
-            options.sub_categoryName = req.query.sub_categoryName;
+        // 2. Busca por Nome (Regex parcial e case-insensitive)
+        if (search) {
+            query.sub_categoryName = { $regex: search, $options: "i" };
         }
 
-        const subCategories = await this.sub_categoryRepository.fetchSub_categories(options);
+        // 3. Organização das Opções de Paginação e Ordenação
+        const sortOptions: any = {};
+        switch (sort) {
+            case "oldest":
+                sortOptions.createdAt = 1;
+                break;
+            case "newest":
+            default:
+                sortOptions.createdAt = -1;
+                break;
+        }
 
-        return subCategories;
+        const options: any = {
+            page: Number(page) || 1,
+            limit: Number(limit) || 20,
+            sort: sortOptions,
+            pagination: all !== "true",
+            populate: ["subCategory"],
+        };
+
+        return await this.sub_categoryRepository.fetchSub_categories(query, options);
     }
 }

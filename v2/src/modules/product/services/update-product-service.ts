@@ -5,7 +5,7 @@ import {
     CategoryRepository,
     IProduct,
     IProductUpdate,
-    ProductRepository,
+    IProductRepository,
     SubCategoryRepository,
     AddProductToSub_CategoryService,
     uploadFirebase,
@@ -17,14 +17,14 @@ interface Request {
     images: Express.Multer.File[];
 }
 export class UpdateProductService {
-    private productRepository: ProductRepository;
+    private productRepository: IProductRepository;
     private categoryRepository: CategoryRepository;
     private subCategoryRepository: SubCategoryRepository;
     private addProductToSub_category: AddProductToSub_CategoryService;
     private brandReposiory: BrandRepository;
 
     constructor(
-        productRepository: ProductRepository,
+        productRepository: IProductRepository,
         categoryRepository: CategoryRepository,
         subCategoryRepository: SubCategoryRepository,
         addProductToSub_category: AddProductToSub_CategoryService,
@@ -46,16 +46,16 @@ export class UpdateProductService {
             productSub_category: data.productSub_category ? [...new Set(data.productSub_category)] : [],
         };
 
-        const product = await this.productRepository.findProductById(productId);
+        const product = await this.productRepository.getProduct(productId);
 
         if (!product) {
             throw new BaseError("Product not found", status.NOT_FOUND);
         }
 
         if (data.sku) {
-            const existingSku = await this.productRepository.findProductBySku(data.sku);
+            const existingSku = await this.productRepository.getProductBySku(data.sku);
             if (existingSku) {
-                throw new BaseError("Product not found", status.CONFLICT);
+                throw new BaseError("Product already exists", status.CONFLICT);
             }
         }
 

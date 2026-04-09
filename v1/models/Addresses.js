@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const options = require("../helpers/options");
+const options = require("../helpers/provinces");
 
 const AddressSchema = new mongoose.Schema(
     {

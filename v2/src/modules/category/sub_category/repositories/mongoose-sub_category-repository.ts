@@ -1,6 +1,6 @@
-import {  ISub_category, Sub_categoryModel} from "../../index.js";
+import {  ISub_category, Sub_categoryModel, ISub_categoryRepository} from "../../index.js";
 
-export class MongooseSub_categoryRepository {
+export class MongooseSub_categoryRepository implements ISub_categoryRepository {
 
     async createSub_categories(data: Partial<ISub_category>): Promise<ISub_category> {
         return Sub_categoryModel.create(data);
@@ -23,16 +23,15 @@ export class MongooseSub_categoryRepository {
         return Boolean(deleted);
     }
 
-    async getSub_category(subCategoryId: string): Promise<ISub_category | null> {
+    async getSub_category(query: any): Promise<ISub_category | null> {
         return Sub_categoryModel
-            .findById(subCategoryId)
+            .findOne(query)
             .populate(["products", "subCategory"]);
     }
 
-    async fetchSub_categories(options: Record<string, any> = {}): Promise<ISub_category[]> {
+    async fetchSub_categories(query: any, options: any): Promise<any> {
         return Sub_categoryModel
-            .find(options)
-            .populate(["products", "subCategory"]);
+            .paginate(query, options);
     }
 
     async findSub_categoryByName(sub_categoryName: string): Promise<ISub_category | null> {

@@ -1,5 +1,6 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { PaginateModel, Schema } from "mongoose";
 import { ICart } from "./cart-interface-model.js";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 const CartSchema = new Schema<ICart>(
     {
@@ -58,4 +59,6 @@ const CartSchema = new Schema<ICart>(
     { timestamps: true, _id: true }
 );
 
-export const CartModel = mongoose.model("Cart", CartSchema, "carts");
+CartSchema.plugin(mongoosePaginate);
+
+export const CartModel = mongoose.model<ICart, PaginateModel<ICart>>("Cart", CartSchema, "carts");

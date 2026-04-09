@@ -1,16 +1,16 @@
-import { BaseError, SubCategoryRepository, ISubCategory } from "../../index.js";
+import { BaseError, ISubCategoryRepository, ISubCategory } from "../../index.js";
 
 export class GetSubCategoryService {
-    private subCategoryRepository: SubCategoryRepository;
+    private subCategoryRepository: ISubCategoryRepository;
 
-    constructor(subCategoryRepository: SubCategoryRepository) {
+    constructor(subCategoryRepository: ISubCategoryRepository) {
         this.subCategoryRepository = subCategoryRepository;
     }
 
     async execute(subCategoryId: string): Promise<ISubCategory> {
-        const subCategory = await this.subCategoryRepository.getSubCategory(subCategoryId);
+        const subCategory = await this.subCategoryRepository.getSubCategory({ _id: subCategoryId, availability: true });
 
-        if (!subCategory || subCategory.availability === false) {
+        if (!subCategory) {
             throw new BaseError("SubCategory Not Found!", 404);
         }
 

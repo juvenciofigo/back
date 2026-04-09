@@ -3,8 +3,9 @@ import { Router } from "express";
 import {
     IsAuthValidator,
     IsAdminValidator,
-
+    
     // Category
+    fetchCategoriesValidator,
     getCategoryValidator,
     createCategoryValidator,
     updateCategoryValidator,
@@ -35,7 +36,7 @@ import {
     createSub_categoryValidator,
     updateSub_categoryValidator,
     fetchSub_categoryController,
-    fetchSub_categoriesBySubCategoryController,
+    fetchSub_categoriesController,
     fetchSub_categoriesValidator,
     getSub_categoryAdminController,
     createSub_categoryController,
@@ -46,11 +47,11 @@ import {
 const router = Router();
 
 // Category
-router.get("/categories", fetchCategoriesController);
+router.get("/categories", fetchCategoriesValidator, fetchCategoriesController);
 
 router.get("/category/:categoryId", getCategoryValidator, getCategoryController);
 
-router.get("/categories/admin", IsAuthValidator.require, IsAdminValidator, fetchCategoriesAdminController);
+router.get("/categories/admin", IsAuthValidator.require, IsAdminValidator, fetchCategoriesValidator, fetchCategoriesAdminController);
 
 router.get("/category/:categoryId/admin", IsAuthValidator.require, IsAdminValidator, getCategoryValidator, getCategoryAdminController);
 
@@ -82,7 +83,7 @@ router.get("/sub_category/:sub_categoryId/admin", IsAuthValidator.require, IsAdm
 
 router.get("/sub_category/:sub_categoryId/", getSub_categoryValidator, fetchSub_categoryController);
 
-router.get("/sub_categories/:subCategoryId/", fetchSub_categoriesValidator, fetchSub_categoriesBySubCategoryController);
+router.get("/sub_categories/:subCategoryId/", fetchSub_categoriesValidator, fetchSub_categoriesController);
 
 router.post("/sub_category", IsAuthValidator.require, IsAdminValidator, createSub_categoryValidator, createSub_categoryController);
 

@@ -16,7 +16,8 @@ export class UpdateSubCategoryService {
         const update: Partial<ISubCategory> = {}
 
         if (subCategoryName) {
-            const existingSubCategoryName = await this.subCategoryRepository.findSubCategoryByName(subCategoryName);
+            const existingSubCategoryName: ISubCategory | null = await this.subCategoryRepository
+                .findSubCategoryByName(subCategoryName);
 
             if (existingSubCategoryName && existingSubCategoryName.category.toString() === categoryId) {
                 throw new BaseError("Subcategory Name Already Exists on this category", 409);
@@ -29,15 +30,14 @@ export class UpdateSubCategoryService {
             update.availability = availability
         }
 
-
-        const existingSubCategory = await this.subCategoryRepository.getSubCategory(subCategoryId);
+        const existingSubCategory: ISubCategory | null = await this.subCategoryRepository
+            .getSubCategory(subCategoryId);
 
         if (!existingSubCategory) {
             throw new BaseError("Subcategory Not Found!", 404);
         }
 
-        const subCategory = await this.subCategoryRepository.updateSubCategory({ subCategoryName, availability, subCategoryId });
-
-        return subCategory;
+        return await this.subCategoryRepository
+            .updateSubCategory({ subCategoryName, availability, subCategoryId });
     }
 }

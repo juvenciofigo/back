@@ -1,9 +1,10 @@
-import { CategoryModel, CategoryRepository, ICategory } from "../../index.js";
+import { ResponsePaginate } from "src/shared/interface.js";
+import { CategoryModel, ICategoryRepository, ICategory } from "../../index.js";
 
-export class MongooseCategoryRepository implements CategoryRepository {
+export class MongooseCategoryRepository implements ICategoryRepository {
     // ========= Category ===========
 
-    async createCategory(categoryName: string): Promise<ICategory> {
+    async createCategory(categoryName: string): Promise<ICategory | null> {
         return await CategoryModel.create({
             categoryName,
             code: categoryName.toLowerCase().replace(/\s/g, ""),
@@ -24,7 +25,7 @@ export class MongooseCategoryRepository implements CategoryRepository {
     }
 
     async deleteCategory(categoryId: string): Promise<boolean> {
-        const deleted = await CategoryModel.findByIdAndDelete(categoryId);
+        const deleted: ICategory | null = await CategoryModel.findByIdAndDelete(categoryId);
         return !!deleted;
     }
 
@@ -66,19 +67,21 @@ export class MongooseCategoryRepository implements CategoryRepository {
             .populate("subCategories");
     }
 
-    async fetchCategories(options: any = {}): Promise<ICategory[]> {
-        return await CategoryModel.find(options).populate({
-            path: "subCategories",
-        });
+    async fetchCategories(query: any = {}, options: any = {}): Promise<ResponsePaginate<ICategory>> {
+        return await CategoryModel
+            .paginate(query, options);
 
     }
 
-    async getCategory(categoryId: string): Promise<ICategory | null> {
+    async getCategory(query: any): Promise<ICategory | null> {
         return await CategoryModel
-            .findById(categoryId)
+            .findOne(query)
             .populate(
                 {
                     path: "subCategories",
+                    populate: {
+                        path: "sub_categories",
+                    }
                 }
             );
     }

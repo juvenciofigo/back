@@ -1,4 +1,4 @@
-import { BaseError, SubCategoryRepository } from "../../index.js";
+import { BaseError, ISubCategory, SubCategoryRepository } from "../../index.js";
 
 interface Request {
     subCategoryId: string;
@@ -12,7 +12,7 @@ export class DeleteSubCategoryService {
     }
 
     async execute({ subCategoryId }: Request): Promise<boolean> {
-        const subCategory = await this.subCategoryRepository.getSubCategory(subCategoryId);
+        const subCategory: ISubCategory | null = await this.subCategoryRepository.getSubCategory(subCategoryId);
 
         if (!subCategory) {
             throw new BaseError("SubCategory Not Found!", 404);
@@ -28,7 +28,7 @@ export class DeleteSubCategoryService {
             throw new BaseError("SubCategory has associated products. Move or delete them first.", 400);
         }
 
-        const success = await this.subCategoryRepository.deleteSubCategory(subCategoryId);
+        const success: boolean = await this.subCategoryRepository.deleteSubCategory(subCategoryId);
 
         if (!success) {
             throw new BaseError("Failed to delete subcategory", 500);

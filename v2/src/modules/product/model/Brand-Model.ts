@@ -1,5 +1,6 @@
 import { IBrand } from "../index.js";
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, PaginateModel } from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
 
 const BrandsSchema = new Schema<IBrand>(
     {
@@ -18,4 +19,6 @@ const BrandsSchema = new Schema<IBrand>(
     { timestamps: true }
 );
 
-export const BrandsModel = mongoose.model("Brands", BrandsSchema, "brands");
+BrandsSchema.plugin(mongoosePaginate);
+
+export const BrandsModel = mongoose.model<IBrand, PaginateModel<IBrand>>("Brands", BrandsSchema, "brands");

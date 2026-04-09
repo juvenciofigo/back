@@ -11,3 +11,9 @@ export interface ResponsePaginate<T> {
     nextPage?: number | null | undefined;
     pagingCounter: number;
 }
+
+export interface IQueryOptions {
+    page?: number;
+    limit?: number;
+    search?: string;
+}

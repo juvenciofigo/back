@@ -1,6 +1,7 @@
-import { SubCategoryRepository, ISubCategory, CategoryModel, SubCategoryModel, IUpdateSubCategory } from "../../index.js";
+import { ResponsePaginate } from "src/shared/interface.js";
+import { ISubCategoryRepository, ISubCategory, CategoryModel, SubCategoryModel, IUpdateSubCategory } from "../../index.js";
 
-export class MongooseSubCategoryRepository implements SubCategoryRepository {
+export class MongooseSubCategoryRepository implements ISubCategoryRepository {
     // ========= SubCategory ===========
 
     async createSubCategory(subCategoryName: string, categoryId: string): Promise<ISubCategory> {
@@ -18,20 +19,16 @@ export class MongooseSubCategoryRepository implements SubCategoryRepository {
         return subCategory;
     }
 
-    async getSubCategory(subCategoryId: string): Promise<ISubCategory | null> {
-        const subCategory = await SubCategoryModel
-            .findById(subCategoryId)
+    async getSubCategory(query: any): Promise<ISubCategory | null> {
+        return await SubCategoryModel
+            .findOne(query)
             .populate("products sub_categories");
-        return subCategory;
+
     }
 
-    async fetchSubcategories(options: any): Promise<ISubCategory[] | []> {
+    async fetchSubcategories(query: any, options: any): Promise<ResponsePaginate<ISubCategory>> {
         const subCategories = await SubCategoryModel
-            .find(options)
-            .populate(
-                {
-                    path: "products sub_categories"
-                });
+            .paginate(query, options);
 
         return subCategories;
     }

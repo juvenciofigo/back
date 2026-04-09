@@ -22,6 +22,7 @@ import Cart from "./modules/cart/routes.js";
 import Category from "./modules/category/routes.js";
 import Product from "./modules/product/routes.js";
 import Statistics from "./modules/statistics/routes.js";
+import Location from "./modules/location/routes.js";
 import { BaseError } from "./shared/BaseError.js";
 import status from "http-status";
 import { MongoError } from "./shared/errors.js";
@@ -76,10 +77,11 @@ app.use(limiter);
 
 // Rotas
 app.use("/", User);
-app.use("/carts", Cart);
+app.use("/", Cart);
 app.use("/", Category);
 app.use("/", Product);
 app.use("/statistics", Statistics);
+app.use("/", Location);
 
 // Rota inicial simples
 app.get("/", (_req: Request, res: Response) => {

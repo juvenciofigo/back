@@ -1,4 +1,5 @@
-import { ICartItem, ICartItemDetails } from "../model/cart-interface-model.js";
+import { IVariation } from "src/modules/product/index.js";
+import { ICartItem, ICartItemDetails, IItemVariation } from "../model/cart-interface-model.js";
 
 /**
  * Calcula o preço de um único item do carrinho, considerando variações e estimativas.
@@ -9,7 +10,9 @@ import { ICartItem, ICartItemDetails } from "../model/cart-interface-model.js";
 export function calculateItemPrice(productDetails: any, variation: any, deliveryEstimateId: any) {
     if (!productDetails) return 0;
 
-    const deliveryEstimate = productDetails.deliveryEstimate?.id(deliveryEstimateId);
+    const deliveryEstimate = productDetails.deliveryEstimate?.id
+        ? productDetails.deliveryEstimate.id(deliveryEstimateId)
+        : productDetails.deliveryEstimate?.find?.((d: any) => (d._id?.toString() || d.id?.toString()) === deliveryEstimateId?.toString());
 
     let extraPrice = 0;
     if (deliveryEstimate?.additionalCost) extraPrice += deliveryEstimate.additionalCost;

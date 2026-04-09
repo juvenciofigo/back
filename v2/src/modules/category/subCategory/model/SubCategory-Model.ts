@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, PaginateModel } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 import { ISubCategory } from "../../index.js";
 
@@ -41,4 +41,4 @@ const SubCategorySchema = new Schema<ISubCategory>(
 
 SubCategorySchema.plugin(mongoosePaginate);
 
-export const SubCategoryModel = mongoose.model("SubCategory", SubCategorySchema, "subCategories");
+export const SubCategoryModel = mongoose.model<ISubCategory, PaginateModel<ISubCategory>>("SubCategory", SubCategorySchema, "subCategories");

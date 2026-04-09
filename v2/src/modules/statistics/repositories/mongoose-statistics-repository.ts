@@ -1,8 +1,9 @@
-import { StatisticsRepository } from "../interfaces/statistics-interface-repository.js";
+import { ResponsePaginate } from "src/shared/interface.js";
+import { StatisticsRepository } from "./statistics-interface-repository.js";
 import { UserModel } from "../../user/index.js";
-import OrdersModel from "../../../../models/Orders.js";
-import CustomersModel from "../../../../models/Customers.js";
-import VisitsModel from "../../../../models/Visita.js";
+import { OrderModel, IOrder } from "../../order/index.js";
+// import { CustomersModel } from "../../customer/index.js";
+// import { VisitsModel } from "../../visit/index.js";
 import { ViewsProductsModel } from "../../product/index.js";
 
 export class MongooseStatisticsRepository implements StatisticsRepository {
@@ -11,23 +12,23 @@ export class MongooseStatisticsRepository implements StatisticsRepository {
     }
 
     async countOrders(): Promise<number> {
-        return (await OrdersModel.countDocuments()) || 0;
+        return (await OrderModel.countDocuments()) || 0;
     }
 
-    async countCustomers(): Promise<number> {
-        return (await CustomersModel.countDocuments()) || 0;
-    }
+    // async countCustomers(): Promise<number> {
+    //     return (await CustomersModel.countDocuments()) || 0;
+    // }
 
-    async countVisits(): Promise<number> {
-        const visitDoc = await VisitsModel.findOne();
-        return visitDoc ? visitDoc.VisitaCount : 0;
-    }
+    // async countVisits(): Promise<number> {
+    //     const visitDoc = await VisitsModel.findOne();
+    //     return visitDoc ? visitDoc.VisitaCount : 0;
+    // }
 
-    async countOrdersByCustomer(userId: string): Promise<number> {
-        const customer = await CustomersModel.findOne({ user: userId });
-        if (!customer) return 0;
-        return (await OrdersModel.countDocuments({ customer: customer._id })) || 0;
-    }
+    // async countOrdersByCustomer(userId: string): Promise<number> {
+    //     const customer = await CustomersModel.findOne({ user: userId });
+    //     if (!customer) return 0;
+    //     return (await OrderModel.countDocuments({ customer: customer._id })) || 0;
+    // }
 
     async getUsersByMonth(): Promise<any[]> {
         return await UserModel.aggregate([
@@ -44,7 +45,7 @@ export class MongooseStatisticsRepository implements StatisticsRepository {
     }
 
     async getOrdersByMonth(): Promise<any[]> {
-        return await OrdersModel.aggregate([
+        return await OrderModel.aggregate([
             {
                 $group: {
                     _id: { $month: "$createdAt" },
@@ -58,16 +59,16 @@ export class MongooseStatisticsRepository implements StatisticsRepository {
     }
 
     async getRecentOrders(limit: number = 10): Promise<any[]> {
-        return await OrdersModel.find()
+        return await OrderModel.find()
             .sort({ createdAt: -1 })
             .limit(limit)
             .select("-address -orderRegistration");
-            // .populate("customer")
-            // .populate("payment");
+        // .populate("customer")
+        // .populate("payment");
     }
 
     async getRevenueByMonth(): Promise<any[]> {
-        return await OrdersModel.aggregate([
+        return await OrderModel.aggregate([
             { $unwind: "$cart" },
             {
                 $group: {
@@ -82,7 +83,7 @@ export class MongooseStatisticsRepository implements StatisticsRepository {
     }
 
     async getTopSellingProducts(limit: number = 5): Promise<any[]> {
-        return await OrdersModel.aggregate([
+        return await OrderModel.aggregate([
             { $unwind: "$cart" },
             {
                 $group: {
@@ -110,5 +111,10 @@ export class MongooseStatisticsRepository implements StatisticsRepository {
                 }
             }
         ]);
+    }
+
+    async fetchOrders(query: any, options: any): Promise<ResponsePaginate<IOrder>> {
+        const orders = await OrderModel.paginate(query, options);
+        return orders;
     }
 }

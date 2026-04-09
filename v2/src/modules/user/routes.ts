@@ -18,12 +18,13 @@ import {
     updateUserController,
     // client
     authenticationController,
+    fetchUsersValidator,
 } from "./index.js";
 
 ////////// Admin ///////////
 
 // obter todos os usuários
-router.get("/users", IsAuthValidator.require, IsAdminValidator, getUsersController); //✅
+router.get("/users", IsAuthValidator.require, IsAdminValidator, fetchUsersValidator, getUsersController); //✅
 
 // obter detalhes de um usuário específico
 // router.get("/user/:id/admin", auth.require, AdminValidator, UserValidation.show, UserController.getUserDetails);

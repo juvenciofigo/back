@@ -1,28 +1,55 @@
-import { Sub_categoryRepository } from "../../index.js";
+import { ISub_categoryRepository } from "../../index.js";
 import { Request } from "express";
 
-export class FetchSub_categoriesBySubCategoryService {
-    private sub_categoryRepository: Sub_categoryRepository;
+export class FetchSub_categoriesService {
+    private sub_categoryRepository: ISub_categoryRepository;
 
-    constructor(sub_categoryRepository: Sub_categoryRepository) {
+    constructor(sub_categoryRepository: ISub_categoryRepository) {
         this.sub_categoryRepository = sub_categoryRepository;
     }
 
     async execute(req: Request) {
+        const {
+            subCategoryId,
+            search,
+            sort,
+            page,
+            limit,
+            all
+        } = req.query;
+
+        const query: any = { availability: true };
+
+        // 1. Filtro por Categoria Pai (Nível 2)
+        if (subCategoryId) {
+            query.subCategory = subCategoryId;
+        }
+
+        // 2. Busca por Nome (Regex parcial e case-insensitive)
+        if (search) {
+            query.sub_categoryName = { $regex: search, $options: "i" };
+        }
+
+        // 3. Organização das Opções de Paginação e Ordenação
+        const sortOptions: any = {};
+        switch (sort) {
+            case "oldest":
+                sortOptions.createdAt = 1;
+                break;
+            case "newest":
+            default:
+                sortOptions.createdAt = -1;
+                break;
+        }
+
         const options: any = {
-            subCategory: true,
+            page: Number(page) || 1,
+            limit: Number(limit) || 10,
+            sort: sortOptions,
+            pagination: all !== "true",
+            populate: ["subCategory"],
         };
 
-        if (req.query.availability) {
-            options.availability = req.query.availability;
-        }
-
-        if (req.query.sub_categoryName) {
-            options.sub_categoryName = req.query.sub_categoryName;
-        }
-
-        const subCategories = await this.sub_categoryRepository.fetchSub_categories(options);
-
-        return subCategories;
+        return await this.sub_categoryRepository.fetchSub_categories(query, options);
     }
 }

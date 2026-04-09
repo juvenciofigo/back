@@ -1,13 +1,13 @@
-import { BaseError, Sub_categoryRepository, SubCategoryRepository } from "../../index.js";
+import { BaseError, ISub_categoryRepository, ISubCategoryRepository } from "../../index.js";
 interface Request {
     sub_categoryName: string;
     subCategoryID: string;
 }
 export class CreateSub_CategoryService {
-    private subCategoryRepository: SubCategoryRepository;
-    private sub_categoryRepository: Sub_categoryRepository;
+    private subCategoryRepository: ISubCategoryRepository;
+    private sub_categoryRepository: ISub_categoryRepository;
 
-    constructor(subCategoryRepository: SubCategoryRepository, sub_categoryRepository: Sub_categoryRepository) {
+    constructor(subCategoryRepository: ISubCategoryRepository, sub_categoryRepository: ISub_categoryRepository) {
         this.subCategoryRepository = subCategoryRepository;
         this.sub_categoryRepository = sub_categoryRepository;
     }
@@ -20,7 +20,7 @@ export class CreateSub_CategoryService {
         }
 
         const existingSub_category = subCategory
-            .sub_categories.find((sub) =>
+            .sub_categories.find((sub: any) =>
                 sub.sub_categoryName.toLowerCase() === sub_categoryName.toLowerCase()
             );
 

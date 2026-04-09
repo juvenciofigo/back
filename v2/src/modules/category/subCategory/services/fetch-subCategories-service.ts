@@ -1,30 +1,52 @@
-import { SubCategoryRepository } from "../../index.js";
+import { ResponsePaginate } from "src/shared/interface.js";
+import { ISubCategory, ISubCategoryRepository } from "../../index.js";
 import { Request } from "express-jwt";
 
 export class FetchSubCategoriesService {
-    private subCategoryRepository: SubCategoryRepository;
+    constructor(private subCategoryRepository: ISubCategoryRepository) { }
 
-    constructor(subCategoryRepository: SubCategoryRepository) {
-        this.subCategoryRepository = subCategoryRepository;
-    }
+    async execute(req: Request): Promise<ResponsePaginate<ISubCategory>> {
+        const {
+            categoryId,
+            search,
+            sort,
+            page,
+            limit,
+            all
+        } = req.query;
 
-    async execute(req: Request) {
+        const query: any = { availability: true };
+
+        // 1. Filtro por Categoria Pai (Nível 1)
+        if (categoryId) {
+            query.category = categoryId;
+        }
+
+        // 2. Busca por Nome (Regex parcial e case-insensitive)
+        if (search) {
+            query.subCategoryName = { $regex: search, $options: "i" };
+        }
+
+        // 3. Organização das Opções de Paginação e Ordenação
+        const sortOptions: any = {};
+        switch (sort) {
+            case "oldest":
+                sortOptions.createdAt = 1;
+                break;
+            case "newest":
+            default:
+                sortOptions.createdAt = -1;
+                break;
+        }
 
         const options: any = {
-            availability: true
-        }
+            page: Number(page) || 1,
+            limit: Number(limit) || 10,
+            sort: sortOptions,
+            pagination: all !== "true",
+            populate: ["category", "sub_categories"],
+        };
 
-        if (req.query.subCategoryName) {
-            options.subCategoryName = req.query.subCategoryName;
-        }
-
-        if (req.query.categoryId) {
-            options.category = req.query.categoryId
-        }
-
-        const subCategories = await this.subCategoryRepository
-            .fetchSubcategories(options);
-
-        return subCategories;
+        return await this.subCategoryRepository.fetchSubcategories(query, options);
     }
 }

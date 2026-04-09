@@ -1,4 +1,4 @@
-import { ProductRepository } from "../index.js";
+import { IProductRepository } from "../index.js";
 
 interface Request {
     search: string;
@@ -7,9 +7,9 @@ interface Request {
 }
 
 export class SearchProductsService {
-    private productRepository: ProductRepository;
+    private productRepository: IProductRepository;
 
-    constructor(productRepository: ProductRepository) {
+    constructor(productRepository: IProductRepository) {
         this.productRepository = productRepository;
     }
 
@@ -35,7 +35,7 @@ export class SearchProductsService {
             populate: "productCategory productBrand",
         };
 
-        const results = await this.productRepository.searchProducts(query, options);
+        const results = await this.productRepository.fetchProducts(query, options);
 
         return results;
     }

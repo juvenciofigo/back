@@ -27,7 +27,6 @@ export class AuthenticationService {
         if (!user || user.deleted === true) {
             throw new InvalidCredentialsError();
         }
-        console.log(user);
 
         const IsValidePassword = compare(data.password, user.password);
 

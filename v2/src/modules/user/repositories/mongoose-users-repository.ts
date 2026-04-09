@@ -1,21 +1,12 @@
-import { UserRepository } from "./user-interface-repository.js";
-import { IUser, UpdateUserInput, UserModel } from "../index.js";
-import { CartModel, ICart } from "src/modules/cart/index.js";
-import { PaginateResult } from 'mongoose';
+import { IUserRepository } from "./user-interface-repository.js";
+import { IUser, UserModel } from "../index.js";
+import { CartModel, ICart } from "../../cart/index.js";
 
-export class MongooseUserRepository implements UserRepository {
-    async findByID(userId: string): Promise<IUser | null> {
+export class MongooseUserRepository implements IUserRepository {
+    async getUser(query: Record<string, any>): Promise<IUser | null> {
         const user = await UserModel
-            .findById(userId)
-            .select("-recovery -salt -password -salt ");
-        return user;
-    }
-
-    async findByEmail(email: string): Promise<IUser | null> {
-        const user = await UserModel
-            .findOne({
-                email: email
-            });
+            .findOne(query)
+            .select("-recovery -salt -password");
         return user;
     }
 
@@ -32,15 +23,15 @@ export class MongooseUserRepository implements UserRepository {
         return user;
     }
 
-    async getUsers(page: number, limit: number): Promise<PaginateResult<IUser>> {
+    async getUsers(query: any, options: any): Promise<any> {
         const users = await UserModel
-            .paginate({}, {
-                select: "-recovery -salt -password -salt",
-                page: page,
-                limit: limit,
+            .paginate(query, {
+                ...options,
+                select: "-recovery -salt -password",
             });
         return users;
     }
+
     async deleteUser(userId: string): Promise<IUser | null> {
         const user = await UserModel
             .findByIdAndUpdate(
@@ -51,26 +42,16 @@ export class MongooseUserRepository implements UserRepository {
         return user;
     }
 
-    async updateUser({ userId, email, firstName, lastName, password }: UpdateUserInput): Promise<IUser | null> {
-        const update: Partial<IUser> = {};
+    async updateUser(userId: string, data: Partial<IUser>): Promise<IUser | null> {
 
-        if (firstName) update.firstName = firstName.trim();
-        if (lastName) update.lastName = lastName.trim();
-        if (email) update.email = email.trim().toLowerCase();
-        if (password) {
-            update.password = password;
-        }
 
-        const userUpdated = await UserModel
+        return await UserModel
             .findByIdAndUpdate(
                 userId,
-                { $set: update },
+                { $set: data },
                 { new: true, runValidators: true })
             .lean()
             .select("-recovery -salt -password -deleted");
 
-        if (!userUpdated) return null;
-
-        return userUpdated;
     }
 }

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const VariationRouterSchema = new mongoose.Schema(
+const VariationSchema = new mongoose.Schema(
     {
         variationProduct: {
             type: mongoose.Schema.Types.ObjectId,
@@ -36,37 +36,32 @@ const VariationRouterSchema = new mongoose.Schema(
             default: [],
         },
         delivery: {
-            type: {
-                dimensions: {
-                    type: {
-                        heightCm: {
-                            type: Number,
-                            default: null,
-                        },
-                        widthCm: {
-                            type: Number,
-                            default: null,
-                        },
-                        depthCm: {
-                            type: Number,
-                            default: null,
-                        },
-                    },
-                    required: false,
-                },
-                weight: {
+            dimensions: {
+                heightCm: {
                     type: Number,
-                    required: false,
                     default: null,
                 },
-                shippingFree: {
-                    type: Boolean,
-                    default: false,
+                widthCm: {
+                    type: Number,
+                    default: null,
+                },
+                depthCm: {
+                    type: Number,
+                    default: null,
                 },
             },
+            weight: {
+                type: Number,
+                required: false,
+                default: null,
+            },
+            shippingFree: {
+                type: Boolean,
+                default: false,
         },
     },
-    { timestamps: true }
+    },
+{ timestamps: true }
 );
 
-module.exports = mongoose.model("Variation", VariationRouterSchema, "variations");
+module.exports = mongoose.model("Variation", VariationSchema, "variations");

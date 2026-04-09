@@ -8,7 +8,6 @@ export async function getCartTotalController(req: Request, res: Response, next: 
 
     try {
         const cartTotal = await makeGetCartTotal().execute({ userId, body });
-        console.log(cartTotal);
 
         return res.status(200).json(cartTotal);
     } catch (error) {

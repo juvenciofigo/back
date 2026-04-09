@@ -1,4 +1,4 @@
-import { ProductRepository } from "../index.js";
+import { IProductRepository } from "../index.js";
 import { Request as REQ } from "express-jwt";
 import axios from "axios";
 import { UAParser } from "ua-parser-js";
@@ -10,10 +10,9 @@ interface Request {
     req: REQ;
 }
 export class TrackProductView {
-    private productRepository: ProductRepository;
+    private productRepository: IProductRepository;
 
-
-    constructor(productRepository: ProductRepository) {
+    constructor(productRepository: IProductRepository) {
         this.productRepository = productRepository;
     }
 

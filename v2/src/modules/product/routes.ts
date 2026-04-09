@@ -17,6 +17,7 @@ import {
     fetchBrandsController,
     createBrandController,
     createBrandValidator,
+    fetchBrandsValidator,
 } from "./index.js";
 const router = Router();
 
@@ -28,7 +29,7 @@ router.put("/product/:id", IsAuthValidator.require, IsAdminValidator, uploadMult
 
 router.post("/product", IsAuthValidator.require, IsAdminValidator, uploadMulter.array("files"), createProductValidator, createProductController);
 
-router.get("/brands", fetchBrandsController);
+router.get("/brands", fetchBrandsValidator, fetchBrandsController);
 
 router.post("/brands", IsAuthValidator.require, IsAdminValidator, createBrandValidator, createBrandController);
 

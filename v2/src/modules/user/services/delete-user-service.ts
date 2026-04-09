@@ -1,13 +1,13 @@
-import { InvalidCredentialsError, UserNotFoundError, UserRepository } from "../index.js";
+import { InvalidCredentialsError, UserNotFoundError, IUserRepository } from "../index.js";
 
 interface Request {
     userId: string;
 }
 
 export class DeleteUserService {
-    private usersRepository: UserRepository;
+    private usersRepository: IUserRepository;
 
-    constructor(userRepository: UserRepository) {
+    constructor(userRepository: IUserRepository) {
         this.usersRepository = userRepository;
     }
 

@@ -20,7 +20,7 @@ export * from "./subCategory/controllers/delete-subCategory-controller.js";
 
 // Sub_category
 export * from "./sub_category/controllers/create-sub_category-controller.js";
-export * from "./sub_category/controllers/fetch-sub_categories-by-subCategory-controller.js";
+export * from "./sub_category/controllers/fetch-sub_categories-controller.js";
 export * from "./sub_category/controllers/fetch-sub_category-controller.js";
 export * from "./sub_category/controllers/get-sub_category-admin-controller.js";
 export * from "./sub_category/controllers/update-sub_category-controller.js";
@@ -54,7 +54,7 @@ export * from "./sub_category/services/get-sub_category-service.js";
 export * from "./sub_category/services/get-sub_category-admin-service.js";
 export * from "./sub_category/services/update-sub_category-service.js";
 export * from "./sub_category/services/delete-sub_category-service.js";
-export * from "./sub_category/services/addProduct-to-sub_category-service.js";
+export * from "./sub_category/services/add-product-to-sub_category-service.js";
 
 ///////////// Factories
 
@@ -78,19 +78,20 @@ export * from "./subCategory/factories/make-delete-subCategory.js";
 
 // Sub_category
 export * from "./sub_category/factories/make-create-sub_category.js";
-export * from "./sub_category/factories/make-fetch-sub_categories-by-subCategory.js";
+export * from "./sub_category/factories/make-fetch-sub_categories.js";
 export * from "./sub_category/factories/make-get-sub_category.js";
 export * from "./sub_category/factories/make-get-sub_category-admin.js";
 export * from "./sub_category/factories/make-update-sub_category.js";
 export * from "./sub_category/factories/make-delete-sub_category.js";
 
 ///////////// Validators
-export * from "../../shared/validators/Is-auth-validator.js";
+export * from "../../shared/validators/is-auth-validator.js";
 export * from "../../shared/validators/is-admin-validator.js";
 
 export * from "./category/validators/create-category-validator.js";
 export * from "./category/validators/update-category-validator.js";
 export * from "./category/validators/get-category-validator.js";
+export * from "./category/validators/fetch-categories-validator.js";
 
 export * from "./subCategory/validators/create-subCategory-validator.js";
 export * from "./subCategory/validators/fetch-subCategories-validator.js";

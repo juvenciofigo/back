@@ -89,7 +89,7 @@ const ProductSchema = new Schema<IProduct>(
             default: true,
         },
         productImage: {
-            type: Array,
+            type: [String],
             default: [],
         },
         productCategory: {
@@ -198,9 +198,9 @@ const ProductSchema = new Schema<IProduct>(
                     },
                     estimatedTime: {
                         type: String,
-                        default: "Imediata",
+                        default: "IMMEDIATE",
                         required: true,
-                        emun: ["Imediata", "7 dias", "30 dias"],
+                        enum: ["IMMEDIATE", "7_DAYS", "30_DAYS"],
                     },
                 },
             ],

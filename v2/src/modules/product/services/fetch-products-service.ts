@@ -1,55 +1,95 @@
-import { GetCategoryService, GetSubCategoryService, GetSub_categoryService, IProduct, ProductRepository } from "../index.js";
+import { ResponsePaginate } from "src/shared/interface.js";
+import { GetCategoryService, GetSubCategoryService, GetSub_categoryService, IProduct, IProductRepository } from "../index.js";
 import { Request } from "express-jwt";
-import mongoosePaginate from "mongoose-paginate-v2";
 
 export class FetchProductsService {
-    private productRepository: ProductRepository;
-    private getCategoryService: GetCategoryService;
-    private getSubCategoryService: GetSubCategoryService;
-    private getSub_categoryService: GetSub_categoryService;
-
     constructor(
-        productRepository: ProductRepository,
-        getCategoryService: GetCategoryService,
-        getSubCategoryService: GetSubCategoryService,
-        getSub_categoryService: GetSub_categoryService
-    ) {
-        this.productRepository = productRepository;
-        this.getCategoryService = getCategoryService;
-        this.getSubCategoryService = getSubCategoryService;
-        this.getSub_categoryService = getSub_categoryService;
-    }
+        private productRepository: IProductRepository,
+        private getCategoryService: GetCategoryService,
+        private getSubCategoryService: GetSubCategoryService,
+        private getSub_categoryService: GetSub_categoryService
+    ) { }
 
-    async execute(req: Request) {
+    async execute(req: Request): Promise<ResponsePaginate<IProduct>> {
+        const {
+            categoryId,
+            subcategoryId,
+            sub_categoryId,
+            brandId,
+            minPrice,
+            maxPrice,
+            search,
+            sort,
+            page,
+            limit
+        } = req.query;
+
         const query: any = { productAvailability: true };
-        const category = req.query?.category as string;
-        const subcategory = req.query?.subcategory as string;
-        const sub_category = req.query?.sub_category as string;
 
-        const options = {
-            page: Number(req.query?.page) || 1,
-            limit: Number(req.query?.limit) || 10,
-            sort: { createdAt: -1 },
-            select: "-productVendor -order_items -timesPurchased -totalRevenue -sales -acquisitionCost -additionalCosts",
-        };
-
-        if (category) {
-            const categoryData = await this.getCategoryService.execute(category);
+        // 1. Filtros de Categorias (População de IDs)
+        if (categoryId) {
+            const categoryData = await this.getCategoryService.execute(categoryId as string);
             query.productCategory = categoryData._id;
         }
 
-        if (subcategory) {
-            const subcategoryData = await this.getSubCategoryService.execute(subcategory);
+        if (subcategoryId) {
+            const subcategoryData = await this.getSubCategoryService.execute(subcategoryId as string);
             query.productSubcategory = subcategoryData._id;
         }
 
-        if (sub_category) {
-            const sub_categoryData = await this.getSub_categoryService.execute(sub_category);
+        if (sub_categoryId) {
+            const sub_categoryData = await this.getSub_categoryService.execute(sub_categoryId as string);
             query.productSub_category = sub_categoryData._id;
         }
 
-        const products = await this.productRepository.fetchProducts(query, options);
+        // 2. Filtro de Marca
+        if (brandId) {
+            query.productBrand = brandId;
+        }
 
-        return products;
+        // 3. Busca por Nome (Regex parcial e case-insensitive)
+        if (search) {
+            query.productName = { $regex: search, $options: "i" };
+        }
+
+        // 4. Filtro de Preço (Intervalo)
+        if (minPrice || maxPrice) {
+            query.productPrice = {};
+            if (minPrice) query.productPrice.$gte = Number(minPrice);
+            if (maxPrice) query.productPrice.$lte = Number(maxPrice);
+        }
+
+        // 5. Organização das Opções de Paginação e Ordenação
+        const sortOptions: any = {};
+        switch (sort) {
+            case "price_asc":
+                sortOptions.productPrice = 1;
+                break;
+            case "price_desc":
+                sortOptions.productPrice = -1;
+                break;
+            case "oldest":
+                sortOptions.createdAt = 1;
+                break;
+            case "newest":
+            default:
+                sortOptions.createdAt = -1;
+                break;
+        }
+
+        const options = {
+            page: Number(page) || 1,
+            limit: Number(limit) || 12,
+            sort: sortOptions,
+            populate: [
+                { path: "productCategory", select: "categoryName" },
+                { path: "productSubcategory", select: "subCategoryName" },
+                { path: "productSub_category", select: "sub_categoryName" },
+                { path: "productBrand", select: "name" }
+            ],
+            select: "-productVendor -order_items -timesPurchased -totalRevenue -sales -acquisitionCost -additionalCosts",
+        };
+
+        return await this.productRepository.fetchProducts(query, options);
     }
 }

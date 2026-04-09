@@ -1,14 +1,14 @@
-import { BaseError, CategoryRepository, ICategory } from "../../index.js";
+import { BaseError, ICategoryRepository, ICategory } from "../../index.js";
 
 export class GetCategoryAdminService {
-    private categoryRepository: CategoryRepository;
+    private categoryRepository: ICategoryRepository;
 
-    constructor(categoryRepository: CategoryRepository) {
+    constructor(categoryRepository: ICategoryRepository) {
         this.categoryRepository = categoryRepository;
     }
 
     async execute(categoryId: string): Promise<ICategory> {
-        const category = await this.categoryRepository.getCategory(categoryId);
+        const category: ICategory | null = await this.categoryRepository.getCategory({ _id: categoryId });
 
         if (!category) {
             throw new BaseError("Category Not Found!", 404);

@@ -1,27 +1,53 @@
-import { CategoryRepository, ICategory } from "../../index.js";
+import { ResponsePaginate } from "src/shared/interface.js";
+import { ICategoryRepository, ICategory } from "../../index.js";
 import { Request } from "express-jwt";
 
 export class FetchCategoriesService {
-    private categoryRepository: CategoryRepository;
+    constructor(private categoryRepository: ICategoryRepository) { }
 
-    constructor(categoryRepository: CategoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
+    async execute(req: Request): Promise<ResponsePaginate<ICategory>> {
+        const {
+            search,
+            sort,
+            page,
+            limit,
+            all
+        } = req.query;
 
-    async execute(req: Request): Promise<ICategory[]> {
+        const query: any = { availability: true };
+
+        // 1. Busca por Nome (Regex parcial e case-insensitive)
+        if (search) {
+            query.categoryName = { $regex: search, $options: "i" };
+        }
+
+        // 2. Organização das Opções de Paginação e Ordenação
+        const sortOptions: any = {};
+        switch (sort) {
+            case "oldest":
+                sortOptions.createdAt = 1;
+                break;
+            case "newest":
+            default:
+                sortOptions.createdAt = -1;
+                break;
+        }
 
         const options: any = {
-            available: true
+            page: Number(page) || 1,
+            limit: Number(limit) || 10,
+            sort: sortOptions,
+            pagination: all !== "true",
+            populate: [
+                {
+                    path: "subCategories",
+                    populate: {
+                        path: "sub_categories",
+                    }
+                }
+            ],
         };
 
-        if (req.query.categoryName) {
-            options.categoryName = req.query.categoryName;
-        }
-
-        if (req.query.code) {
-            options.code = req.query.code;
-        }
-
-        return await this.categoryRepository.fetchCategories(options);
+        return await this.categoryRepository.fetchCategories(query, options);
     }
 }

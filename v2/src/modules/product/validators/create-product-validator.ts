@@ -29,7 +29,7 @@ export async function createProductValidator(req: Request, res: Response, next: 
         deliveryEstimate: Joi.array()
             .items(
                 Joi.object({
-                    estimatedTime: Joi.string().valid("Imediata", "7 dias", "30 dias").required(),
+                    estimatedTime: Joi.string().valid("IMMEDIATE", "7_DAYS", "30_DAYS").required(),
                     additionalCost: Joi.number().required(),
                 })
             )

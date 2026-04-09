@@ -1,8 +1,10 @@
-import { BaseError, CategoryRepository, SubCategoryRepository } from "../../index.js";
+import { BaseError, CategoryRepository, ICategory, ISubCategory, SubCategoryRepository } from "../../index.js";
+
 interface Request {
     categoryId: string;
     subCategoryName: string;
 }
+
 export class CreateSubCategoryService {
     private categoryRepository: CategoryRepository;
     private subCategoryRepository: SubCategoryRepository;
@@ -12,23 +14,25 @@ export class CreateSubCategoryService {
         this.subCategoryRepository = subCategoryRepository;
     }
 
-    async execute({ subCategoryName, categoryId }: Request) {
-        const existingCategory = await this.categoryRepository.getCategory(categoryId);
+    async execute({ subCategoryName, categoryId }: Request): Promise<ISubCategory> {
+
+        const existingCategory: ICategory | null = await this.categoryRepository.getCategory(categoryId);
 
         if (!existingCategory) {
             throw new BaseError("Category Not Found!", 404);
         }
 
-        const existingSubCategory = existingCategory.subCategories.find((sub) => sub.subCategoryName.toLowerCase() === subCategoryName.toLowerCase());
+        const existingSubCategory: ISubCategory | undefined = existingCategory.subCategories.find((sub) => sub.subCategoryName.toLowerCase() === subCategoryName.toLowerCase());
 
         if (existingSubCategory) {
             throw new BaseError(`SubCategory "${subCategoryName}" Exists On This Category !`, 409);
         }
 
-        const subCategory = await this.subCategoryRepository.createSubCategory(subCategoryName, categoryId);
+        const subCategory: ISubCategory = await this.subCategoryRepository.createSubCategory(subCategoryName, categoryId);
 
         await this.categoryRepository.addSubCategoryToCategory(categoryId, subCategory.id);
 
-        return { message: "SubCategoria criada", subCategory };
+        return subCategory;
     }
+
 }

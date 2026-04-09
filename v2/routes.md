@@ -133,7 +133,7 @@
 | Método   | Endpoint                           | Acesso   | Status   | Descrição                               |
 |----------|------------------------------------|----------|----------|-----------------------------------------|
 | `GET`    | `/carts/admin`                     | Admin    | Ativa    | Listar todos os carrinhos (admin)       |🔶
-| `POST`   | `/cart`                            | Auth     | Ativa    | Criar carrinho                          |✅
+| `POST`   | `/cart`                            | Auth     | Ativa    | Criar carrinho                          |🔶
 | `POST`   | `/cart/item`                       | Auth     | Ativa    | Adicionar produto ao carrinho           |✅
 | `DELETE` | `/cart/product/:itemId`            | Auth     | Ativa    | Remover item do carrinho                |✅
 | `POST`   | `/cart/details`                    | Opcional | Ativa    | Ver itens do carrinho                   |✅
@@ -150,7 +150,7 @@
 
 | Método   | Endpoint                 | Acesso | Status      | Descrição                          |
 |----------|--------------------------|--------|-------------|------------------------------------|
-| `POST`   | `/order`                 | Auth   | Legada (v1) | Criar pedido                       |
+| `POST`   | `/order`                 | Auth   | Legada (v1) | Criar pedido                       |✅
 | `GET`    | `/orders/:user`          | Auth   | Legada (v1) | Listar meus pedidos                |
 | `GET`    | `/orders/:id`            | Auth   | Legada (v1) | Ver um pedido específico           |
 | `PATCH`  | `/order/:id`             | Auth   | Legada (v1) | Cancelar pedido (cliente)          |

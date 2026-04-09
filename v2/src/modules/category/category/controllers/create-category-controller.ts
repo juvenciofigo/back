@@ -6,7 +6,7 @@ export async function createCategoryController(req: Request, res: Response, next
     const { categoryName } = req.body;
 
     try {
-        const category = await makeCreateCategory().execute({ categoryName });
+        const category = await makeCreateCategory().execute(categoryName);
 
         return res.status(201).json(category);
     } catch (error) {

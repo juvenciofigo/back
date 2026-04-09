@@ -1,6 +1,5 @@
-import { ProductRepository, ProductNotFoundError } from "../index.js";
+import { IProductRepository, ProductNotFoundError, IProduct } from "../index.js";
 import { TrackProductView } from "./trackProductView.js";
-import { IProduct } from "../index.js";
 import { Request } from "express-jwt";
 
 interface ServiceRequest {
@@ -10,16 +9,14 @@ interface ServiceRequest {
 }
 
 export class GetProductService {
-    private productRepository: ProductRepository;
-    private trackProductView: TrackProductView;
 
-    constructor(productRepository: ProductRepository) {
-        this.productRepository = productRepository;
-        this.trackProductView = new TrackProductView(productRepository);
-    }
+    constructor(
+        private productRepository: IProductRepository,
+        private trackProductView: TrackProductView
+    ) { }
 
     async execute({ productId, userId, req }: ServiceRequest): Promise<IProduct | null> {
-        const product = await this.productRepository.findProductById(productId);
+        const product = await this.productRepository.getProduct({ id: productId });
 
         if (!product) {
             throw new ProductNotFoundError();

@@ -1,5 +1,5 @@
 import status from "http-status";
-import { BaseError, BrandRepository, CategoryRepository, ICreateProduct, IProduct, ProductRepository, SubCategoryRepository, AddProductToSub_CategoryService, uploadFirebase } from "../index.js";
+import { BaseError, IBrandRepository, ICategoryRepository, ICreateProduct, IProduct, IProductRepository, ISubCategoryRepository, AddProductToSub_CategoryService, uploadFirebase } from "../index.js";
 
 interface Request {
     userId: string;
@@ -7,25 +7,14 @@ interface Request {
     images: Express.Multer.File[];
 }
 export class CreateProductService {
-    private productRepository: ProductRepository;
-    private categoryRepository: CategoryRepository;
-    private subCategoryRepository: SubCategoryRepository;
-    private addProductToSub_category: AddProductToSub_CategoryService;
-    private brandReposiory: BrandRepository;
 
     constructor(
-        productRepository: ProductRepository,
-        categoryRepository: CategoryRepository,
-        subCategoryRepository: SubCategoryRepository,
-        addProductToSub_category: AddProductToSub_CategoryService,
-        brandReposiory: BrandRepository
-    ) {
-        this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
-        this.subCategoryRepository = subCategoryRepository;
-        this.addProductToSub_category = addProductToSub_category;
-        this.brandReposiory = brandReposiory;
-    }
+        private productRepository: IProductRepository,
+        private categoryRepository: ICategoryRepository,
+        private subCategoryRepository: ISubCategoryRepository,
+        private addProductToSub_category: AddProductToSub_CategoryService,
+        private brandRepository: IBrandRepository
+    ) { }
 
     async execute({ data, images, userId }: Request): Promise<IProduct | null> {
         await this.validateSku(data.sku);
@@ -101,7 +90,7 @@ export class CreateProductService {
     }
 
     private async validateSku(sku: string): Promise<void> {
-        const existingSku = await this.productRepository.findProductBySku(sku);
+        const existingSku = await this.productRepository.getProduct({ sku });
         if (existingSku) {
             throw new BaseError("SKU already exists", status.CONFLICT);
         }
@@ -109,11 +98,11 @@ export class CreateProductService {
 
     private async associateProductToBrand(brandId: string, productId: string): Promise<string> {
         let products: string[] = [];
-        const brandToUpdate = await this.brandReposiory.findBrandById(brandId);
+        const brandToUpdate = await this.brandRepository.findBrandById(brandId);
         if (brandToUpdate && brandToUpdate.products) {
             products = [...new Set([...brandToUpdate.products, productId])];
         }
-        const brand = await this.brandReposiory.updateBrand(brandId, { products });
+        const brand = await this.brandRepository.updateBrand(brandId, { products });
         return brand ? brand.id : "";
     }
 }

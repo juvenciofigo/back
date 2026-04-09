@@ -6,19 +6,16 @@ interface IRecovery {
 }
 
 export interface IUser extends Document {
-    firstName: string;
-    lastName: string;
-    profilePhoto?: string;
-    password: string;
     email: string;
+    password: string;
     role: string[];
     customer?: Types.ObjectId;
     cart?: unknown;
-    deleted: boolean;
     hash?: string;
     salt?: string;
     OTP?: number;
     recovery?: IRecovery;
+    deleted: boolean;
     gerTokenRecoveryPass(): IRecovery;
     finalTokenRecoveryPass(): IRecovery;
 }

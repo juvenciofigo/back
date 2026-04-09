@@ -1,8 +1,8 @@
-import { GetUserServive, MongooseUserRepository } from "../index.js";
+import { GetUserService, MongooseUserRepository } from "../index.js";
 
 export function makeGetUser() {
     const mongooseUserRepository = new MongooseUserRepository();
-    const getUserService = new GetUserServive(mongooseUserRepository);
+    const getUserService = new GetUserService(mongooseUserRepository);
     
     return getUserService;
 }

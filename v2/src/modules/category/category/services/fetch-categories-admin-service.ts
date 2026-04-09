@@ -1,29 +1,59 @@
-import { CategoryRepository, ICategory } from "../../index.js";
+import { ResponsePaginate } from "src/shared/interface.js";
+import { ICategoryRepository, ICategory } from "../../index.js";
 import { Request } from "express-jwt";
 
 export class FetchCategoriesAdminService {
-    private categoryRepository: CategoryRepository;
+    constructor(private categoryRepository: ICategoryRepository) { }
 
-    constructor(categoryRepository: CategoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
+    async execute(req: Request): Promise<ResponsePaginate<ICategory>> {
+        const {
+            search,
+            availability,
+            sort,
+            page,
+            limit,
+            all
+        } = req.query;
 
-    async execute(req: Request): Promise<ICategory[]> {
+        const query: any = {};
 
-        const options: any = {};
-
-        if (req.query.categoryName) {
-            options.categoryName = req.query.categoryName;
+        // Filtro por Disponibilidade (Admin pode alternar)
+        if (availability !== undefined) {
+            query.availability = availability === "true";
         }
 
-        if (req.query.code) {
-            options.code = req.query.code;
+        // 1. Busca por Nome (Regex parcial e case-insensitive)
+        if (search) {
+            query.categoryName = { $regex: search, $options: "i" };
         }
 
-        if (req.query.available) {
-            options.available = req.query.available;
+        // 2. Organização das Opções de Paginação e Ordenação
+        const sortOptions: any = {};
+        switch (sort) {
+            case "oldest":
+                sortOptions.createdAt = 1;
+                break;
+            case "newest":
+            default:
+                sortOptions.createdAt = -1;
+                break;
         }
 
-        return await this.categoryRepository.fetchCategories(options);
+        const options: any = {
+            page: Number(page) || 1,
+            limit: Number(limit) || 20,
+            sort: sortOptions,
+            pagination: all !== "true",
+            populate: [
+                {
+                    path: "subCategories",
+                    populate: {
+                        path: "sub_categories",
+                    }
+                }
+            ],
+        };
+
+        return await this.categoryRepository.fetchCategories(query, options);
     }
 }

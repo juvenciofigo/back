@@ -1,24 +1,27 @@
-import { BaseError, CategoryRepository } from "../../index.js";
-interface Request {
-    categoryName: string;
-}
-export class CreateCategoryService {
-    private categoryRepository: CategoryRepository;
+import { BaseError, ICategory, ICategoryRepository } from "../../index.js";
 
-    constructor(categoryRepository: CategoryRepository) {
+
+export class CreateCategoryService {
+    private categoryRepository: ICategoryRepository;
+
+    constructor(categoryRepository: ICategoryRepository) {
         this.categoryRepository = categoryRepository;
     }
 
-    async execute({ categoryName }: Request) {
+    async execute(categoryName: string): Promise<ICategory | null> {
 
-        const existingCategory = await this.categoryRepository.findCategoryByName(categoryName);
+        const existingCategory: ICategory | null = await this.categoryRepository.getCategory({ categoryName });
 
         if (existingCategory) {
             throw new BaseError("NameAlreadyExistsError", 409);
         }
 
-        const category = await this.categoryRepository.createCategory(categoryName);
+        const category: ICategory | null = await this.categoryRepository.createCategory(categoryName);
 
-        return { category };
+        if (!category) {
+            throw new BaseError("Failed to create category", 500);
+        }
+
+        return category;
     }
 }

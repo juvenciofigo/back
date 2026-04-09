@@ -1,6 +1,7 @@
-import { IBrand, BrandRepository, ICreateBrand, BrandsModel } from "../index.js";
+import { ResponsePaginate } from "src/shared/interface.js";
+import { IBrand, IBrandRepository, ICreateBrand, BrandsModel } from "../index.js";
 
-export class MongooseBrandRepository implements BrandRepository {
+export class MongooseBrandRepository implements IBrandRepository {
     async createBrand(input: ICreateBrand): Promise<IBrand> {
         const brand = await BrandsModel.create(input);
         return brand;
@@ -16,8 +17,8 @@ export class MongooseBrandRepository implements BrandRepository {
         }).populate("products");
         return brands;
     }
-    async fetchBrands(): Promise<IBrand[] | []> {
-        const brands = await BrandsModel.find();
+    async fetchBrands(query: any, options: any): Promise<ResponsePaginate<IBrand>> {
+        const brands = await BrandsModel.paginate(query, options);
         return brands;
     }
     async updateBrand(brandId: string, input: Partial<IBrand>): Promise<IBrand | null> {
