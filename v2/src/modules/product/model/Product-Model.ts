@@ -160,7 +160,7 @@ const ProductSchema = new Schema<IProduct>(
         // },
         productWeight: {
             type: Number,
-            default: undefined,
+            required: true,
         },
         productLength: {
             type: Number,

@@ -1,5 +1,5 @@
 import { BaseError } from "src/shared/BaseError.js";
-import { ICustomer, ICustomerRepository, IUserRepository, ICreateCustomerRequest, IUser } from "../../index.js";
+import { ICustomer, ICustomerRepository, IUserRepository, ICreateCustomerRequest, IUser } from "../index.js";
 
 export class CreateCustomerService {
     constructor(

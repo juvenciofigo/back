@@ -19,8 +19,8 @@ export class MongooseAddressRepository implements IAddressRepository {
         return !!deleted;
     }
 
-    async getAddress(query: any): Promise<IAddress | null> {
-        return await AddressModel.findOne(query);
+    async getAddress(query: any, options?: any): Promise<IAddress | null> {
+        return await AddressModel.findOne(query, options);
     }
 
     async fetchAddresses(query: any, options: any): Promise<ResponsePaginate<IAddress>> {

@@ -2,32 +2,28 @@ import mongoose, { Schema } from "mongoose";
 import { IPayment } from "../index.js";
 import mongoosePaginate from "mongoose-paginate-v2";
 
-const PaymentSchema = new Schema(
+const PaymentSchema = new Schema<IPayment>(
     {
         amount: {
             type: Number,
             required: true,
         },
-        totalProductsPrice: {
-            type: Number,
+        status: {
+            type: String,
             required: true,
+            enum: ["Pending", "Payment declined", "Suspected fraud", "Paid", "Order canceled"],
+            default: "Pending",
         },
-        paymentDate: {
+        paidAt: {
             type: Date,
         },
         paymentMethod: {
             type: String,
             enum: ["Mpesa", "Emola", "Paypal", "Visa", "Mastercard"],
         },
-        paymentInstallments: {
-            type: Number,
-            default: 1,
-        },
-        status: {
+        gateway: {
             type: String,
-            required: true,
-            enum: ["Esperando", "Pagamento recusado", "Fraude suspeita", "Pago", "Pedido Cancelado"],
-            default: "Esperando",
+            enum: ["Mpesa", "Emola", "Paypal", "Visa", "Mastercard"],
         },
         order: {
             type: mongoose.Schema.Types.ObjectId,
@@ -53,7 +49,7 @@ const PaymentSchema = new Schema(
         },
     },
     { timestamps: true }
-);
+)
 
 PaymentSchema.plugin(mongoosePaginate);
 

@@ -1,8 +1,8 @@
 import { NextFunction, Response } from "express";
-import { makeGetUser, UnauthorizedError } from "../index.js";
+import { makeGetUser } from "../index.js";
 import { Request } from "express-jwt";
 
-export async function GetUserController(req: Request, res: Response, next: NextFunction) {
+export async function getUserController(req: Request, res: Response, next: NextFunction) {
     const authId = req?.auth?._id;
 
     try {

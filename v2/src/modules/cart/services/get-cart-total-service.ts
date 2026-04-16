@@ -21,7 +21,7 @@ export class GetCartTotalService {
 
         if (userId) {
             // Utilizador autenticado → busca o carrinho na base de dados (já vem populado pelo repositório)
-            const cart: ICart | null = await this.cartRepository.fetchCartByUser(userId);
+            const cart: ICart | null = await this.cartRepository.getCart({ cartUser: userId });
 
             if (!cart) throw new CartNotFoundError();
 

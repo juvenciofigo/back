@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
+import { Request } from "express-jwt"
 import { makeCreateOrder } from "../factories/make-create-order.js";
 
 export async function createOrderController(req: Request, res: Response, next: NextFunction) {
-    const { cart, address } = req.body;
+    const { addressId } = req.body;
     const userId = (req as any).auth?._id;
 
     if (!userId) {
@@ -12,8 +13,7 @@ export async function createOrderController(req: Request, res: Response, next: N
     try {
         const createOrderService = makeCreateOrder();
         const result = await createOrderService.execute({
-            cartId: cart,
-            addressId: address,
+            addressId,
             userId
         });
 

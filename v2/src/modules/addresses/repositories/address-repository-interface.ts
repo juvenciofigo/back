@@ -8,6 +8,6 @@ export interface IAddressRepository {
     deleteAddress(addressId: string): Promise<boolean>;
 
     // Public
-    getAddress(query: any): Promise<IAddress | null>;
+    getAddress(query: any, options?: any): Promise<IAddress | null>;
     fetchAddresses(query: any, options: any): Promise<ResponsePaginate<IAddress>>;
 }

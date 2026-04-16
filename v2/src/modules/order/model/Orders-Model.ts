@@ -1,15 +1,16 @@
 import mongoose, { Schema } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
-import { IOrder, IOrderCartItem } from "../index.js";
+import { IOrder, EnOrderStatus } from "../index.js";
+import { IItemDetails } from "../../cart/model/cart-interface-model.js";
 
-const OrderCartItemSchema = new Schema<IOrderCartItem>(
+const OrderCartItemSchema = new Schema<IItemDetails>(
     {
         productId: {
             type: Schema.Types.ObjectId,
             ref: "Products",
             required: true,
         },
-        product: {
+        productName: {
             type: String,
             required: true,
             min: 1,
@@ -84,11 +85,6 @@ const OrderSchema = new Schema<IOrder>(
             required: true,
         },
         cart: [OrderCartItemSchema],
-        address: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Address",
-            required: true,
-        },
         payment: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Payment",
@@ -101,10 +97,6 @@ const OrderSchema = new Schema<IOrder>(
             type: mongoose.Schema.Types.ObjectId,
             ref: "OrderRegistration",
         },
-        orderCancel: {
-            type: Boolean,
-            default: false,
-        },
         referenceOrder: {
             type: String,
             unique: true,
@@ -113,8 +105,8 @@ const OrderSchema = new Schema<IOrder>(
         status: {
             type: String,
             required: true,
-            enum: ["Pendente", "Confirmado", "Em Processamento", "Pronto para Envio", "Enviado", "Concluído", "Pedido Cancelado", "Devolvido", "Reembolsado", "Falha", "Em Espera"],
-            default: "Pendente",
+            enum: EnOrderStatus,
+            default: EnOrderStatus.PENDING,
             // Pending (Pendente): O pedido foi criado, mas ainda não foi processado.
             // Confirmed (Confirmado): O pedido foi confirmado pelo sistema ou pelo vendedor.
             // Processing (Em Processamento): O pedido está sendo processado (ex.: itens estão sendo separados no estoque).
@@ -134,18 +126,6 @@ const OrderSchema = new Schema<IOrder>(
     },
     { timestamps: true }
 );
-export enum OrderStatus {
-    PENDING = "PENDING",
-    CONFIRMED = "CONFIRMED",
-    PROCESSING = "PROCESSING",
-    READY_TO_SHIP = "READY_TO_SHIP",
-    SHIPPED = "SHIPPED",
-    COMPLETED = "COMPLETED",
-    CANCELLED = "CANCELLED",
-    REFUNDED = "REFUNDED",
-    FAILED = "FAILED",
-    ON_HOLD = "ON_HOLD",
-}
 
 OrderSchema.plugin(mongoosePaginate);
 export const OrderModel = mongoose.model<IOrder, mongoose.PaginateModel<IOrder>>("Order", OrderSchema, "orders");

@@ -9,15 +9,13 @@ export interface IVariation extends Document {
     variationPromotion?: number;
     variationStock: boolean;
     variationImage: string[];
-    delivery: IDelivery
-}
-
-export interface IDelivery {
-    dimensions: {
-        heightCm: number;
-        widthCm: number;
-        depthCm: number;
-    };
-    weight: number;
-    shippingFree: boolean;
+    delivery: {
+        dimensions: {
+            heightCm: number;
+            widthCm: number;
+            depthCm: number;
+        };
+        weight: number;
+        shippingFree: boolean;
+    }
 }

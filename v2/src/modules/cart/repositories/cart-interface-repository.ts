@@ -5,5 +5,5 @@ export interface ICartRepository {
     getCart(query: any): Promise<ICart | null>;
     create(userId: string): Promise<ICart>;
     fetchCarts(query: any, options: any): Promise<ResponsePaginate<ICart>>;
-    fetchCartByUser(userId: string): Promise<ICart | null>;
+    clearCart(cartId: string, options?: any): Promise<boolean>;
 }

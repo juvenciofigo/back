@@ -3,6 +3,7 @@ export * from "./controllers/fetch-users-controller.js";
 export * from "./controllers/authenticate-user-controller.js";
 export * from "./controllers/register-user-controller.js";
 export * from "./controllers/get-user-controller.js";
+export * from "./controllers/get-user-admin-controller.js";
 export * from "./controllers/delete-user-controller.js";
 export * from "./controllers/update-user-controller.js";
 

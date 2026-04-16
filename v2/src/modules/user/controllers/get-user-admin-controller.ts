@@ -2,7 +2,7 @@ import { NextFunction, Response } from "express";
 import { makeGetUser } from "../index.js";
 import { Request } from "express-jwt";
 
-export async function GetUserController(req: Request, res: Response, next: NextFunction) {
+export async function getUserAdminController(req: Request, res: Response, next: NextFunction) {
     const userId = req.query.userId as string;
     const firstName = req.query.firstName as string;
     const lastName = req.query.lastName as string;

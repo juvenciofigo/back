@@ -19,7 +19,7 @@ export class UpdateProductQuantityService {
             throw new Error("Quantidade inválida");
         }
 
-        const cart: ICart | null = await this.cartRepository.fetchCartByUser(userId);
+        const cart: ICart | null = await this.cartRepository.getCart({ cartUser: userId });
 
         if (!cart) {
             throw new CartNotFoundError();

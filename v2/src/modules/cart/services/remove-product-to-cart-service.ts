@@ -14,7 +14,7 @@ export class RemoveProductToCartService {
     }
 
     async execute({ userId, itemId }: Request) {
-        const cart: ICart | null = await this.cartRepository.fetchCartByUser(userId);
+        const cart: ICart | null = await this.cartRepository.getCart({ cartUser: userId });
 
         if (!cart) {
             throw new CartNotFoundError();

@@ -9,8 +9,9 @@ const AddressSchema = new Schema<IAddress>(
             ref: "Customer",
             required: true,
         },
-        complete: {
-            type: String,
+        province: {
+            type: Schema.Types.ObjectId,
+            ref: "Province",
             required: true,
         },
         city: {
@@ -18,14 +19,16 @@ const AddressSchema = new Schema<IAddress>(
             ref: "City",
             required: true,
         },
-        province: {
-            type: Schema.Types.ObjectId,
-            ref: "Province",
-            required: true,
-        },
         neighborhood: {
             type: Schema.Types.ObjectId,
             ref: "Neighborhood",
+        },
+        terminal: {
+            type: Schema.Types.ObjectId,
+            ref: "CarrierTerminal",
+        },
+        complete: {
+            type: String,
             required: true,
         },
         reference: {

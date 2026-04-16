@@ -49,7 +49,7 @@ export class AddProductToCartService {
 
     async execute({ userId, tempCart, singleItem }: AddProductToCartDTO) {
 
-        let cart: ICart | null = await this.cartRepository.fetchCartByUser(userId);
+        let cart: ICart | null = await this.cartRepository.getCart({ cartUser: userId });
 
         // [Melhoria 2] Sistema de Recuperação Automática (Auto-Healing)
         if (!cart) {

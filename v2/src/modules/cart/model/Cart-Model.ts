@@ -1,4 +1,4 @@
-import mongoose, { PaginateModel, Schema } from "mongoose";
+import mongoose, { PaginateModel, Schema, model } from "mongoose";
 import { ICart } from "./cart-interface-model.js";
 import mongoosePaginate from "mongoose-paginate-v2";
 
@@ -9,7 +9,7 @@ const CartSchema = new Schema<ICart>(
             type: [
                 {
                     productId: {
-                        type: mongoose.Schema.Types.ObjectId,
+                        type: Schema.Types.ObjectId,
                         ref: "Products",
                         required: true,
                     },
@@ -19,30 +19,30 @@ const CartSchema = new Schema<ICart>(
                         required: true,
                     },
                     deliveryEstimate: {
-                        type: mongoose.Schema.Types.ObjectId,
+                        type: Schema.Types.ObjectId,
                     },
                     variation: {
                         type: {
                             color: {
-                                type: mongoose.Schema.Types.ObjectId,
+                                type: Schema.Types.ObjectId,
                                 ref: "Variation",
                             },
                             model: {
-                                type: mongoose.Schema.Types.ObjectId,
+                                type: Schema.Types.ObjectId,
                                 ref: "Variation",
                             },
                             size: {
-                                type: mongoose.Schema.Types.ObjectId,
+                                type: Schema.Types.ObjectId,
                                 ref: "Variation",
                             },
                             material: {
-                                type: mongoose.Schema.Types.ObjectId,
+                                type: Schema.Types.ObjectId,
                                 ref: "Variation",
                             },
                         },
                     },
                     item: {
-                        type: mongoose.Schema.Types.ObjectId,
+                        type: Schema.Types.ObjectId,
                         default: () => new mongoose.Types.ObjectId(),
                         unique: true,
                         sparse: true,
@@ -51,7 +51,7 @@ const CartSchema = new Schema<ICart>(
             ],
         },
         cartUser: {
-            type: mongoose.Schema.Types.ObjectId,
+            type: Schema.Types.ObjectId,
             ref: "User",
             required: true,
         },
@@ -61,4 +61,4 @@ const CartSchema = new Schema<ICart>(
 
 CartSchema.plugin(mongoosePaginate);
 
-export const CartModel = mongoose.model<ICart, PaginateModel<ICart>>("Cart", CartSchema, "carts");
+export const CartModel = model<ICart, PaginateModel<ICart>>("Cart", CartSchema, "carts");

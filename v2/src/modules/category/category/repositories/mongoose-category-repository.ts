@@ -60,13 +60,6 @@ export class MongooseCategoryRepository implements ICategoryRepository {
 
     // Public
 
-    async findCategoryByName(categoryName: string): Promise<ICategory | null> {
-        return await CategoryModel
-            .findOne(
-                { categoryName: categoryName })
-            .populate("subCategories");
-    }
-
     async fetchCategories(query: any = {}, options: any = {}): Promise<ResponsePaginate<ICategory>> {
         return await CategoryModel
             .paginate(query, options);

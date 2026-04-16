@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { makeFetchUsers } from "../index.js";
 
-export async function FetchUsersController(req: Request, res: Response, next: NextFunction) {
+export async function fetchUsersController(req: Request, res: Response, next: NextFunction) {
     try {
         const result = await makeFetchUsers().execute(req);
 

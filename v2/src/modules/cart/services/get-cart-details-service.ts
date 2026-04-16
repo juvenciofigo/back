@@ -20,7 +20,7 @@ export class GetCartDetailsService {
 
         if (userId) { // se o usuário estiver autenticado, busca os dados do carrinho no banco de dados
 
-            const cart: ICart | null = await this.cartRepository.fetchCartByUser(userId);
+            const cart: ICart | null = await this.cartRepository.getCart({ cartUser: userId });
             if (!cart) throw new CartNotFoundError();
             if (!cart.cartItens || cart.cartItens.length === 0) return { totalProducts: 0, items: [], cartId: cart._id?.toString() };
 

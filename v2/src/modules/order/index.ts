@@ -5,9 +5,14 @@ export * from "./validators/create-order-validator.js";
 
 // Interfaces
 export * from "./model/order-interface.js";
+export * from "./repositories/order-interface-repository.js";
 
 // Repositories
-export * from "./repositories/order-interface-repository.js";
+export * from "./repositories/mongoose-order-repository.js"
+export * from "../customer/index.js";
+export * from "../cart/index.js";
+export * from "../delivery/index.js";
+export * from "../addresses/index.js";
 
 // Services
 export * from "./services/create-order-service.js";

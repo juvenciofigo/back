@@ -1,10 +1,10 @@
 import { Types, Document } from "mongoose";
 
 export interface IItemVariation {
-    color?: Types.ObjectId;
-    model?: Types.ObjectId;
-    size?: Types.ObjectId;
-    material?: Types.ObjectId;
+    color?: Types.ObjectId | string;
+    model?: Types.ObjectId | string;
+    size?: Types.ObjectId | string;
+    material?: Types.ObjectId | string;
 }
 
 // Representa o item como é guardado no MongoDB
@@ -16,17 +16,24 @@ export interface ICartItem {
     variation: IItemVariation;
 }
 
-// // Representa o item após ser processado para a API (com populações e cálculos)
-export interface ICartItemDetails {
+// Representa o item após ser processado para a API (com populações e cálculos) e também o snapshot do pedido
+export interface IItemDetails {
     item: Types.ObjectId;
-    productId: string;
+    productId: Types.ObjectId | string;
     productName: string;
-    picture: string;
-    variation: IItemVariation; // Aqui virá o objecto populado da variação
-    deliveryEstimate?: any; // Aqui virá o objecto populado do estimate
-    productPrice: number;
+    picture?: string;
+    itemPrice: number;
     quantity: number;
+    totalWeight?: number;
     subtotal: number;
+    variation?: IItemVariation;
+    deliveryEstimate?: IDeliveryEstimate;
+    itemAvailability?: boolean;
+}
+
+export interface IDeliveryEstimate {
+    additionalCost: number;
+    estimatedTime: string;
 }
 
 export interface ICart extends Document {

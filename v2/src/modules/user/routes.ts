@@ -12,22 +12,23 @@ import {
     authenticateUserValidator,
 
     // admin
-    getUsersController,
-    getUserProfileController,
+    fetchUsersController,
+    getUserAdminController,
     deleteUserController,
     updateUserController,
     // client
     authenticationController,
     fetchUsersValidator,
+    getUserController,
 } from "./index.js";
 
 ////////// Admin ///////////
 
 // obter todos os usuários
-router.get("/users", IsAuthValidator.require, IsAdminValidator, fetchUsersValidator, getUsersController); //✅
+router.get("/users", IsAuthValidator.require, IsAdminValidator, fetchUsersValidator, fetchUsersController); //✅
 
 // obter detalhes de um usuário específico
-// router.get("/user/:id/admin", auth.require, AdminValidator, UserValidation.show, UserController.getUserDetails);
+router.get("/user/:id/admin", IsAuthValidator.require, IsAdminValidator, getUserValidator, getUserAdminController);
 
 // // atualizar informações de um usuário
 // router.put("/user/:id/admin", auth.require, AdminValidator, UserValidation.update, UserController.updateUser);
@@ -46,7 +47,7 @@ router.get("/users", IsAuthValidator.require, IsAdminValidator, fetchUsersValida
 
 router.post("/authentication", authenticateUserValidator, authenticationController); //✅
 
-router.get("/user/:id", IsAuthValidator.require, getUserValidator, getUserProfileController);
+router.get("/user/:id", IsAuthValidator.require, getUserValidator, getUserController);
 
 // // atualizar informações de um usuário
 router.put("/user/:id", IsAuthValidator.require, updateUserValidator, updateUserController);

@@ -5,7 +5,8 @@ export interface IAddress extends Document {
     complete: string;
     city: Types.ObjectId;
     province: Types.ObjectId;
-    neighborhood: Types.ObjectId;
+    neighborhood?: Types.ObjectId;
+    terminal?: Types.ObjectId;
     reference?: string;
     note?: string;
     cellNumber: string;
@@ -17,7 +18,8 @@ export interface ICreateAddressRequest {
     complete: string;
     city: string;
     province: string;
-    neighborhood: string;
+    neighborhood?: string;
+    terminal?: string;
     reference?: string;
     note?: string;
     cellNumber: string;

@@ -2,10 +2,9 @@ import { BaseError, ICategory, ICategoryRepository } from "../../index.js";
 
 
 export class CreateCategoryService {
-    private categoryRepository: ICategoryRepository;
 
-    constructor(categoryRepository: ICategoryRepository) {
-        this.categoryRepository = categoryRepository;
+
+    constructor(private categoryRepository: ICategoryRepository) {
     }
 
     async execute(categoryName: string): Promise<ICategory | null> {

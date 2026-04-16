@@ -1,16 +1,14 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import mongoose, { Schema, Document, Types, model } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 
 interface IPayment extends Document {
     amount: number;
-    totalProductsPrice: number;
-    paymentDate: Date;
-    paymentMethod: string;
-    paymentInstallments: number;
     status: string;
+    paidAt: Date;
+    paymentMethod: string;
     order: Types.ObjectId;
     transactionId: string;
-    rescriptionResponse: string;
+    descriptionResponse: string;
     reference: string;
     number: string;
     holderName: string;
@@ -22,26 +20,18 @@ const PaymentRouterSchema = new Schema<IPayment>(
             type: Number,
             required: true,
         },
-        totalProductsPrice: {
-            type: Number,
-            required: true,
-        },
-        paymentDate: {
-            type: Date,
-        },
-        paymentMethod: {
-            type: String,
-            enum: ["Mpesa", "Emola", "Paypal", "Visa", "Mastercard"],
-        },
-        paymentInstallments: {
-            type: Number,
-            default: 1,
-        },
         status: {
             type: String,
             required: true,
             enum: ["Esperando", "Pagamento recusado", "Fraude suspeita", "Pago", "Pedido Cancelado"],
             default: "Esperando",
+        },
+        paidAt: {
+            type: Date,
+        },
+        paymentMethod: {
+            type: String,
+            enum: ["Mpesa", "Emola", "Paypal", "Visa", "Mastercard"],
         },
         order: {
             type: mongoose.Schema.Types.ObjectId,
@@ -52,7 +42,7 @@ const PaymentRouterSchema = new Schema<IPayment>(
             unique: true,
             sparse: true,
         },
-        rescriptionResponse: {
+        descriptionResponse: {
             type: String,
         },
         reference: {
@@ -71,4 +61,4 @@ const PaymentRouterSchema = new Schema<IPayment>(
 
 PaymentRouterSchema.plugin(mongoosePaginate);
 
-export default mongoose.model("Payment", PaymentRouterSchema, "payments");
+export default model("Payment", PaymentRouterSchema, "payments");

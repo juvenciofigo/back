@@ -2,13 +2,12 @@ import { Types } from "mongoose";
 import { BaseError } from "src/shared/BaseError.js";
 import { IAddressRepository, IAddress, IUserRepository, IUser, ICreateAddressRequest, IRegionalRepository, INeighborhood, ICity, IProvince } from "../index.js";
 
-
 export class CreateAddressService {
     constructor(
         private addressRepository: IAddressRepository,
         private userRepository: IUserRepository,
         private regionalRepository: IRegionalRepository
-    ) { }
+    ) {}
 
     async execute(data: ICreateAddressRequest): Promise<IAddress | null> {
         const user: IUser | null = await this.userRepository.getUser({ userId: data.userId });
@@ -45,15 +44,14 @@ export class CreateAddressService {
             throw new BaseError("Province not found", 404);
         }
 
-
         const newAddress: Partial<IAddress> = {
             customer: user.customer,
             complete: data.complete,
-            city: city._id as any,
-            province: province._id as any,
-            neighborhood: neighborhood._id as any,
+            city: city._id as Types.ObjectId,
+            province: province._id as Types.ObjectId,
+            neighborhood: neighborhood._id as Types.ObjectId,
             cellNumber: data.cellNumber,
-        }
+        };
 
         if (data.reference) {
             newAddress.reference = data.reference;
@@ -63,12 +61,6 @@ export class CreateAddressService {
             newAddress.note = data.note;
         }
 
-        const address: IAddress | null = await this.addressRepository.createAddress(newAddress);
-
-        if (!address) {
-            throw new BaseError("Failed to create address", 500);
-        }
-
-        return address;
+        return await this.addressRepository.createAddress(newAddress);
     }
 }

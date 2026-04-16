@@ -1,17 +1,27 @@
-import mongoose, { ClientSession } from "mongoose";
-import { IOrderRepository, IOrder } from "../index.js";
-import { ICartRepository } from "../../cart/index.js";
-import { IUserRepository } from "../../user/index.js";
+import mongoose from "mongoose";
+import {
+    IOrderRepository,
+    IOrder,
+    ICustomerRepository,
+    ICartRepository,
+    ICustomer,
+    IAddressRepository,
+    IAddress,
+    EnOrderStatus,
+    IProductRepository,
+    ICart,
+    IItemDetails,
+    BaseError,
+    IDelivery,
+    CreateDeliveryService
+} from "../index.js";
 import { formatCartItemSnapshot } from "../../cart/utils/cartItemSnapshot.js";
 
 // Importando os modelos globais que ainda não possuem módulos em src/modules/
 import Payments from "../../../../models/Payments.js";
-import Deliveries from "../../../../models/Deliveries.js";
 import OrderRegistrations from "../../../../models/OrderRegistrations.js";
-import Customers from "../../../../models/Customers.js";
 
 interface CreateOrderRequest {
-    cartId: string;
     addressId: string;
     userId: string;
 }
@@ -20,88 +30,100 @@ export class CreateOrderService {
     constructor(
         private orderRepository: IOrderRepository,
         private cartRepository: ICartRepository,
-        private userRepository: IUserRepository
+        private customerRepository: ICustomerRepository,
+        private createDelivery: CreateDeliveryService,
+        private addressRepository: IAddressRepository,
+        private productRepository: IProductRepository,
     ) { }
 
-    async execute({ cartId, addressId, userId }: CreateOrderRequest) {
+    async execute({ addressId, userId }: CreateOrderRequest) {
         const session = await mongoose.startSession();
         session.startTransaction();
 
         try {
             // 1. Verificar existência do carrinho (populado)
-            const cart = await this.cartRepository.fetchCartByUser(userId);
+            const cart: ICart | null = await this.cartRepository.getCart({ cartUser: userId });
 
-            if (!cart || cart.cartItens.length === 0 || cart._id?.toString() !== cartId) {
-                throw new Error("Carrinho inválido ou vazio!");
+            if (!cart || cart.cartItens.length === 0) {
+                throw new BaseError("Carrinho inválido ou vazio!", 400);
             }
 
             // 2. Verificar se cliente existe
-            const customer = await Customers.findOne({ user: userId }).session(session);
+            const customer: ICustomer | null = await this.customerRepository.getCustomer({ user: userId });
             if (!customer) {
-                throw new Error("Perfil de cliente não encontrado!");
+                throw new BaseError("Perfil de cliente não encontrado!", 404);
             }
 
-            // 3. Gerar referência única
-            const reference = await this.generateUniqueReference(session);
+            // 3. Verificar se o endereço é válido
+            const address: IAddress | null = await this.addressRepository.getAddress({ _id: addressId });
+            if (!address) {
+                throw new BaseError("Endereço não encontrado!", 404);
+            }
 
-            // 4. Processar itens do carrinho (Snapshot) usando o utilitário partilhado
-            const cartProducts = cart.cartItens.map(item => formatCartItemSnapshot(item));
+            // 4. Processar itens do carrinho (Snapshot) 
+            const cartItems: IItemDetails[] = await Promise.all(
+                cart.cartItens.map(
+                    async item => await formatCartItemSnapshot(item, this.productRepository)
+                )
+            );
 
-            const totalProductsPrice = cartProducts.reduce((total, p) => total + p.subtotal, 0);
+            const totalProductsPrice = cartItems.reduce((total, p) => total + p.subtotal, 0);
 
-            // 5. Criar Pagamento
-            const payment = new Payments({
-                amount: totalProductsPrice, // + shippingPrice (v1 tem 0 por padrão)
-                totalProductsPrice,
-                reference,
-                status: "Esperando"
-            });
+            // 5. Gerar referência única
+            const reference = await this.generateUniqueReference();
 
-            // 6. Criar Entrega
-            const delivery = new Deliveries({
-                cost: 0,
-                address: addressId
-            });
-
-            // 7. Criar Pedido
-            const orderData: Partial<IOrder> = {
+            // 6. Criar Encomenda (Order)
+            const order = await this.orderRepository.createOrder({
                 customer: customer._id,
-                cart: cartProducts,
-                address: addressId,
-                payment: payment._id,
-                delivery: delivery._id,
+                cart: cartItems,
                 referenceOrder: reference,
-                status: "Pendente",
-                orderCancel: false,
-                deleted: false
-            };
-
-            const order: IOrder | null = await this.orderRepository.createOrder(orderData);
+                status: EnOrderStatus.PENDING,
+            }, { session });
 
             if (!order) {
-                throw new Error("Erro ao criar pedido!");
+                throw new BaseError("Erro ao criar pedido!", 500);
             }
 
-            // 8. Registo do Pedido
+            // 7. Criar Entrega (Delivery) usando o serviço inteligente
+            const delivery: IDelivery | null = await this.createDelivery.execute({
+                cartItems,
+                address,
+                orderId: order.id,
+                customerId: customer.id
+            }, session);
+
+            if (!delivery) {
+                throw new BaseError("Erro ao criar entrega!", 500);
+            }
+
+            // 8. Criar Pagamento (Modelo Legado)
+            const payment = new Payments({
+                amount: totalProductsPrice + delivery.logistics.totalShipping,
+                totalProductsPrice,
+                reference,
+                status: "Esperando",
+                order: order._id
+            });
+
+            // 9. Registo do Histórico (Modelo Legado)
             const orderReg = new OrderRegistrations({
                 order: order._id,
                 orderStatus: order.status
             });
 
-            payment.order = order.id;
-            delivery.order = order.id;
-            order.orderRegistration = orderReg._id;
+            // 10. Atualizar referências cruzadas na Encomenda
+            await this.orderRepository.updateOrder(order.id, {
+                delivery: delivery._id,
+                payment: payment._id,
+                orderRegistration: orderReg._id
+            }, { session });
 
-            // 9. Salvar todos os documentos
-            await order.save({ session });
+            // 11. Salvar documentos legados e limpar carrinho
             await payment.save({ session });
-            await delivery.save({ session });
             await orderReg.save({ session });
+            await this.cartRepository.clearCart(cart.id, { session });
 
-            // 10. Limpar carrinho
-            cart.cartItens = [];
-            await cart.save({ session });
-
+            // Finalizar Transação
             await session.commitTransaction();
 
             return {
@@ -118,12 +140,13 @@ export class CreateOrderService {
         }
     }
 
-    private async generateUniqueReference(session: ClientSession): Promise<string> {
+    private async generateUniqueReference(): Promise<string> {
         let reference: string = "";
         let exists = true;
 
         while (exists) {
             reference = this.createReferenceCode();
+            // Aqui usamos findOne normal sem sessão pois a ordem ainda não foi comitada
             const order = await this.orderRepository.getOrder({ referenceOrder: reference });
             if (!order) exists = false;
         }
@@ -132,12 +155,9 @@ export class CreateOrderService {
     }
 
     private createReferenceCode(): string {
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        const timestamp = new Date().getTime().toString();
-        const randomStr = Array.from({ length: 10 }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join("");
-
-        // v1 usa tamanho entre 6 e 20
-        const size = Math.floor(Math.random() * (20 - 6 + 1)) + 6;
-        return (timestamp + randomStr).slice(0, size);
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        const timestamp = Date.now().toString().slice(-4);
+        const randomStr = Array.from({ length: 6 }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join("");
+        return `ORD-${timestamp}-${randomStr}`;
     }
 }

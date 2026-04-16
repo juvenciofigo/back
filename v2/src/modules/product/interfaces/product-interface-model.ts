@@ -42,14 +42,14 @@ export interface IProduct extends Document {
     productVendor: string;
     productModel?: string;
     productBrand?: string;
-    productWeight?: number;
+    productWeight: number;
     productLength?: number;
     productWidth?: number;
     productHeight?: number;
     order_items?: string[];
     timesPurchased?: number;
     totalRevenue?: number;
-    deliveryEstimate?: string[];
+    deliveryEstimate?: IDeliveryEstimate[];
     sales?: ISale[];
     profit?: IProfit[];
     createdAt: Date;

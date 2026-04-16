@@ -1,21 +1,33 @@
-import { IVariation } from "src/modules/product/index.js";
-import { ICartItem, ICartItemDetails, IItemVariation } from "../model/cart-interface-model.js";
+import { Types } from "mongoose";
+import { IDeliveryEstimate, IProduct, IVariation } from "src/modules/product/index.js";
+import { ICartItem, IItemDetails, IItemVariation } from "../model/cart-interface-model.js";
 
 /**
  * Calcula o preço de um único item do carrinho, considerando variações e estimativas.
  * @param productDetails Objeto do produto populado
- * @param variation Objeto da variação populado
+ * @param variation Objeto da variação populado (populado)
  * @param deliveryEstimateId ID da estimativa selecionada
  */
-export function calculateItemPrice(productDetails: any, variation: any, deliveryEstimateId: any) {
+export function calculateItemPrice( productDetails: IProduct,  variation: any, deliveryEstimateId?: string | Types.ObjectId) {
     if (!productDetails) return 0;
 
-    const deliveryEstimate = productDetails.deliveryEstimate?.id
-        ? productDetails.deliveryEstimate.id(deliveryEstimateId)
-        : productDetails.deliveryEstimate?.find?.((d: any) => (d._id?.toString() || d.id?.toString()) === deliveryEstimateId?.toString());
+    // 1. Encontrar a estimativa correta dentro do produto usando o ID
+    // Fazemos o cast para 'any' para evitar erro de tipo caso seja um DocumentArray do Mongoose
+    const deliveryEstimates = productDetails.deliveryEstimate as any;
+    const selectedEstimate = deliveryEstimates?.id
+        ? deliveryEstimates.id(deliveryEstimateId)
+        : deliveryEstimates?.find?.((d: any) =>
+            (d._id?.toString() || d.id?.toString()) === deliveryEstimateId?.toString()
+        );
 
     let extraPrice = 0;
-    if (deliveryEstimate?.additionalCost) extraPrice += deliveryEstimate.additionalCost;
+
+    // 2. Somar custo adicional da entrega, se existir
+    if (selectedEstimate?.additionalCost) {
+        extraPrice += selectedEstimate.additionalCost;
+    }
+
+    // 3. Somar custos das variações (considerando que vêm populadas)
     if (variation?.color?.variationPrice) extraPrice += variation.color.variationPrice;
     if (variation?.model?.variationPrice) extraPrice += variation.model.variationPrice;
     if (variation?.size?.variationPrice) extraPrice += variation.size.variationPrice;
@@ -26,13 +38,13 @@ export function calculateItemPrice(productDetails: any, variation: any, delivery
 
 /**
  * Calcula o total de uma lista de itens.
- * Aceita tanto a lista bruta (ICartItem) quanto a detalhada (ICartItemDetails).
+ * Aceita tanto a lista bruta (ICartItem) quanto a detalhada (IItemDetails).
  */
-export default function calculateTotal(items: (ICartItem | ICartItemDetails)[]) {
+export default function calculateTotal(items: (ICartItem | IItemDetails)[]) {
     let total = 0;
 
     for (const item of items) {
-        // Se já tiver subtotal (ICartItemDetails), usa-o
+        // Se já tiver subtotal (IItemDetails), usa-o
         if ("subtotal" in item) {
             total += item.subtotal;
             continue;
